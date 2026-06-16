@@ -4,6 +4,15 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Barraca Sol da Bahia</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#0f2340"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="CookControl"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjM4IiBmaWxsPSIjMGYyMzQwIi8+PHRleHQgeD0iOTYiIHk9IjEyOCIgZm9udC1zaXplPSIxMDgiIHRleHQtYW5jaG9yPSJtaWRkbGUiPvCfkrY8L3RleHQ+PC9zdmc+"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 
@@ -400,7 +409,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   </div>
   <!-- Abas — filtradas por role via JS -->
   <div id="nav-main-wrapper" style="position:relative;overflow:hidden">
-  <button id="nav-arrow-left" onclick="document.getElementById('nav-main').scrollBy({left:-120,behavior:'smooth'})" style="position:absolute;left:0;top:0;bottom:0;z-index:40;width:36px;background:linear-gradient(to right,rgba(255,255,255,1) 60%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem;color:#ea580c;padding:0;font-weight:700">‹</button>
+  <button id="nav-arrow-left" onclick="document.getElementById('nav-main').scrollBy({left:-120,behavior:'smooth'})" style="position:absolute;left:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to right,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">‹</button>
   <div id="nav-main" class="flex items-center gap-1 overflow-x-auto" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 40px">
     <button class="nav-tab active" data-view="cardapio"  onclick="showView('cardapio',this)">🍽️ Cardápio</button>
     <button class="nav-tab"        data-view="mesas"     onclick="showView('mesas',this)">🪑 Mesas</button>
@@ -414,7 +423,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
     <button class="nav-tab"        data-view="admin"     onclick="showView('admin',this)">⚙️ Admin</button>
     <button class="nav-tab"        data-view="cliente"   onclick="showView('cliente',this)" style="display:none">📱 Cliente</button>
   </div>
-  <button id="nav-arrow-right" onclick="document.getElementById('nav-main').scrollBy({left:120,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;z-index:40;width:36px;background:linear-gradient(to left,rgba(255,255,255,1) 60%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem;color:#ea580c;padding:0;font-weight:700">›</button>
+  <button id="nav-arrow-right" onclick="document.getElementById('nav-main').scrollBy({left:120,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to left,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">›</button>
   </div><!-- /nav-main-wrapper -->
 </div><!-- /sticky nav -->
 
@@ -10286,6 +10295,27 @@ window._gestorRefresh = setInterval(() => {
   window._swAplicarTodos = _aplicarTodos;
 
 })();
+</script>
+<!-- PWA — Registro do Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').then(function(reg) {
+      console.log('[PWA] Service Worker registrado:', reg.scope);
+      // Verifica atualização
+      reg.addEventListener('updatefound', function() {
+        var sw = reg.installing;
+        sw.addEventListener('statechange', function() {
+          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('[PWA] Nova versão disponível — recarregue para atualizar');
+          }
+        });
+      });
+    }).catch(function(e) {
+      console.warn('[PWA] Service Worker falhou:', e.message);
+    });
+  });
+}
 </script>
 </body>
 </html>
