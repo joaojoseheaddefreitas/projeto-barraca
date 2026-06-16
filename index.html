@@ -2154,7 +2154,17 @@ render();
   <!-- SUB: Fichas Técnicas -->
   <div id="estoque-sub-fichas" class="hidden">
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:18px">
-      <p style="font-size:.82rem;color:#6b7280;margin-bottom:12px">Clique num prato para ver ingredientes, custo e margem de lucro.</p>
+      <!-- Cabeçalho com botão nova ficha -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div>
+          <p style="font-weight:700;font-size:.88rem;color:#0f2340">📋 Fichas Técnicas</p>
+          <p style="font-size:.76rem;color:#6b7280;margin-top:2px">Clique numa ficha para ver detalhes, editar ou excluir.</p>
+        </div>
+        <button onclick="abrirModalFicha(null)"
+          style="background:#ea580c;color:#fff;border:none;border-radius:12px;padding:9px 18px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+          ＋ Nova Ficha
+        </button>
+      </div>
       <div id="fichas-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px"></div>
     </div>
   </div>
@@ -2863,7 +2873,7 @@ function inicializarInsumosDefault() {
 // ═══════════════════════════════════════════════════════════════
 // FICHAS TÉCNICAS — mapa ingrediente×prato
 // ═══════════════════════════════════════════════════════════════
-const FICHAS_TECNICAS = {
+const FICHAS_PADRAO = {
   "pet_001":[{insId:"ins_p06",qtd:12},{insId:"ins_h01",qtd:0.02},{insId:"ins_h07",qtd:0.1},{insId:"ins_t01",qtd:0.01}],
   "pet_002":[{insId:"ins_p03",qtd:0.4},{insId:"ins_c06",qtd:0.08},{insId:"ins_t05",qtd:0.15},{insId:"ins_t01",qtd:0.005}],
   "pet_010":[{insId:"ins_p07",qtd:2},{insId:"ins_h01",qtd:0.02},{insId:"ins_t01",qtd:0.01}],
@@ -2913,6 +2923,15 @@ const FICHAS_TECNICAS = {
   "sob_003":[{insId:"ins_t04",qtd:0.1},{insId:"ins_l02",qtd:0.2}],
 };
 
+// Carrega do localStorage ou usa padrão
+let FICHAS_TECNICAS = (function(){
+  const salvo = carregar("fichas_tecnicas_v1", null);
+  if(salvo && typeof salvo === "object" && Object.keys(salvo).length > 0) return salvo;
+  return JSON.parse(JSON.stringify(FICHAS_PADRAO));
+})();
+
+function salvarFichas(){ salvar("fichas_tecnicas_v1", FICHAS_TECNICAS); }
+
 function getFicha(id){ return FICHAS_TECNICAS[id]||[]; }
 
 function calcCustoItem(id){
@@ -2959,18 +2978,40 @@ function renderFichasLista(){
     const f=FICHAS_TECNICAS[it.id];
     if(f&&f.length) todos.push({...it,ficha:f});
   }));
-  if(!todos.length){ cont.innerHTML='<p style="color:#9ca3af;padding:12px">Nenhuma ficha cadastrada.</p>'; return; }
+  if(!todos.length){
+    cont.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:32px 0">
+      <p style="color:#9ca3af;font-size:.88rem;margin-bottom:12px">Nenhuma ficha cadastrada ainda.</p>
+      <button onclick="abrirModalFicha(null)" style="background:#ea580c;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:.8rem;font-weight:700;cursor:pointer">＋ Criar primeira ficha</button>
+    </div>`;
+    return;
+  }
   cont.innerHTML=todos.map(it=>{
     const custo=calcCustoItem(it.id);
     const margem=it.preco>0?((it.preco-custo)/it.preco*100).toFixed(0):0;
-    return `<div onclick="verFichaTecnica('${it.id}')" style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;cursor:pointer;transition:.15s" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
-      <div style="font-weight:700;font-size:.85rem;color:#0f2340;margin-bottom:6px">${it.nome}</div>
-      <div style="display:flex;gap:12px;font-size:.78rem;flex-wrap:wrap">
+    const cor=margem>=60?"#16a34a":margem>=40?"#d97706":"#dc2626";
+    return `<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:14px;transition:.15s;display:flex;flex-direction:column;gap:8px"
+      onmouseover="this.style.borderColor='#ea580c'" onmouseout="this.style.borderColor='#e5e7eb'">
+      <div style="font-weight:700;font-size:.85rem;color:#0f2340">${it.nome}</div>
+      <div style="display:flex;gap:10px;font-size:.78rem;flex-wrap:wrap">
         <span>💰 Custo: <strong>R$ ${custo.toFixed(2)}</strong></span>
         <span>🏷️ Venda: <strong>R$ ${it.preco.toFixed(2)}</strong></span>
-        <span style="color:#16a34a">📈 <strong>${margem}%</strong></span>
+        <span style="color:${cor}">📈 <strong>${margem}%</strong></span>
       </div>
-      <div style="font-size:.72rem;color:#9ca3af;margin-top:4px">${it.ficha.length} ingrediente(s) · clique para detalhes</div>
+      <div style="font-size:.72rem;color:#9ca3af">${it.ficha.length} ingrediente(s)</div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <button onclick="verFichaTecnica('${it.id}')"
+          style="flex:1;background:#f1f5f9;border:none;border-radius:8px;padding:6px;font-size:.72rem;font-weight:700;cursor:pointer;color:#0f2340">
+          👁 Ver
+        </button>
+        <button onclick="abrirModalFicha('${it.id}')"
+          style="flex:1;background:#fff7ed;border:none;border-radius:8px;padding:6px;font-size:.72rem;font-weight:700;cursor:pointer;color:#ea580c">
+          ✏️ Editar
+        </button>
+        <button onclick="excluirFicha('${it.id}','${it.nome.replace(/'/g,"&#39;")}')"
+          style="flex:1;background:#fef2f2;border:none;border-radius:8px;padding:6px;font-size:.72rem;font-weight:700;cursor:pointer;color:#dc2626">
+          🗑 Excluir
+        </button>
+      </div>
     </div>`;
   }).join("");
 }
@@ -3015,6 +3056,211 @@ function verFichaTecnica(itemId){
       </tr></thead><tbody>${linhas}</tbody>
     </table>`);
 }
+
+// ══════════════════════════════════════════════════════
+//  CRUD FICHAS TÉCNICAS
+// ══════════════════════════════════════════════════════
+
+function excluirFicha(itemId, nome){
+  if(!confirm(`Excluir a ficha técnica de "${nome}"?\nEsta ação não pode ser desfeita.`)) return;
+  delete FICHAS_TECNICAS[itemId];
+  salvarFichas();
+  renderFichasLista();
+  toast(`🗑 Ficha de "${nome}" excluída`);
+}
+
+function abrirModalFicha(itemId){
+  // Coleta todos os pratos do cardápio
+  const todosPratos=[];
+  categorias.forEach(cat=>(cat.itens||[]).forEach(it=>todosPratos.push({...it,catNome:cat.nome})));
+  if(!todosPratos.length){ toast("⚠️ Nenhum prato no cardápio ainda"); return; }
+
+  const editando = itemId && FICHAS_TECNICAS[itemId];
+  let itemSel = itemId ? todosPratos.find(p=>p.id===itemId) : null;
+
+  // Ingredientes atuais (para edição) ou vazio
+  let ingredientes = editando ? JSON.parse(JSON.stringify(FICHAS_TECNICAS[itemId])) : [];
+
+  // ── opções do select de pratos ──
+  const optsPratos = todosPratos.map(p=>
+    `<option value="${p.id}" ${p.id===itemId?'selected':''}>${p.catNome} › ${p.nome}</option>`
+  ).join("");
+
+  // ── opções do select de insumos ──
+  const optsInsumos = insumos.map(i=>
+    `<option value="${i.id}">${i.nome} (${i.unidade})</option>`
+  ).join("");
+
+  const m=document.createElement("div");
+  m.id="modal-ficha-crud";
+  m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10050;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto";
+  m.innerHTML=`
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:580px;margin:auto;overflow:hidden">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0f2340,#1e3a5f);color:#fff;padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-weight:800;font-size:.95rem">${editando?'✏️ Editar Ficha Técnica':'📋 Nova Ficha Técnica'}</span>
+      <button onclick="document.getElementById('modal-ficha-crud').remove()" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:1.4rem;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+
+      <!-- Seleção do prato -->
+      <div>
+        <label style="font-size:.76rem;font-weight:700;color:#374151;display:block;margin-bottom:5px">PRATO / PRODUTO</label>
+        <select id="fic-prato-sel" ${editando?'disabled':''} onchange="_ficAtualizarPrato(this.value)"
+          style="width:100%;border:1.5px solid #d1d5db;border-radius:10px;padding:9px 12px;font-size:.84rem;background:#fff">
+          <option value="">— selecione um prato —</option>
+          ${optsPratos}
+        </select>
+        ${editando?`<p style="font-size:.71rem;color:#9ca3af;margin-top:4px">Para trocar o prato crie uma nova ficha.</p>`:''}
+      </div>
+
+      <!-- Ingredientes já adicionados -->
+      <div>
+        <label style="font-size:.76rem;font-weight:700;color:#374151;display:block;margin-bottom:8px">INGREDIENTES</label>
+        <div id="fic-ings-lista" style="display:flex;flex-direction:column;gap:6px;min-height:40px"></div>
+      </div>
+
+      <!-- Adicionar ingrediente -->
+      <div style="background:#f8fafc;border-radius:12px;padding:14px;border:1px dashed #d1d5db">
+        <p style="font-size:.76rem;font-weight:700;color:#374151;margin-bottom:10px">➕ ADICIONAR INGREDIENTE</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:2;min-width:160px">
+            <label style="font-size:.7rem;color:#6b7280;display:block;margin-bottom:3px">Insumo</label>
+            <select id="fic-ins-sel" style="width:100%;border:1.5px solid #d1d5db;border-radius:8px;padding:7px 10px;font-size:.8rem;background:#fff">
+              <option value="">— selecione —</option>${optsInsumos}
+            </select>
+          </div>
+          <div style="min-width:90px">
+            <label style="font-size:.7rem;color:#6b7280;display:block;margin-bottom:3px">Quantidade</label>
+            <input id="fic-ins-qtd" type="number" min="0.001" step="0.001" value="1"
+              style="width:100%;border:1.5px solid #d1d5db;border-radius:8px;padding:7px 10px;font-size:.8rem">
+          </div>
+          <button onclick="_ficAdicionarIng()"
+            style="background:#ea580c;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap">
+            + Adicionar
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumo de custo (atualiza dinamicamente) -->
+      <div id="fic-resumo" style="display:none;background:#f0fdf4;border-radius:12px;padding:12px;font-size:.82rem;color:#15803d;font-weight:600;text-align:center"></div>
+
+      <!-- Ações -->
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button onclick="document.getElementById('modal-ficha-crud').remove()"
+          style="flex:1;background:#f3f4f6;border:none;border-radius:10px;padding:11px;font-size:.82rem;font-weight:700;cursor:pointer;color:#374151">
+          Cancelar
+        </button>
+        <button onclick="_ficSalvar()"
+          style="flex:2;background:#ea580c;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.84rem;font-weight:800;cursor:pointer">
+          💾 Salvar Ficha
+        </button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", function(e){ if(e.target===m) m.remove(); });
+
+  // Expor estado no modal para as funções inline
+  m._ings = ingredientes;
+  m._optsInsumos = optsInsumos;
+
+  _ficRenderIngs();
+  if(itemId) _ficAtualizarResumo();
+}
+
+function _ficGetModal(){ return document.getElementById("modal-ficha-crud"); }
+
+function _ficRenderIngs(){
+  const m = _ficGetModal(); if(!m) return;
+  const lista = document.getElementById("fic-ings-lista");
+  if(!lista) return;
+  if(!m._ings.length){
+    lista.innerHTML='<p style="color:#9ca3af;font-size:.78rem;text-align:center;padding:8px">Nenhum ingrediente adicionado.</p>';
+    return;
+  }
+  lista.innerHTML = m._ings.map((ing,i)=>{
+    const ins = insumos.find(x=>x.id===ing.insId);
+    const nome = ins ? ins.nome : ing.insId;
+    const und  = ins ? ins.unidade : "";
+    const custo= ins ? (ins.custo*ing.qtd).toFixed(2) : "?";
+    return `<div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:7px 10px">
+      <span style="flex:1;font-size:.8rem;color:#0f2340;font-weight:600">${nome}</span>
+      <input type="number" min="0.001" step="0.001" value="${ing.qtd}"
+        onchange="_ficEditQtd(${i},this.value)"
+        style="width:72px;border:1px solid #d1d5db;border-radius:6px;padding:4px 7px;font-size:.78rem;text-align:right">
+      <span style="font-size:.75rem;color:#6b7280;min-width:24px">${und}</span>
+      <span style="font-size:.75rem;color:#16a34a;min-width:52px">R$ ${custo}</span>
+      <button onclick="_ficRemoverIng(${i})"
+        style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:.9rem;padding:2px 4px">✕</button>
+    </div>`;
+  }).join("");
+  _ficAtualizarResumo();
+}
+
+function _ficAdicionarIng(){
+  const m=_ficGetModal(); if(!m) return;
+  const insId=document.getElementById("fic-ins-sel").value;
+  const qtd=parseFloat(document.getElementById("fic-ins-qtd").value)||0;
+  if(!insId||qtd<=0){ toast("⚠️ Selecione insumo e informe a quantidade"); return; }
+  // Verifica duplicata — soma se já existe
+  const existente = m._ings.find(x=>x.insId===insId);
+  if(existente){ existente.qtd=parseFloat((existente.qtd+qtd).toFixed(4)); }
+  else { m._ings.push({insId,qtd}); }
+  document.getElementById("fic-ins-sel").value="";
+  document.getElementById("fic-ins-qtd").value="1";
+  _ficRenderIngs();
+}
+
+function _ficRemoverIng(i){
+  const m=_ficGetModal(); if(!m) return;
+  m._ings.splice(i,1);
+  _ficRenderIngs();
+}
+
+function _ficEditQtd(i,val){
+  const m=_ficGetModal(); if(!m) return;
+  m._ings[i].qtd=parseFloat(val)||0;
+  _ficAtualizarResumo();
+}
+
+function _ficAtualizarPrato(itemId){
+  _ficAtualizarResumo();
+}
+
+function _ficAtualizarResumo(){
+  const m=_ficGetModal(); if(!m) return;
+  const resumo=document.getElementById("fic-resumo"); if(!resumo) return;
+  if(!m._ings.length){ resumo.style.display="none"; return; }
+  const custo=m._ings.reduce((s,ing)=>{
+    const ins=insumos.find(x=>x.id===ing.insId);
+    return s+(ins?ins.custo*ing.qtd:0);
+  },0);
+  const pratoId=document.getElementById("fic-prato-sel")?.value;
+  let item=null;
+  categorias.forEach(cat=>(cat.itens||[]).forEach(it=>{ if(it.id===pratoId) item=it; }));
+  const mg=item&&item.preco>0?((item.preco-custo)/item.preco*100).toFixed(0):null;
+  resumo.style.display="block";
+  resumo.innerHTML=`💰 Custo estimado: <strong>R$ ${custo.toFixed(2)}</strong>${mg!==null?' · 📈 Margem: <strong>'+mg+'%</strong>':''}`;
+}
+
+function _ficSalvar(){
+  const m=_ficGetModal(); if(!m) return;
+  const pratoId=document.getElementById("fic-prato-sel").value;
+  if(!pratoId){ toast("⚠️ Selecione o prato"); return; }
+  if(!m._ings.length){ toast("⚠️ Adicione pelo menos um ingrediente"); return; }
+  // Valida quantidades
+  if(m._ings.some(x=>!x.qtd||x.qtd<=0)){ toast("⚠️ Verifique as quantidades (devem ser > 0)"); return; }
+  FICHAS_TECNICAS[pratoId]=JSON.parse(JSON.stringify(m._ings));
+  salvarFichas();
+  m.remove();
+  renderFichasLista();
+  let nomePrato="";
+  categorias.forEach(cat=>(cat.itens||[]).forEach(it=>{ if(it.id===pratoId) nomePrato=it.nome; }));
+  toast(`✅ Ficha de "${nomePrato}" salva com ${m._ings.length} ingrediente(s)`);
+}
+
+// ══════════════════════════════════════════════════════
 
 function preencherSelectsBaixas(){
   ["baixa-ins-sel","entrada-ins-sel"].forEach(id=>{
