@@ -46,7 +46,12 @@ window.COOKCONTROL_CONFIG = {
 
   // Supabase Storage — onde as fotos de produto enviadas pelo Admin são guardadas
   storageBucket: "cardapio-fotos",
-  storageFolder: "produtos"
+  storageFolder: "produtos",
+
+  // Módulo de Pagamentos (maquininhas) — identificador único deste restaurante
+  // e endereço do backend que fala com as adquirentes.
+  empresaId: "barraca-sol-da-bahia",
+  paymentsApiBase: "https://cookcontrol-pagamentos.vercel.app/api/v1"
 };
 
 (function() {
@@ -149,7 +154,7 @@ window.COOKCONTROL_CONFIG = {
 </script>
 <script>
 (function(){
-  var VER="gv_v7";
+  var VER="gv_v8";
   if(localStorage.getItem("gv_ver")!==VER){
     localStorage.removeItem("solbahia_categorias");
     localStorage.setItem("gv_ver",VER);
@@ -10494,6 +10499,186 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   PATCH — CONEXÃO COM MAQUININHAS VIA API (NUVEM)
+   Card novo na aba Admin, ABAIXO do card "Maquininha & Pix" que já
+   existe (esse continua igual, é só pro deep link/Pix estático).
+   ═══════════════════════════════════════════════════════════════ */
+
+const ADQUIRENTES_API = {
+  mercadopago: { nome: "Mercado Pago", emoji: "💙", disponivel: true },
+  cielo:       { nome: "Cielo",        emoji: "💳", disponivel: false, motivo: "endpoint da maquininha física ainda em confirmação" },
+  stone:       { nome: "Stone",        emoji: "🟩", disponivel: false, motivo: "exige aprovação como parceiro homologado pela Stone" },
+  pagbank:     { nome: "PagBank",      emoji: "🟧", disponivel: false, motivo: "pagamento no cartão exige app nativo (fase futura)" },
+};
+
+function _injetarPainelPagamentosAPI() {
+  const adminEl = document.getElementById("view-admin");
+  if (!adminEl) return;
+
+  let card = document.getElementById("admin-pagamentos-api-card");
+  if (!card) {
+    card = document.createElement("div");
+    card.id = "admin-pagamentos-api-card";
+    card.className = "admin-card mb-4";
+    const cards = adminEl.querySelectorAll(".admin-card");
+    let refCard = null;
+    cards.forEach(c => { if (c.textContent.includes("Maquininha & Pix")) refCard = c; });
+    if (refCard && refCard.nextSibling) adminEl.insertBefore(card, refCard.nextSibling);
+    else adminEl.prepend(card);
+  }
+
+  const cfg = window.COOKCONTROL_CONFIG || {};
+  const backendPronto = !!cfg.paymentsApiBase && !cfg.paymentsApiBase.includes("SEU-BACKEND");
+  const statusPagamentos = config.pagamentos_api || {};
+  const adquirenteAtiva = statusPagamentos.provider || "";
+
+  card.innerHTML = `
+    <div class="flex items-center gap-3 mb-4">
+      <div style="background:linear-gradient(135deg,#059669,#047857);border-radius:12px;padding:8px 12px;font-size:1.2rem">🔌</div>
+      <h2 class="serif text-lg" style="color:#0f2340">Conexão com Maquininhas (Nuvem)</h2>
+    </div>
+    <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px">
+      Aqui você conecta a conta real do restaurante em cada adquirente, pra cobrar
+      direto na maquininha física e receber confirmação automática — diferente do
+      card acima, que só abre o app da maquininha manualmente.
+    </p>
+
+    ${!backendPronto ? `
+    <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px;margin-bottom:14px">
+      <p style="font-size:.8rem;color:#92400e;font-weight:700">⚠️ Backend ainda não configurado</p>
+      <p style="font-size:.74rem;color:#92400e">Defina <code>paymentsApiBase</code> em COOKCONTROL_CONFIG antes de testar a conexão.</p>
+    </div>` : ''}
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
+      ${Object.entries(ADQUIRENTES_API).map(([key, a]) => `
+        <button
+          ${a.disponivel ? `onclick="_selecionarAdquirenteAPI('${key}')"` : 'disabled'}
+          style="position:relative;padding:14px 10px;border-radius:12px;text-align:center;cursor:${a.disponivel ? 'pointer' : 'not-allowed'};
+                 border:2px solid ${adquirenteAtiva === key ? '#059669' : '#e5e7eb'};
+                 background:${a.disponivel ? (adquirenteAtiva === key ? '#ecfdf5' : '#fff') : '#f9fafb'};
+                 opacity:${a.disponivel ? '1' : '.55'}">
+          <div style="font-size:1.4rem">${a.emoji}</div>
+          <div style="font-size:.78rem;font-weight:700;color:#0f2340;margin-top:4px">${a.nome}</div>
+          ${a.disponivel
+            ? (adquirenteAtiva === key ? `<div style="font-size:.65rem;color:#059669;font-weight:800;margin-top:2px">✅ SELECIONADA</div>` : '')
+            : `<div style="font-size:.6rem;color:#9ca3af;margin-top:2px">Em breve</div>`}
+        </button>
+      `).join('')}
+    </div>
+
+    <div id="admin-form-adquirente-api"></div>
+  `;
+
+  if (adquirenteAtiva && ADQUIRENTES_API[adquirenteAtiva]?.disponivel) {
+    _selecionarAdquirenteAPI(adquirenteAtiva, true);
+  }
+}
+
+function _selecionarAdquirenteAPI(provider, semSalvar) {
+  if (!semSalvar) {
+    config.pagamentos_api = config.pagamentos_api || {};
+    config.pagamentos_api.provider = provider;
+    salvar("config", config);
+    _injetarPainelPagamentosAPI();
+  }
+
+  const container = document.getElementById("admin-form-adquirente-api");
+  if (!container) return;
+
+  const statusAtual = (config.pagamentos_api && config.pagamentos_api[provider]) || {};
+
+  if (provider === "mercadopago") {
+    container.innerHTML = `
+      <div class="p-3 rounded-xl border-2" style="border-color:#bfdbfe;background:#eff6ff">
+        <label class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">Access Token (Mercado Pago)</label>
+        <input id="mp-access-token" type="password" class="input-base mb-2"
+               placeholder="Cole aqui o Access Token (comece com TEST- pra testar)" style="border-color:#93c5fd"/>
+
+        <label class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">Serial da Maquininha (device_id)</label>
+        <input id="mp-device-id" class="input-base mb-3" placeholder="Ex: PAX_A910__SMARTPOS1234567890"
+               value="${statusAtual.deviceId || ''}" style="border-color:#93c5fd"/>
+
+        <button class="btn-primary w-full" onclick="_testarConexaoMercadoPago()">🔍 Testar Conexão</button>
+
+        <p id="mp-status-conexao" style="font-size:.78rem;font-weight:700;margin-top:10px;color:${statusAtual.conectado ? '#16a34a' : '#6b7280'}">
+          ${statusAtual.conectado ? '✅ Conectado — testado em ' + new Date(statusAtual.testadoEm || Date.now()).toLocaleString('pt-BR') : '⚪ Ainda não testado'}
+        </p>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="p-3 rounded-xl border-2" style="border-color:#e5e7eb;background:#f9fafb">
+        <p style="font-size:.8rem;color:#6b7280">${ADQUIRENTES_API[provider]?.motivo || 'Ainda não disponível.'}</p>
+      </div>
+    `;
+  }
+}
+
+async function _testarConexaoMercadoPago() {
+  const cfg = window.COOKCONTROL_CONFIG || {};
+  if (!cfg.paymentsApiBase || cfg.paymentsApiBase.includes("SEU-BACKEND")) {
+    toast("Configure paymentsApiBase em COOKCONTROL_CONFIG antes de testar.");
+    return;
+  }
+
+  const accessToken = document.getElementById("mp-access-token")?.value?.trim();
+  const deviceId = document.getElementById("mp-device-id")?.value?.trim();
+  const statusEl = document.getElementById("mp-status-conexao");
+
+  if (!accessToken) { toast("Cole o Access Token do Mercado Pago primeiro."); return; }
+  if (!deviceId) { toast("Preencha o Serial da Maquininha antes de testar."); return; }
+
+  statusEl.textContent = "⏳ Testando conexão...";
+  statusEl.style.color = "#6b7280";
+
+  try {
+    const resp = await fetch(`${cfg.paymentsApiBase}/payments/test-connection`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-empresa-id": cfg.empresaId || "",
+      },
+      body: JSON.stringify({
+        provider: "mercadopago",
+        credentials: { accessToken },
+        serialNumber: deviceId,
+      }),
+    });
+    const data = await resp.json();
+
+    config.pagamentos_api = config.pagamentos_api || {};
+    config.pagamentos_api.mercadopago = {
+      conectado: !!data.conectado,
+      deviceId: deviceId || "",
+      testadoEm: new Date().toISOString(),
+    };
+    salvar("config", config);
+
+    if (data.conectado) {
+      statusEl.textContent = "✅ Conectado com sucesso! " + new Date().toLocaleString('pt-BR');
+      statusEl.style.color = "#16a34a";
+      toast("Mercado Pago conectado! 🎉");
+    } else {
+      statusEl.textContent = "❌ Falha: " + (data.motivo || "credenciais inválidas");
+      statusEl.style.color = "#dc2626";
+    }
+  } catch (err) {
+    statusEl.textContent = "❌ Erro ao contatar o backend: " + err.message;
+    statusEl.style.color = "#dc2626";
+  }
+}
+
+const _renderAdminComPagamentosAPI = renderAdmin;
+renderAdmin = function() {
+  _renderAdminComPagamentosAPI();
+  setTimeout(_injetarPainelPagamentosAPI, 200);
+};
+
+console.log("✅ Painel de Conexão com Maquininhas (API) carregado!");
 </script>
 </body>
 </html>
