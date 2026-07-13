@@ -154,7 +154,7 @@ window.COOKCONTROL_CONFIG = {
 </script>
 <script>
 (function(){
-  var VER="gv_v8";
+  var VER="gv_v9";
   if(localStorage.getItem("gv_ver")!==VER){
     localStorage.removeItem("solbahia_categorias");
     localStorage.setItem("gv_ver",VER);
@@ -10607,6 +10607,26 @@ function _selecionarAdquirenteAPI(provider, semSalvar) {
         <p id="mp-status-conexao" style="font-size:.78rem;font-weight:700;margin-top:10px;color:${statusAtual.conectado ? '#16a34a' : '#6b7280'}">
           ${statusAtual.conectado ? '✅ Conectado — testado em ' + new Date(statusAtual.testadoEm || Date.now()).toLocaleString('pt-BR') : '⚪ Ainda não testado'}
         </p>
+
+        ${statusAtual.conectado ? `
+        <div style="margin-top:16px;padding-top:16px;border-top:2px dashed #93c5fd">
+          <p style="font-size:.8rem;font-weight:800;color:#0f2340;margin-bottom:8px">💳 Fazer Pagamento de Teste</p>
+          <p style="font-size:.72rem;color:#6b7280;margin-bottom:10px">
+            O Pix não precisa da maquininha física — gera o QR Code na hora.
+            O cartão só funciona se a Point Smart 2 já estiver ligada nessa conta,
+            com o serial certo preenchido acima.
+          </p>
+
+          <label class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block">Valor do teste (R$)</label>
+          <input id="mp-teste-valor" type="number" step="0.01" class="input-base mb-2" value="1.00" style="border-color:#93c5fd"/>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <button class="btn-primary" style="background:#16a34a" onclick="_pagamentoTesteMercadoPago('pix')">📱 Testar Pix</button>
+            <button class="btn-primary" style="background:#2563eb" onclick="_pagamentoTesteMercadoPago('cartao')">💳 Testar Cartão</button>
+          </div>
+
+          <div id="mp-teste-resultado"></div>
+        </div>` : ''}
       </div>
     `;
   } else {
@@ -10669,6 +10689,67 @@ async function _testarConexaoMercadoPago() {
   } catch (err) {
     statusEl.textContent = "❌ Erro ao contatar o backend: " + err.message;
     statusEl.style.color = "#dc2626";
+  }
+}
+
+async function _pagamentoTesteMercadoPago(tipoPagamento) {
+  const cfg = window.COOKCONTROL_CONFIG || {};
+  const accessToken = document.getElementById("mp-access-token")?.value?.trim();
+  const deviceId = document.getElementById("mp-device-id")?.value?.trim();
+  const valor = parseFloat(document.getElementById("mp-teste-valor")?.value || "1.00");
+  const resultadoEl = document.getElementById("mp-teste-resultado");
+
+  if (!accessToken) { toast("O Access Token sumiu do campo — cola ele de novo antes de testar o pagamento."); return; }
+  if (tipoPagamento === "cartao" && !deviceId) { toast("Preencha o Serial da Maquininha pra testar o cartão."); return; }
+
+  resultadoEl.innerHTML = `<p style="font-size:.78rem;color:#6b7280;margin-top:8px">⏳ Gerando cobrança de teste...</p>`;
+
+  try {
+    const resp = await fetch(`${cfg.paymentsApiBase}/payments/process`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-empresa-id": cfg.empresaId || "",
+      },
+      body: JSON.stringify({
+        provider: "mercadopago",
+        serialNumber: deviceId || "teste-sem-serial",
+        tipoPagamento,
+        orderData: {
+          orderId: `teste-${Date.now()}`,
+          numeroMesa: "TESTE",
+          valorTotal: valor,
+          itensPedido: [{ nome: "Pagamento de Teste", quantidade: 1, preco: valor }],
+        },
+      }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      resultadoEl.innerHTML = `<p style="font-size:.78rem;color:#dc2626;margin-top:8px;font-weight:700">❌ ${data.erro || 'Falha ao gerar cobrança.'}</p>`;
+      return;
+    }
+
+    if (tipoPagamento === "pix" && data.pix?.qrCodeBase64) {
+      resultadoEl.innerHTML = `
+        <div style="text-align:center;margin-top:10px;padding:12px;background:#f0fdf4;border-radius:10px;border:1.5px solid #86efac">
+          <p style="font-size:.78rem;font-weight:700;color:#16a34a;margin-bottom:8px">✅ Pix gerado! Escaneia pra confirmar:</p>
+          <img src="data:image/png;base64,${data.pix.qrCodeBase64}" style="width:180px;height:180px;margin:0 auto;border-radius:8px"/>
+          <p style="font-size:.65rem;color:#6b7280;margin-top:6px">ID do pagamento: ${data.pix.paymentId}</p>
+        </div>`;
+    } else if (tipoPagamento === "cartao") {
+      resultadoEl.innerHTML = `
+        <div style="margin-top:10px;padding:12px;background:#eff6ff;border-radius:10px;border:1.5px solid #93c5fd">
+          <p style="font-size:.78rem;font-weight:700;color:#2563eb">📟 Comando enviado pra maquininha ${deviceId}</p>
+          <p style="font-size:.72rem;color:#6b7280;margin-top:4px">Status: ${data.terminal?.status || data.terminal?.comando || 'enviado'}</p>
+          <p style="font-size:.72rem;color:#6b7280">Se a Point Smart 2 estiver ligada e perto, ela deve "acordar" mostrando R$ ${valor.toFixed(2)}.</p>
+        </div>`;
+    } else {
+      resultadoEl.innerHTML = `<p style="font-size:.78rem;color:#6b7280;margin-top:8px">Resposta recebida, mas sem QR Code/comando — confere o console (F12) pra detalhes.</p>`;
+      console.log("Resposta do pagamento de teste:", data);
+    }
+  } catch (err) {
+    resultadoEl.innerHTML = `<p style="font-size:.78rem;color:#dc2626;margin-top:8px;font-weight:700">❌ Erro ao contatar o backend: ${err.message}</p>`;
   }
 }
 
