@@ -154,7 +154,7 @@ window.COOKCONTROL_CONFIG = {
 </script>
 <script>
 (function(){
-  var VER="gv_v9";
+  var VER="gv_v10";
   if(localStorage.getItem("gv_ver")!==VER){
     localStorage.removeItem("solbahia_categorias");
     localStorage.setItem("gv_ver",VER);
@@ -10683,7 +10683,7 @@ async function _testarConexaoMercadoPago() {
       statusEl.style.color = "#16a34a";
       toast("Mercado Pago conectado! 🎉");
     } else {
-      statusEl.textContent = "❌ Falha: " + (data.motivo || "credenciais inválidas");
+      statusEl.textContent = "❌ Falha: " + (data.motivo || data.erro || "credenciais inválidas");
       statusEl.style.color = "#dc2626";
     }
   } catch (err) {
