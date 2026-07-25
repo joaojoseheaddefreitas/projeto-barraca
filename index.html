@@ -54,6 +54,43 @@ window.COOKCONTROL_CONFIG = {
   paymentsApiBase: "https://cookcontrol-pagamentos.vercel.app/api/v1"
 };
 
+/* ═══════════════════════════════════════════════════════════════
+   ATIVAÇÃO POR QR CODE — o empresa_id ativo neste dispositivo passa
+   a vir do localStorage (lido pelo garçom via QR Code), com o valor
+   de COOKCONTROL_CONFIG.empresaId servindo de fallback — não quebra
+   nada do que já estava configurado antes desta mudança.
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var idDaUrl = params.get('ativar_empresa');
+
+  if (idDaUrl) {
+    localStorage.setItem('cookcontrol_empresa_id', idDaUrl);
+    params.delete('ativar_empresa');
+    var novaUrl = window.location.pathname +
+      (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+    window.history.replaceState({}, document.title, novaUrl);
+  }
+
+  var empresaIdSalvo = localStorage.getItem('cookcontrol_empresa_id');
+  window.COOKCONTROL_EMPRESA_ID_ATIVA = empresaIdSalvo || window.COOKCONTROL_CONFIG.empresaId || null;
+
+  if (!window.COOKCONTROL_EMPRESA_ID_ATIVA) {
+    document.addEventListener('DOMContentLoaded', function () {
+      var bloqueio = document.createElement('div');
+      bloqueio.style.cssText = 'position:fixed;inset:0;background:#0f2340;color:#fff;z-index:99999;'
+        + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;'
+        + 'padding:24px;font-family:sans-serif';
+      bloqueio.innerHTML =
+        '<div style="font-size:3rem;margin-bottom:12px">📷</div>'
+        + '<h1 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">Ative este dispositivo</h1>'
+        + '<p style="font-size:.85rem;color:#bfdbfe;max-width:320px">Peça ao gerente para escanear '
+        + 'o QR Code de ativação, disponível no painel Admin do estabelecimento.</p>';
+      document.body.appendChild(bloqueio);
+    });
+  }
+})();
+
 (function() {
   /* ── CREDENCIAIS (lidas de COOKCONTROL_CONFIG) ──────────────── */
   var SUPABASE_URL = window.COOKCONTROL_CONFIG.supabaseUrl;
@@ -2829,10 +2866,12 @@ render();
       <div id="maq-pedido-info" class="bg-gray-50 rounded-2xl p-4 mb-4 border border-gray-100"></div>
 
       <!-- Tabs: PIX / Maquininha / Dinheiro -->
-      <div class="flex gap-1 p-1 bg-gray-100 rounded-2xl mb-4" id="maq-tabs">
-        <button onclick="setMaqTab('pix',this)"     id="mqt-pix"  class="flex-1 py-2 rounded-xl text-xs font-bold bg-white shadow text-gray-800">💸 Pix</button>
+      <div class="flex gap-1 p-1 bg-gray-100 rounded-2xl mb-4 flex-wrap" id="maq-tabs">
+        <button onclick="setMaqTab('pix',this)"     id="mqt-pix"  class="flex-1 py-2 rounded-xl text-xs font-bold bg-white shadow text-gray-800">💸 Pix Manual</button>
         <button onclick="setMaqTab('maquininha',this)" id="mqt-maquininha" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500">💳 Maquininha</button>
         <button onclick="setMaqTab('dinheiro',this)" id="mqt-dinheiro" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500">💵 Dinheiro</button>
+        <button onclick="setMaqTab('celular',this)" id="mqt-celular" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hidden">📱 Celular</button>
+        <button onclick="setMaqTab('balcao',this)" id="mqt-balcao" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hidden">🖥️ Balcão</button>
       </div>
 
       <!-- ═══ TAB: PIX ═══ -->
@@ -2900,6 +2939,25 @@ render();
         <button onclick="confirmarPgto('dinheiro')" class="w-full btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#d97706,#b45309)">
           ✅ Confirmar Pagamento em Dinheiro
         </button>
+      </div>
+
+      <!-- ═══ TAB: CELULAR (cobrança real via API — Perfil Pequeno/Híbrido) ═══ -->
+      <div id="maq-tab-celular" class="hidden">
+        <p class="text-xs text-gray-500 mb-3">Cobra direto pela API do adquirente. A mesa só libera quando o pagamento for confirmado de verdade pelo backend — não é preciso apertar nenhum botão de "confirmar".</p>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <button onclick="ccCobrarNoCelular('pix')" class="btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#16a34a,#15803d)">💸 Pix (API)</button>
+          <button onclick="ccCobrarNoCelular('cartao')" class="btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">💳 Cartão (API)</button>
+        </div>
+        <div id="cc-celular-status" class="text-center text-xs text-gray-400"></div>
+      </div>
+
+      <!-- ═══ TAB: BALCÃO (fila em nuvem — Perfil Grande/Híbrido) ═══ -->
+      <div id="maq-tab-balcao" class="hidden">
+        <p class="text-xs text-gray-500 mb-3">Envia o valor da mesa para a fila do caixa/balcão. A cobrança acontece na maquininha física de lá.</p>
+        <button onclick="ccEnviarParaBalcao()" class="w-full btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">
+          🖥️ Enviar para o Balcão
+        </button>
+        <div id="cc-balcao-status" class="text-center text-xs text-gray-400 mt-3"></div>
       </div>
 
     </div>
@@ -4260,7 +4318,7 @@ function abrirDeeplink(tipo, valor) {
 // ─── TABS DO MODAL ──────────────────────────────────────────────
 function setMaqTab(tab, btn) {
   _maqTabAtual = tab;
-  ["pix","maquininha","dinheiro"].forEach(t => {
+  ["pix","maquininha","dinheiro","celular","balcao"].forEach(t => {
     document.getElementById("maq-tab-"+t).classList.toggle("hidden", t !== tab);
     const b = document.getElementById("mqt-"+t);
     if(b) {
@@ -4322,6 +4380,15 @@ async function abrirMaquininha(pedidoId) {
 
   // Deeplinks grid
   renderDeeplinks(ped.total);
+
+  // Perfil de atendimento define quais abas novas aparecem
+  const perfil = config.perfil_atendimento || "hibrido";
+  const btnCelular = document.getElementById("mqt-celular");
+  const btnBalcao  = document.getElementById("mqt-balcao");
+  if (btnCelular) btnCelular.classList.toggle("hidden", perfil === "grande");
+  if (btnBalcao)  btnBalcao.classList.toggle("hidden", perfil === "pequeno");
+  const statusCel = document.getElementById("cc-celular-status"); if (statusCel) statusCel.textContent = "";
+  const statusBal = document.getElementById("cc-balcao-status"); if (statusBal) statusBal.textContent = "";
 
   // Tab padrão = pix se tiver chave, senão maquininha
   const temPix = config.pixChave && config.pixChave.length > 3;
@@ -10760,6 +10827,221 @@ renderAdmin = function() {
 };
 
 console.log("✅ Painel de Conexão com Maquininhas (API) carregado!");
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   COBRANÇA VIA API (CELULAR) + FILA DE BALCÃO + QUADRO EM TEMPO REAL
+   ─────────────────────────────────────────────────────────────────
+   IMPORTANTE (lido com atenção, não é rodapé descartável):
+   - empresa_id aqui vem de window.COOKCONTROL_EMPRESA_ID_ATIVA
+     (localStorage, ativado por QR Code), não mais só do
+     COOKCONTROL_CONFIG fixo — exatamente como pedido.
+   - A mesa NUNCA é liberada por um parâmetro de URL de retorno.
+     Ela só libera quando o Supabase Realtime confirma, na tabela
+     cobrancas_mesa, que o backend (payments-router.js) recebeu a
+     confirmação real do adquirente. Isso evita que qualquer pessoa
+     libere uma mesa sem pagar, só digitando uma URL.
+   ═══════════════════════════════════════════════════════════════ */
+
+let _ccClienteSb = null;
+function ccGetSupabaseClient() {
+  if (_ccClienteSb) return _ccClienteSb;
+  _ccClienteSb = window.supabase.createClient(
+    window.COOKCONTROL_CONFIG.supabaseUrl, window.COOKCONTROL_CONFIG.supabaseKey
+  );
+  return _ccClienteSb;
+}
+
+// ─── MODO A: Cobrar no celular (Pix ou cartão, via payments-router.js) ──
+async function ccCobrarNoCelular(tipoPagamento) {
+  const ped = _pedidoMaquininha;
+  const cfg = window.COOKCONTROL_CONFIG || {};
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  const statusEl = document.getElementById("cc-celular-status");
+
+  if (!ped) { toast("Nenhum pedido selecionado."); return; }
+  if (!empresaId) { toast("⚠️ Dispositivo não ativado — leia o QR Code do gerente."); return; }
+  if (!cfg.paymentsApiBase) { toast("paymentsApiBase não configurado."); return; }
+
+  const orderId = `mesa-${ped.mesa}-${ped.id}`;
+  if (statusEl) statusEl.textContent = "⏳ Iniciando cobrança...";
+
+  try {
+    const resp = await fetch(`${cfg.paymentsApiBase}/payments/process`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-empresa-id": empresaId },
+      body: JSON.stringify({
+        provider: "mercadopago",
+        serialNumber: cfg.deviceIdCelularGarcom || "sem-serial-configurado",
+        tipoPagamento, // 'pix' ou 'cartao'
+        orderData: {
+          orderId, numeroMesa: ped.mesa, valorTotal: ped.total,
+          itensPedido: ped.itens.map(i => ({ nome: i.nome, quantidade: i.q, preco: i.preco || 0 })),
+        },
+      }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      if (statusEl) statusEl.textContent = "❌ " + (data.erro || "Falha ao iniciar cobrança.");
+      return;
+    }
+
+    if (tipoPagamento === "pix" && data.pix?.qrCodeBase64) {
+      if (statusEl) {
+        statusEl.innerHTML =
+          `<img src="data:image/png;base64,${data.pix.qrCodeBase64}" style="width:180px;height:180px;margin:8px auto"/>`
+          + `<p>Aguardando pagamento do cliente...</p>`;
+      }
+    } else if (tipoPagamento === "cartao") {
+      if (statusEl) statusEl.textContent = "📟 Aproxime o cartão no celular — aguardando confirmação...";
+    }
+
+    ccEscutarConfirmacaoPagamento(orderId, empresaId, ped);
+  } catch (err) {
+    if (statusEl) statusEl.textContent = "❌ Erro de conexão: " + err.message;
+  }
+}
+
+// Escuta a confirmação REAL vinda do backend (via webhook do adquirente),
+// nunca de um parâmetro de URL — só chama confirmarPgto quando o Supabase
+// realmente marcar 'pago_confirmado' em cobrancas_mesa.
+function ccEscutarConfirmacaoPagamento(orderId, empresaId, ped) {
+  const sb = ccGetSupabaseClient();
+  const canal = sb
+    .channel(`cobranca-${orderId}`)
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "cobrancas_mesa", filter: `order_id=eq.${orderId}` },
+      (payload) => {
+        if (payload.new.status === "pago_confirmado") {
+          const metodo = payload.new.tipo_pagamento === "pix" ? "pix" : "credito";
+          confirmarPgto(metodo); // reaproveita a função já existente — libera mesa, baixa estoque, registra caixa
+          toast(`✅ Mesa ${ped.mesa} confirmada via ${metodo === "pix" ? "Pix" : "cartão"} — API`);
+          sb.removeChannel(canal);
+        }
+      }
+    )
+    .subscribe();
+}
+
+// ─── MODO B: Enviar para o balcão (fila em nuvem) ──────────────────────
+async function ccEnviarParaBalcao() {
+  const ped = _pedidoMaquininha;
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  const statusEl = document.getElementById("cc-balcao-status");
+
+  if (!ped) { toast("Nenhum pedido selecionado."); return; }
+  if (!empresaId) { toast("⚠️ Dispositivo não ativado — leia o QR Code do gerente."); return; }
+
+  const sb = ccGetSupabaseClient();
+  const { error } = await sb.from("fila_balcao").insert({
+    empresa_id: empresaId, mesa: ped.mesa, total: ped.total, status_pagamento: "pendente",
+  });
+
+  if (error) { if (statusEl) statusEl.textContent = "❌ " + error.message; return; }
+
+  await ccAtualizarMesaSupabase(empresaId, ped.mesa, "pedindo_conta", ped.total);
+  if (statusEl) statusEl.textContent = "✅ Enviado! Aguardando o caixa confirmar o pagamento.";
+  toast(`Mesa ${ped.mesa} enviada para o balcão!`);
+  document.getElementById("maquininha-modal").classList.add("hidden");
+}
+
+// ─── QUADRO EM TEMPO REAL (sincroniza mesaStatus entre dispositivos) ───
+async function ccAtualizarMesaSupabase(empresaId, numeroMesa, status, total) {
+  const sb = ccGetSupabaseClient();
+  await sb.from("mesas").upsert(
+    { empresa_id: empresaId, numero: numeroMesa, status, total: total || 0 },
+    { onConflict: "empresa_id,numero" }
+  );
+}
+
+let _ccCanalMesasRealtime = null;
+function ccIniciarEscutaMesasRealtime() {
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  if (!empresaId || _ccCanalMesasRealtime) return;
+
+  const sb = ccGetSupabaseClient();
+  _ccCanalMesasRealtime = sb
+    .channel(`mesas-${empresaId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "mesas", filter: `empresa_id=eq.${empresaId}` },
+      (payload) => {
+        if (payload.eventType === "DELETE") return;
+        const linha = payload.new;
+        // Traduz os 4 estados pedidos para os 3 que o sistema local já usa,
+        // sem quebrar a lógica existente de mesaStatus/renderAtendente:
+        const statusLocal = linha.status === "pronto_entrega" ? "conta" : linha.status;
+        mesaStatus[linha.numero] = statusLocal;
+        salvar("mesaStatus", mesaStatus);
+        if (typeof renderAtendente === "function" && S.viewAtual === "atendente") renderAtendente();
+        if (typeof renderMesaGrid === "function" && S.viewAtual === "mesas") renderMesaGrid();
+      }
+    )
+    .subscribe();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  setTimeout(ccIniciarEscutaMesasRealtime, 500);
+});
+
+// ─── ADMIN: Perfil de atendimento + QR Code de ativação ────────────────
+function _ccInjetarPainelPerfilEQr() {
+  const adminEl = document.getElementById("view-admin") || document.querySelector('[id^="view-admin"]');
+  if (!adminEl || document.getElementById("cc-perfil-painel")) return;
+
+  const painel = document.createElement("div");
+  painel.className = "admin-card";
+  painel.id = "cc-perfil-painel";
+  painel.innerHTML = `
+    <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:10px">🏗️ Perfil de Atendimento</h3>
+    <select id="cc-perfil-select" style="width:100%;border:1.5px solid #d1d5db;border-radius:10px;padding:9px 12px;font-size:.85rem;margin-bottom:16px">
+      <option value="pequeno">Pequeno Empresário — só celular do garçom</option>
+      <option value="grande">Grande Empresário — só fila de balcão</option>
+      <option value="hibrido">Híbrido — os dois disponíveis</option>
+    </select>
+
+    <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:10px">📷 QR Code de Ativação</h3>
+    <p style="font-size:.74rem;color:#9ca3af;margin-bottom:10px">O garçom escaneia este QR Code uma vez, no celular dele, pra ativar o CookControl neste dispositivo.</p>
+    <div id="cc-qr-ativacao" style="width:180px;height:180px;margin:0 auto 10px"></div>
+    <p style="font-size:.7rem;color:#6b7280;text-align:center;word-break:break-all" id="cc-link-ativacao"></p>
+  `;
+  const resetCard = adminEl.querySelector('[style*="border-color:#fca5a5"]') || null;
+  adminEl.insertBefore(painel, resetCard);
+
+  const sel = document.getElementById("cc-perfil-select");
+  sel.value = config.perfil_atendimento || "hibrido";
+  sel.onchange = function () {
+    config.perfil_atendimento = this.value;
+    salvar("config", config);
+    toast("✅ Perfil de atendimento: " + this.value);
+  };
+
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA || window.COOKCONTROL_CONFIG.empresaId;
+  const linkAtivacao = window.location.origin + window.location.pathname + "?ativar_empresa=" + encodeURIComponent(empresaId || "");
+  document.getElementById("cc-link-ativacao").textContent = linkAtivacao;
+
+  const desenharQr = () => new QRCode(document.getElementById("cc-qr-ativacao"), {
+    text: linkAtivacao, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M,
+  });
+  if (window.QRCode) desenharQr();
+  else {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+    s.onload = desenharQr;
+    document.head.appendChild(s);
+  }
+}
+
+const _renderAdminComPerfilEQr = renderAdmin;
+renderAdmin = function () {
+  _renderAdminComPerfilEQr();
+  setTimeout(_ccInjetarPainelPerfilEQr, 250);
+};
+
+console.log("✅ Módulo Celular/Balcão/Tempo-Real carregado!");
 </script>
 </body>
 </html>
