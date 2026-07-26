@@ -2948,7 +2948,16 @@ render();
           <button onclick="ccCobrarNoCelular('pix')" class="btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#16a34a,#15803d)">💸 Pix (API)</button>
           <button onclick="ccCobrarNoCelular('cartao')" class="btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">💳 Cartão (API)</button>
         </div>
-        <div id="cc-celular-status" class="text-center text-xs text-gray-400"></div>
+        <div id="cc-celular-status" class="text-center text-xs text-gray-400 mb-4"></div>
+
+        <div class="border-t pt-3 mt-1">
+          <p class="text-xs font-bold text-gray-600 mb-2">➗ Dividir conta — cobrar só uma parte</p>
+          <div class="flex gap-2">
+            <input id="cc-valor-parcial" type="number" min="0.01" step="0.01" placeholder="Valor (R$)"
+              style="flex:1;border:1.5px solid #d1d5db;border-radius:10px;padding:8px 10px;font-size:.82rem">
+            <button onclick="ccCobrarParcialDoModal()" class="btn-primary py-2 px-4 text-xs" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">Cobrar Parte</button>
+          </div>
+        </div>
       </div>
 
       <!-- ═══ TAB: BALCÃO (fila em nuvem — Perfil Grande/Híbrido) ═══ -->
@@ -10907,26 +10916,89 @@ async function ccCobrarNoCelular(tipoPagamento) {
 // Escuta a confirmação REAL vinda do backend (via webhook do adquirente),
 // nunca de um parâmetro de URL — só chama confirmarPgto quando o Supabase
 // realmente marcar 'pago_confirmado' em cobrancas_mesa.
-function ccEscutarConfirmacaoPagamento(orderId, empresaId, ped) {
+// Escuta a confirmação REAL vinda do backend (via webhook do adquirente),
+// nunca de um parâmetro de URL — só chama confirmarPgto/atualiza o saldo
+// quando o Supabase realmente marcar 'pago_confirmado' em cobrancas_mesa.
+function ccEscutarConfirmacaoPagamento(orderId, empresaId, ped, opcoes) {
+  opcoes = opcoes || {};
   const sb = ccGetSupabaseClient();
   const canal = sb
     .channel(`cobranca-${orderId}`)
     .on(
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "cobrancas_mesa", filter: `order_id=eq.${orderId}` },
-      (payload) => {
-        if (payload.new.status === "pago_confirmado") {
-          const metodo = payload.new.tipo_pagamento === "pix" ? "pix" : "credito";
+      async (payload) => {
+        if (payload.new.status !== "pago_confirmado") return;
+        const metodo = payload.new.tipo_pagamento === "pix" ? "pix" : "credito";
+
+        if (opcoes.parcial) {
+          // DIFERENCIAL 1 — divisão parcial: só reduz o saldo da mesa
+          // depois que o backend confirmou de verdade, nunca por URL.
+          const restante = Math.max(0, Number(opcoes.valorTotalAtual) - Number(opcoes.valorParaCobrar));
+          await ccAtualizarMesaSupabase(empresaId, ped.mesa, restante > 0 ? "ocupada" : "livre", restante);
+          toast(`✅ Pago R$ ${Number(opcoes.valorParaCobrar).toFixed(2)} da Mesa ${ped.mesa} — restam R$ ${restante.toFixed(2)}`);
+        } else {
           confirmarPgto(metodo); // reaproveita a função já existente — libera mesa, baixa estoque, registra caixa
           toast(`✅ Mesa ${ped.mesa} confirmada via ${metodo === "pix" ? "Pix" : "cartão"} — API`);
-          sb.removeChannel(canal);
         }
+        sb.removeChannel(canal);
       }
     )
     .subscribe();
 }
 
-// ─── MODO B: Enviar para o balcão (fila em nuvem) ──────────────────────
+// ─── DIFERENCIAL 1: Cobrança parcial na mesa (divisão de conta) ────────
+async function cobrarValorParcialMesa(numeroMesa, valorTotalAtual, valorParaCobrar) {
+  const cfg = window.COOKCONTROL_CONFIG || {};
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+
+  if (!empresaId) { toast("⚠️ Dispositivo não ativado — leia o QR Code do gerente."); return; }
+  if (!(valorParaCobrar > 0) || valorParaCobrar > valorTotalAtual) {
+    toast("⚠️ Valor parcial inválido."); return;
+  }
+
+  const orderId = `mesa-${numeroMesa}-parcial-${Date.now()}`;
+  const pedParcial = { mesa: numeroMesa, id: orderId, itens: [] };
+
+  try {
+    const resp = await ccChamarSupabaseComResiliencia(() =>
+      fetch(`${cfg.paymentsApiBase}/payments/process`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-empresa-id": empresaId },
+        body: JSON.stringify({
+          provider: "mercadopago",
+          serialNumber: cfg.deviceIdCelularGarcom || "sem-serial-configurado",
+          tipoPagamento: "pix",
+          orderData: {
+            orderId, numeroMesa, valorTotal: valorParaCobrar,
+            itensPedido: [{ nome: `Pagamento parcial — Mesa ${numeroMesa}`, quantidade: 1, preco: valorParaCobrar }],
+          },
+        }),
+      })
+    );
+    const data = await resp.json();
+    if (!resp.ok) { toast("❌ " + (data.erro || "Falha ao gerar cobrança parcial.")); return; }
+
+    if (data.pix?.qrCodeBase64) {
+      const m = document.createElement("div");
+      m.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10070;display:flex;align-items:center;justify-content:center";
+      m.innerHTML = `<div style="background:#fff;border-radius:20px;padding:24px;text-align:center;max-width:320px">
+        <p style="font-weight:800;color:#0f2340">Mesa ${numeroMesa} — Pagamento parcial</p>
+        <img src="data:image/png;base64,${data.pix.qrCodeBase64}" style="width:200px;height:200px;margin:10px auto"/>
+        <p style="font-size:.78rem;color:#6b7280">R$ ${Number(valorParaCobrar).toFixed(2)} de R$ ${Number(valorTotalAtual).toFixed(2)}</p>
+        <button onclick="this.closest('div[style*=fixed]').remove()" class="btn-sec" style="margin-top:10px">Fechar</button>
+      </div>`;
+      document.body.appendChild(m);
+    }
+
+    ccEscutarConfirmacaoPagamento(orderId, empresaId, pedParcial, {
+      parcial: true, valorTotalAtual, valorParaCobrar,
+    });
+  } catch (err) {
+    toast("❌ Erro ao cobrar valor parcial: " + err.message);
+  }
+}
+
 async function ccEnviarParaBalcao() {
   const ped = _pedidoMaquininha;
   const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
@@ -10935,26 +11007,25 @@ async function ccEnviarParaBalcao() {
   if (!ped) { toast("Nenhum pedido selecionado."); return; }
   if (!empresaId) { toast("⚠️ Dispositivo não ativado — leia o QR Code do gerente."); return; }
 
-  const sb = ccGetSupabaseClient();
-  const { error } = await sb.from("fila_balcao").insert({
+  const resultado = await ccEscreverComResiliencia("fila_balcao", {
     empresa_id: empresaId, mesa: ped.mesa, total: ped.total, status_pagamento: "pendente",
   });
 
-  if (error) { if (statusEl) statusEl.textContent = "❌ " + error.message; return; }
+  if (resultado.erro) { if (statusEl) statusEl.textContent = "❌ " + resultado.erro; return; }
 
   await ccAtualizarMesaSupabase(empresaId, ped.mesa, "pedindo_conta", ped.total);
-  if (statusEl) statusEl.textContent = "✅ Enviado! Aguardando o caixa confirmar o pagamento.";
+  if (statusEl) statusEl.textContent = resultado.offline
+    ? "📡 Sem conexão — será enviado assim que a internet voltar."
+    : "✅ Enviado! Aguardando o caixa confirmar o pagamento.";
   toast(`Mesa ${ped.mesa} enviada para o balcão!`);
   document.getElementById("maquininha-modal").classList.add("hidden");
 }
 
 // ─── QUADRO EM TEMPO REAL (sincroniza mesaStatus entre dispositivos) ───
 async function ccAtualizarMesaSupabase(empresaId, numeroMesa, status, total) {
-  const sb = ccGetSupabaseClient();
-  await sb.from("mesas").upsert(
-    { empresa_id: empresaId, numero: numeroMesa, status, total: total || 0 },
-    { onConflict: "empresa_id,numero" }
-  );
+  await ccEscreverComResiliencia("mesas", {
+    empresa_id: empresaId, numero: numeroMesa, status, total: total || 0,
+  }, "empresa_id,numero");
 }
 
 let _ccCanalMesasRealtime = null;
@@ -10985,7 +11056,163 @@ function ccIniciarEscutaMesasRealtime() {
 
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(ccIniciarEscutaMesasRealtime, 500);
+  setTimeout(ccIniciarRetryFilaOffline, 800);
 });
+
+// ─── DIFERENCIAL 2: Caixa escuta a fila do balcão + alerta sonoro ──────
+let _ccCanalFilaBalcao = null;
+function ccIniciarEscutaFilaBalcaoCaixa() {
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  if (!empresaId || _ccCanalFilaBalcao) return;
+
+  const sb = ccGetSupabaseClient();
+  _ccCanalFilaBalcao = sb
+    .channel(`fila-balcao-${empresaId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "fila_balcao", filter: `empresa_id=eq.${empresaId}` },
+      (payload) => {
+        if (payload.new.status_pagamento === "pendente") ccNotificarNovoPedidoBalcao(payload.new);
+      }
+    )
+    .subscribe();
+}
+
+function ccNotificarNovoPedidoBalcao(pedido) {
+  ccTocarAlertaSonoro();
+  const card = document.createElement("div");
+  card.style.cssText = "position:fixed;top:16px;right:16px;z-index:10080;background:#fff;border:2px solid #7c3aed;"
+    + "border-radius:14px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-width:260px";
+  card.innerHTML = `
+    <p style="font-weight:800;color:#6d28d9;font-size:.85rem">🔔 Mesa ${pedido.mesa} — Balcão</p>
+    <p style="font-size:.8rem;color:#374151;margin:4px 0 10px">R$ ${Number(pedido.total).toFixed(2)}</p>
+    <button onclick="ccMarcarFilaBalcaoComoPago('${pedido.id}', ${pedido.mesa}); this.closest('div').remove()"
+      class="btn-primary py-2 px-3 text-xs" style="background:#7c3aed;width:100%">✅ Marcar como pago</button>`;
+  document.body.appendChild(card);
+  setTimeout(() => card.remove(), 60000); // some sozinho depois de 1 min se ninguém interagir
+}
+
+async function ccMarcarFilaBalcaoComoPago(filaId, numeroMesa) {
+  const sb = ccGetSupabaseClient();
+  await sb.from("fila_balcao").update({ status_pagamento: "pago" }).eq("id", filaId);
+  await ccAtualizarMesaSupabase(window.COOKCONTROL_EMPRESA_ID_ATIVA, numeroMesa, "livre", 0);
+  toast(`✅ Mesa ${numeroMesa} — pagamento do balcão confirmado`);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  setTimeout(ccIniciarEscutaFilaBalcaoCaixa, 600);
+});
+
+// ─── DIFERENCIAL 2: Alerta sonoro no caixa quando uma mesa entra na fila ──
+function ccTocarAlertaSonoro() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const tocarBip = (freq, inicioSeg, duracaoSeg) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + inicioSeg);
+      gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + inicioSeg + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + inicioSeg + duracaoSeg);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + inicioSeg);
+      osc.stop(ctx.currentTime + inicioSeg + duracaoSeg + 0.05);
+    };
+    tocarBip(880, 0, 0.15);   // sino, primeira nota
+    tocarBip(1320, 0.18, 0.2); // segunda nota, mais aguda
+  } catch (e) {
+    console.warn("[Alerta sonoro] Não foi possível tocar:", e.message);
+  }
+}
+
+// ─── DIFERENCIAL 3: Modo Resiliência / Fila Offline ────────────────────
+const CC_FILA_OFFLINE_KEY = "cc_fila_offline_v1";
+
+function ccLerFilaOffline() {
+  try { return JSON.parse(localStorage.getItem(CC_FILA_OFFLINE_KEY) || "[]"); }
+  catch (e) { return []; }
+}
+function ccSalvarFilaOffline(fila) {
+  localStorage.setItem(CC_FILA_OFFLINE_KEY, JSON.stringify(fila));
+}
+function ccEnfileirarAcaoOffline(tipo, dados, onConflict) {
+  const fila = ccLerFilaOffline();
+  fila.push({ tipo, dados, onConflict: onConflict || null, tentativas: 0, criado_em: Date.now() });
+  ccSalvarFilaOffline(fila);
+  toast("📡 Sem conexão — ação salva, será enviada assim que a internet voltar.");
+}
+
+// Envolve qualquer chamada de rede (fetch ou chamada Supabase): se falhar
+// por erro de rede, relança o erro pra quem chamou decidir, mas quem usa
+// esse helper especificamente para gravações no Supabase usa a versão
+// abaixo, que enfileira automaticamente em vez de só relançar.
+async function ccChamarSupabaseComResiliencia(fnChamada) {
+  try {
+    return await fnChamada();
+  } catch (err) {
+    if (!navigator.onLine) throw err; // deixa quem chamou decidir o texto de erro
+    throw err;
+  }
+}
+
+// Grava na tabela mesas/fila_balcao com fallback automático pra fila offline
+async function ccEscreverComResiliencia(tabela, linha, onConflict) {
+  if (!navigator.onLine) {
+    ccEnfileirarAcaoOffline(tabela, linha, onConflict);
+    return { offline: true };
+  }
+  try {
+    const sb = ccGetSupabaseClient();
+    const opts = onConflict ? { onConflict } : undefined;
+    const { error } = await sb.from(tabela).upsert(linha, opts);
+    if (error) throw error;
+    return { offline: false };
+  } catch (err) {
+    ccEnfileirarAcaoOffline(tabela, linha, onConflict);
+    return { offline: true, erro: err.message };
+  }
+}
+
+async function ccReenviarFilaOffline() {
+  const fila = ccLerFilaOffline();
+  if (!fila.length || !navigator.onLine) return;
+
+  const sb = ccGetSupabaseClient();
+  const restantes = [];
+  for (const item of fila) {
+    try {
+      const opts = item.onConflict ? { onConflict: item.onConflict } : undefined;
+      const { error } = await sb.from(item.tipo).upsert(item.dados, opts);
+      if (error) throw error;
+    } catch (err) {
+      item.tentativas = (item.tentativas || 0) + 1;
+      if (item.tentativas < 10) restantes.push(item); // desiste depois de 10 tentativas
+    }
+  }
+  ccSalvarFilaOffline(restantes);
+  if (restantes.length < fila.length) {
+    toast(`✅ ${fila.length - restantes.length} ação(ões) pendente(s) sincronizada(s) com sucesso.`);
+  }
+}
+
+function ccIniciarRetryFilaOffline() {
+  window.addEventListener("online", ccReenviarFilaOffline);
+  setInterval(ccReenviarFilaOffline, 30000); // checa a cada 30s, além do evento 'online'
+  ccReenviarFilaOffline(); // tenta uma vez já na inicialização, se já estiver online
+}
+
+// Lê o campo de valor parcial do modal e chama a função segura de cobrança parcial
+function ccCobrarParcialDoModal() {
+  const ped = _pedidoMaquininha;
+  if (!ped) { toast("Nenhum pedido selecionado."); return; }
+  const input = document.getElementById("cc-valor-parcial");
+  const valor = parseFloat(input?.value || "0");
+  if (!(valor > 0)) { toast("⚠️ Informe um valor válido."); return; }
+  cobrarValorParcialMesa(ped.mesa, ped.total, valor);
+}
+
+console.log("✅ Módulo Celular/Balcão/Tempo-Real carregado! (parte 1/2)");
 
 // ─── ADMIN: Perfil de atendimento + QR Code de ativação ────────────────
 function _ccInjetarPainelPerfilEQr() {
