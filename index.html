@@ -1532,8 +1532,7 @@ function enviarPedido() {
   if(typeof baixarEstoqueAutomatico==="function") baixarEstoqueAutomatico(registro.itens);
 
   // Marcar mesa como ocupada
-  mesaStatus[S.mesa] = "ocupada";
-  salvar("mesaStatus", mesaStatus);
+  ccSetMesaStatus(S.mesa, "ocupada");
 
   // Montar resumo
   let txt = `━━━━━━━━━━━━━━━━━━━━━━\n  ${config.nome}\n  ${config.local}\n━━━━━━━━━━━━━━━━━━━━━━\n`;
@@ -1608,8 +1607,7 @@ function abrirDetalheMesa(num) {
 }
 
 function setMesaStatus(num, status) {
-  mesaStatus[num] = status;
-  salvar("mesaStatus", mesaStatus);
+  ccSetMesaStatus(num, status);
   renderMesaGrid();
   abrirDetalheMesa(num);
   toast(`Mesa ${num} marcada como ${status}`);
@@ -2146,10 +2144,9 @@ function gerarRegistro() {
 function salvarRegistro(reg) {
   historico.unshift(reg);
   salvar("historico", historico);
-  mesaStatus[reg.mesa] = "ocupada";
   mesaTimers[reg.mesa] = Date.now();
-  salvar("mesaStatus", mesaStatus);
   salvar("mesaTimers", mesaTimers);
+  ccSetMesaStatus(reg.mesa, "ocupada");
 }
 
 function enviarWhatsApp() {
@@ -2681,6 +2678,7 @@ render();
     </div>
     <div style="display:flex;gap:10px">
       <button onclick="imprimirComandaManual()" style="flex:1;background:#475569;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit">🖨️ Imprimir Comanda</button>
+      <button onclick="imprimirComandaManualRawBT()" style="flex:1;background:#0f766e;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit" title="Precisa do app RawBT instalado, ligado à impressora térmica">🖨️📡 Imprimir (RawBT)</button>
       <button onclick="enviarComandaManual()" style="flex:1;background:linear-gradient(135deg,#0f2340,#1e3a5f);color:#fff;border:none;border-radius:10px;padding:11px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit">✅ Enviar para Cozinha</button>
     </div>
   </div>
@@ -2867,83 +2865,14 @@ render();
 
       <!-- Tabs: PIX / Maquininha / Dinheiro -->
       <div class="flex gap-1 p-1 bg-gray-100 rounded-2xl mb-4 flex-wrap" id="maq-tabs">
-        <button onclick="setMaqTab('pix',this)"     id="mqt-pix"  class="flex-1 py-2 rounded-xl text-xs font-bold bg-white shadow text-gray-800">💸 Pix Manual</button>
-        <button onclick="setMaqTab('maquininha',this)" id="mqt-maquininha" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500">💳 Maquininha</button>
-        <button onclick="setMaqTab('dinheiro',this)" id="mqt-dinheiro" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500">💵 Dinheiro</button>
-        <button onclick="setMaqTab('celular',this)" id="mqt-celular" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hidden">📱 Celular</button>
+        <button onclick="setMaqTab('automatico',this)" id="mqt-automatico" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hidden">🤖 Automático</button>
+        <button onclick="setMaqTab('manual',this)"     id="mqt-manual"    class="flex-1 py-2 rounded-xl text-xs font-bold bg-white shadow text-gray-800">✋ Manual</button>
         <button onclick="setMaqTab('balcao',this)" id="mqt-balcao" class="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 hidden">🖥️ Balcão</button>
       </div>
 
-      <!-- ═══ TAB: PIX ═══ -->
-      <div id="maq-tab-pix">
-        <!-- QR Code dinâmico -->
-        <div class="text-center mb-4">
-          <div id="pix-qr-wrap" style="display:inline-block;padding:16px;background:#fff;border-radius:20px;border:2px solid #e5e7eb;box-shadow:0 4px 16px rgba(0,0,0,.08)">
-            <div id="pix-qr-canvas" style="width:200px;height:200px;margin:0 auto"></div>
-          </div>
-          <p class="text-xs text-gray-400 mt-2" id="pix-qr-label">Configure a chave Pix no Admin</p>
-        </div>
-
-        <!-- Código copia-cola -->
-        <div id="pix-copiacola-wrap" class="hidden mb-4">
-          <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Código Pix (Copia e Cola)</label>
-          <div class="flex gap-2">
-            <input id="pix-copiacola-txt" class="input-base flex-1 text-xs font-mono" readonly/>
-            <button onclick="copiarPix()" class="btn-primary px-4" title="Copiar">📋</button>
-          </div>
-          <p class="text-xs text-gray-400 mt-1" id="pix-copiacola-hint"></p>
-        </div>
-
-        <button onclick="confirmarPgto('pix')" class="w-full btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#16a34a,#15803d)">
-          ✅ Confirmar Pagamento via Pix
-        </button>
-      </div>
-
-      <!-- ═══ TAB: MAQUININHA ═══ -->
-      <div id="maq-tab-maquininha" class="hidden">
-        <!-- Deeplinks das maquininhas -->
-        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Abrir app da maquininha</p>
-        <div id="maq-deeplinks-grid" class="grid grid-cols-2 gap-2 mb-4"></div>
-
-        <!-- Todas as maquininhas como fallback -->
-        <p class="text-xs text-gray-400 text-center mb-3">Ou escolha outra maquininha:</p>
-        <div class="grid grid-cols-3 gap-2 mb-4" id="maq-outras-grid"></div>
-
-        <div class="border-t border-gray-100 pt-4">
-          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Confirmar método:</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="confirmarPgto('credito')" class="popt flex-col py-3 gap-1">
-              <span class="text-xl">💳</span><span class="text-xs font-bold">Crédito</span>
-            </button>
-            <button onclick="confirmarPgto('debito')" class="popt flex-col py-3 gap-1">
-              <span class="text-xl">🏦</span><span class="text-xs font-bold">Débito</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ TAB: DINHEIRO ═══ -->
-      <div id="maq-tab-dinheiro" class="hidden">
-        <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 mb-4 text-center">
-          <p class="text-4xl font-black text-amber-700 mb-1" id="maq-valor-troco-display">R$ 0,00</p>
-          <p class="text-xs text-amber-600 font-semibold">Valor a cobrar</p>
-        </div>
-        <div class="mb-4">
-          <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Valor recebido do cliente (R$)</label>
-          <input id="maq-recebido" class="input-base text-lg font-bold" type="number" step="0.5" placeholder="0,00" oninput="calcTroco()"/>
-          <div id="troco-display" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-center">
-            <p class="text-xs text-green-600 font-semibold">Troco</p>
-            <p class="text-2xl font-black text-green-700" id="troco-valor">R$ 0,00</p>
-          </div>
-        </div>
-        <button onclick="confirmarPgto('dinheiro')" class="w-full btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#d97706,#b45309)">
-          ✅ Confirmar Pagamento em Dinheiro
-        </button>
-      </div>
-
-      <!-- ═══ TAB: CELULAR (cobrança real via API — Perfil Pequeno/Híbrido) ═══ -->
-      <div id="maq-tab-celular" class="hidden">
-        <p class="text-xs text-gray-500 mb-3">Cobra direto pela API do adquirente. A mesa só libera quando o pagamento for confirmado de verdade pelo backend — não é preciso apertar nenhum botão de "confirmar".</p>
+      <!-- ═══ TAB: AUTOMÁTICO (cobrança real via API — Mercado Pago) ═══ -->
+      <div id="maq-tab-automatico" class="hidden">
+        <p class="text-xs text-gray-500 mb-3">Cobra direto pela API do Mercado Pago. A mesa só libera quando o pagamento for confirmado de verdade pelo backend — não é preciso apertar nenhum botão de "confirmar".</p>
         <div class="grid grid-cols-2 gap-2 mb-4">
           <button onclick="ccCobrarNoCelular('pix')" class="btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#16a34a,#15803d)">💸 Pix (API)</button>
           <button onclick="ccCobrarNoCelular('cartao')" class="btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">💳 Cartão (API)</button>
@@ -2957,6 +2886,64 @@ render();
               style="flex:1;border:1.5px solid #d1d5db;border-radius:10px;padding:8px 10px;font-size:.82rem">
             <button onclick="ccCobrarParcialDoModal()" class="btn-primary py-2 px-4 text-xs" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">Cobrar Parte</button>
           </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: MANUAL (Pix estático + Maquininha física + Dinheiro, tudo junto) ═══ -->
+      <div id="maq-tab-manual">
+        <!-- Pix estático -->
+        <div class="text-center mb-4">
+          <div id="pix-qr-wrap" style="display:inline-block;padding:16px;background:#fff;border-radius:20px;border:2px solid #e5e7eb;box-shadow:0 4px 16px rgba(0,0,0,.08)">
+            <div id="pix-qr-canvas" style="width:200px;height:200px;margin:0 auto"></div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2" id="pix-qr-label">Configure a chave Pix no Admin</p>
+        </div>
+        <div id="pix-copiacola-wrap" class="hidden mb-4">
+          <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Código Pix (Copia e Cola)</label>
+          <div class="flex gap-2">
+            <input id="pix-copiacola-txt" class="input-base flex-1 text-xs font-mono" readonly/>
+            <button onclick="copiarPix()" class="btn-primary px-4" title="Copiar">📋</button>
+          </div>
+          <p class="text-xs text-gray-400 mt-1" id="pix-copiacola-hint"></p>
+        </div>
+        <button onclick="confirmarPgto('pix')" class="w-full btn-primary py-3 text-sm mb-5" style="background:linear-gradient(135deg,#16a34a,#15803d)">
+          ✅ Confirmar Pagamento via Pix
+        </button>
+
+        <!-- Maquininha física (deeplink) -->
+        <div class="border-t border-gray-100 pt-4 mb-5">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">💳 Abrir app da maquininha</p>
+          <div id="maq-deeplinks-grid" class="grid grid-cols-2 gap-2 mb-4"></div>
+          <p class="text-xs text-gray-400 text-center mb-3">Ou escolha outra maquininha:</p>
+          <div class="grid grid-cols-3 gap-2 mb-4" id="maq-outras-grid"></div>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="confirmarPgto('credito')" class="popt flex-col py-3 gap-1">
+              <span class="text-xl">💳</span><span class="text-xs font-bold">Crédito</span>
+            </button>
+            <button onclick="confirmarPgto('debito')" class="popt flex-col py-3 gap-1">
+              <span class="text-xl">🏦</span><span class="text-xs font-bold">Débito</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dinheiro -->
+        <div class="border-t border-gray-100 pt-4">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">💵 Dinheiro</p>
+          <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 mb-4 text-center">
+            <p class="text-4xl font-black text-amber-700 mb-1" id="maq-valor-troco-display">R$ 0,00</p>
+            <p class="text-xs text-amber-600 font-semibold">Valor a cobrar</p>
+          </div>
+          <div class="mb-4">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Valor recebido do cliente (R$)</label>
+            <input id="maq-recebido" class="input-base text-lg font-bold" type="number" step="0.5" placeholder="0,00" oninput="calcTroco()"/>
+            <div id="troco-display" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-center">
+              <p class="text-xs text-green-600 font-semibold">Troco</p>
+              <p class="text-2xl font-black text-green-700" id="troco-valor">R$ 0,00</p>
+            </div>
+          </div>
+          <button onclick="confirmarPgto('dinheiro')" class="w-full btn-primary py-3 text-sm" style="background:linear-gradient(135deg,#d97706,#b45309)">
+            ✅ Confirmar Pagamento em Dinheiro
+          </button>
         </div>
       </div>
 
@@ -4327,7 +4314,7 @@ function abrirDeeplink(tipo, valor) {
 // ─── TABS DO MODAL ──────────────────────────────────────────────
 function setMaqTab(tab, btn) {
   _maqTabAtual = tab;
-  ["pix","maquininha","dinheiro","celular","balcao"].forEach(t => {
+  ["automatico","manual","balcao"].forEach(t => {
     document.getElementById("maq-tab-"+t).classList.toggle("hidden", t !== tab);
     const b = document.getElementById("mqt-"+t);
     if(b) {
@@ -4390,24 +4377,28 @@ async function abrirMaquininha(pedidoId) {
   // Deeplinks grid
   renderDeeplinks(ped.total);
 
-  // Perfil de atendimento define quais abas novas aparecem
+  // Perfil de atendimento + status real da conexão Mercado Pago definem
+  // quais abas aparecem — "Automático" só existe se MP estiver conectado
+  // de verdade (senão prometeria algo que ainda não funciona).
   const perfil = config.perfil_atendimento || "hibrido";
-  const btnCelular = document.getElementById("mqt-celular");
+  const mpConectado = !!(config.pagamentos_api && config.pagamentos_api.mercadopago && config.pagamentos_api.mercadopago.conectado);
+  const btnAutomatico = document.getElementById("mqt-automatico");
   const btnBalcao  = document.getElementById("mqt-balcao");
-  if (btnCelular) btnCelular.classList.toggle("hidden", perfil === "grande");
+  if (btnAutomatico) btnAutomatico.classList.toggle("hidden", perfil === "grande" || !mpConectado);
   if (btnBalcao)  btnBalcao.classList.toggle("hidden", perfil === "pequeno");
   const statusCel = document.getElementById("cc-celular-status"); if (statusCel) statusCel.textContent = "";
   const statusBal = document.getElementById("cc-balcao-status"); if (statusBal) statusBal.textContent = "";
 
-  // Tab padrão = pix se tiver chave, senão maquininha
-  const temPix = config.pixChave && config.pixChave.length > 3;
-  setMaqTab(temPix ? "pix" : "maquininha", document.getElementById("mqt-"+(temPix?"pix":"maquininha")));
+  // Tab padrão: Automático se disponível e configurado, senão Manual
+  const abaPadrao = (mpConectado && perfil !== "grande") ? "automatico" : "manual";
+  setMaqTab(abaPadrao, document.getElementById("mqt-"+abaPadrao));
 
   // Gerar QR Pix
   const pixLabel = document.getElementById("pix-qr-label");
   const pixCola  = document.getElementById("pix-copiacola-wrap");
   const pixColaTxt = document.getElementById("pix-copiacola-txt");
   const pixColaHint = document.getElementById("pix-copiacola-hint");
+  const temPix = config.pixChave && config.pixChave.length > 3;
 
   if(temPix) {
     const payload = gerarPixPayload(
@@ -4494,8 +4485,7 @@ function confirmarPgto(metodo) {
   salvar("pedidosCozinha_v1", pedidosCozinha);
 
   // 2. Liberar mesa
-  mesaStatus[ped.mesa] = "livre";
-  salvar("mesaStatus", mesaStatus);
+  ccSetMesaStatus(ped.mesa, "livre");
 
   // 3. Registrar no caixa
   if(typeof pagamentos2 !== "undefined") {
@@ -4595,8 +4585,9 @@ function renderCozinha() {
   if(!grid) return;
   grid.innerHTML = "";
   if(!lista.length){
-    // Mostrar pedidos de demonstração para o operador ver o painel funcionando
-    if(!window._kds_demo_shown) {
+    // Dados de demonstração só aparecem se explicitamente ativados
+    // (config.modo_demonstracao) — nunca automaticamente na operação real.
+    if(config.modo_demonstracao === true && !window._kds_demo_shown) {
       window._kds_demo_shown = true;
       const demos = [
         {id:'DEMO_1',data:new Date(Date.now()-5*60000).toISOString(),mesa:'3',
@@ -4787,7 +4778,7 @@ const urgStyle = document.createElement("style");
 urgStyle.textContent = `
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 #view-cozinha .pill{font-size:.72rem}
-#maq-tab-pix img,#maq-tab-pix canvas{border-radius:12px}
+#maq-tab-manual img,#maq-tab-manual canvas{border-radius:12px}
 `;
 document.head.appendChild(urgStyle);
 
@@ -5084,11 +5075,10 @@ function enviarComandaManual() {
   if(!mesa){toast("⚠️ Selecione a mesa");return;}
   if(!itens.length){toast("⚠️ Adicione ao menos um item");return;}
   const sub=itens.reduce((s,i)=>s+i.preco*i.q,0);
-  const reg={id:"CMD_"+Date.now(),data:new Date().toISOString(),mesa,pag,taxa:false,subtotal:sub,taxaVal:0,total:sub,obs,itens};
+  const reg={id:"CMD_"+Date.now(),data:new Date().toISOString(),mesa:Number(mesa),pag,taxa:false,subtotal:sub,taxaVal:0,total:sub,obs,itens};
   historico.unshift(reg);
   salvar("historico",historico);
-  mesaStatus[mesa]="ocupada";
-  salvar("mesaStatus",mesaStatus);
+  ccSetMesaStatus(mesa, "ocupada", sub);
   syncHistoricoCozinha();
   if(typeof baixarEstoqueAutomatico==="function") baixarEstoqueAutomatico(itens);
   fecharComandaManual();
@@ -5112,6 +5102,69 @@ function imprimirComandaManual() {
   if(obs) html+=`📝 ${obs}<br/>`;
   const pc=document.getElementById("print-content");
   if(pc){pc.innerHTML=html; window.print();}
+}
+
+// Mesma comanda, mesmos dados — mas mostra um preview do que vai ser
+// impresso ANTES de disparar pro RawBT, pra o garçom conferir os dados
+// (mesa, itens, valores) antes de confirmar.
+function imprimirComandaManualRawBT() {
+  const mesa=document.getElementById("cm-mesa")?.value||"?";
+  const obs=document.getElementById("cm-obs")?.value.trim()||"";
+  const itens=Object.entries(_cmCart).filter(([,q])=>q>0).map(([id,q])=>{
+    let it=null; categorias.forEach(cat=>(cat.itens||[]).forEach(i=>{ if(i.id===id) it=i; }));
+    return it?{nome:it.nome,q,preco:it.preco}:null;
+  }).filter(Boolean);
+  if(!itens.length){toast("⚠️ Nenhum item");return;}
+  ccMostrarPreviewImpressao(mesa, itens, obs);
+}
+
+let _ccPreviewPendente = null;
+
+function ccMostrarPreviewImpressao(mesa, itens, obs) {
+  _ccPreviewPendente = { mesa, itens, obs };
+  const total = itens.reduce((s,i)=>s+(i.preco||0)*i.q, 0);
+  const linhasItens = itens.map(i =>
+    `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f3f4f6">
+       <span>${i.q}× ${_ccEscaparHtml(i.nome)}</span>
+       ${i.preco ? `<span style="color:#6b7280">R$ ${(i.preco*i.q).toFixed(2)}</span>` : ""}
+     </div>`
+  ).join("");
+
+  const m = document.createElement("div");
+  m.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10090;display:flex;align-items:center;justify-content:center;padding:16px";
+  m.innerHTML = `
+    <div style="background:#fff;border-radius:20px;max-width:340px;width:100%;overflow:hidden">
+      <div style="background:#0f766e;color:#fff;padding:14px 18px">
+        <p style="font-weight:800;font-size:.9rem">🖨️📡 Confira antes de imprimir</p>
+        <p style="font-size:.72rem;color:#a7f3d0;margin-top:2px">A impressora usada é a que já está configurada dentro do app RawBT no aparelho.</p>
+      </div>
+      <div style="padding:16px">
+        <p style="font-weight:800;color:#0f2340;margin-bottom:8px">MESA ${String(mesa).padStart(2,"0")}</p>
+        <div style="font-size:.82rem;margin-bottom:10px">${linhasItens}</div>
+        ${obs ? `<p style="font-size:.78rem;color:#6b7280;margin-bottom:10px">📝 ${_ccEscaparHtml(obs)}</p>` : ""}
+        ${total ? `<p style="font-weight:800;text-align:right;color:var(--cor-pri,#1e3a8a);margin-bottom:14px">TOTAL: R$ ${total.toFixed(2)}</p>` : ""}
+        <div style="display:flex;gap:8px">
+          <button onclick="this.closest('div[style*=fixed]').remove()" class="btn-ghost" style="flex:1;padding:10px;font-size:.82rem">Cancelar</button>
+          <button onclick="ccConfirmarImpressaoPendente(this)"
+            class="btn-primary" style="flex:2;padding:10px;font-size:.82rem;background:#0f766e">✅ Confirmar e Imprimir</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+function _ccEscaparHtml(texto) {
+  const div = document.createElement("div");
+  div.textContent = texto == null ? "" : String(texto);
+  return div.innerHTML;
+}
+
+function ccConfirmarImpressaoPendente(btn) {
+  if (!_ccPreviewPendente) return;
+  const { mesa, itens, obs } = _ccPreviewPendente;
+  ccImprimirViaRawBT(mesa, itens, obs);
+  _ccPreviewPendente = null;
+  btn.closest('div[style*="fixed"]')?.remove();
 }
 
 </script>
@@ -5154,6 +5207,7 @@ function imprimirComandaManual() {
     </div>
     <div style="display:flex;gap:10px">
       <button onclick="imprimirComandaManual()" style="flex:1;background:#475569;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit">🖨️ Imprimir Comanda</button>
+      <button onclick="imprimirComandaManualRawBT()" style="flex:1;background:#0f766e;color:#fff;border:none;border-radius:10px;padding:11px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit" title="Precisa do app RawBT instalado, ligado à impressora térmica">🖨️📡 Imprimir (RawBT)</button>
       <button onclick="enviarComandaManual()" style="flex:1;background:linear-gradient(135deg,#0f2340,#1e3a5f);color:#fff;border:none;border-radius:10px;padding:11px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit">✅ Enviar para Cozinha</button>
     </div>
   </div>
@@ -9704,8 +9758,7 @@ window._gestorAvancar = function(id, canal) {
     if(idx < seq.length-1) ped.status = seq[idx+1];
     salvar("pedidosCozinha_v1", pedidosCozinha);
     if(ped.status === "entregue" && mesaStatus[ped.mesa] === "ocupada") {
-      mesaStatus[ped.mesa] = "conta";
-      salvar("mesaStatus", mesaStatus);
+      ccSetMesaStatus(ped.mesa, "conta");
     }
   }
   // Avançar também no delivery se for delivery
@@ -9736,8 +9789,7 @@ window._gestorCancelar = function(id, canal) {
     // Liberar mesa se era o único pedido
     const outroPed = pedidosCozinha.find((p,i) => i!==idx && p.mesa===ped.mesa && p.status!=="entregue");
     if(!outroPed && ped.mesa && !String(ped.mesa).startsWith("🛵")) {
-      mesaStatus[ped.mesa] = "livre";
-      salvar("mesaStatus", mesaStatus);
+      ccSetMesaStatus(ped.mesa, "livre");
     }
     pedidosCozinha.splice(idx, 1);
     salvar("pedidosCozinha_v1", pedidosCozinha);
@@ -10882,7 +10934,7 @@ async function ccCobrarNoCelular(tipoPagamento) {
       headers: { "Content-Type": "application/json", "x-empresa-id": empresaId },
       body: JSON.stringify({
         provider: "mercadopago",
-        serialNumber: cfg.deviceIdCelularGarcom || "sem-serial-configurado",
+        serialNumber: (config.pagamentos_api&&config.pagamentos_api.mercadopago&&config.pagamentos_api.mercadopago.deviceId) || cfg.deviceIdCelularGarcom || "sem-serial-configurado",
         tipoPagamento, // 'pix' ou 'cartao'
         orderData: {
           orderId, numeroMesa: ped.mesa, valorTotal: ped.total,
@@ -10967,7 +11019,7 @@ async function cobrarValorParcialMesa(numeroMesa, valorTotalAtual, valorParaCobr
         headers: { "Content-Type": "application/json", "x-empresa-id": empresaId },
         body: JSON.stringify({
           provider: "mercadopago",
-          serialNumber: cfg.deviceIdCelularGarcom || "sem-serial-configurado",
+          serialNumber: (config.pagamentos_api&&config.pagamentos_api.mercadopago&&config.pagamentos_api.mercadopago.deviceId) || cfg.deviceIdCelularGarcom || "sem-serial-configurado",
           tipoPagamento: "pix",
           orderData: {
             orderId, numeroMesa, valorTotal: valorParaCobrar,
@@ -11026,6 +11078,17 @@ async function ccAtualizarMesaSupabase(empresaId, numeroMesa, status, total) {
   await ccEscreverComResiliencia("mesas", {
     empresa_id: empresaId, numero: numeroMesa, status, total: total || 0,
   }, "empresa_id,numero");
+}
+
+// ─── FONTE ÚNICA DE VERDADE — toda mudança de status de mesa passa por
+// aqui: atualiza local (pra tela responder na hora) E o Supabase (pra
+// sincronizar com outros dispositivos). Substitui os 7 pontos que antes
+// duplicavam "mesaStatus[x]=y; salvar(...)" sem nunca avisar o Supabase.
+function ccSetMesaStatus(numero, status, total) {
+  mesaStatus[numero] = status;
+  salvar("mesaStatus", mesaStatus);
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  if (empresaId) ccAtualizarMesaSupabase(empresaId, Number(numero), status, total || 0);
 }
 
 let _ccCanalMesasRealtime = null;
@@ -11210,6 +11273,66 @@ function ccCobrarParcialDoModal() {
   const valor = parseFloat(input?.value || "0");
   if (!(valor > 0)) { toast("⚠️ Informe um valor válido."); return; }
   cobrarValorParcialMesa(ped.mesa, ped.total, valor);
+}
+
+// ─── IMPRESSÃO TÉRMICA REAL — ESC/POS via RawBT (contorna o bloqueio do
+// navegador pra rede/Bluetooth). Complementa o Ctrl+P/window.print() já
+// existente — não substitui, é uma opção extra pra quem instalar o app
+// RawBT (grátis) no celular/tablet ligado à impressora térmica.
+// Protocolo confirmado na documentação oficial do RawBT (rawbt.ru/start.html).
+const ESC_INIT         = new Uint8Array([0x1B, 0x40]);
+const ESC_BOLD_ON      = new Uint8Array([0x1B, 0x45, 0x01]);
+const ESC_BOLD_OFF     = new Uint8Array([0x1B, 0x45, 0x00]);
+const ESC_ALIGN_CENTER = new Uint8Array([0x1B, 0x61, 0x01]);
+const ESC_ALIGN_LEFT   = new Uint8Array([0x1B, 0x61, 0x00]);
+const ESC_CORTE_PAPEL  = new Uint8Array([0x1D, 0x56, 0x00]);
+const ESC_AVANCO_PAPEL = new Uint8Array([0x0A, 0x0A, 0x0A]);
+
+function _escposMontarBytes(...partes) {
+  const encoder = new TextEncoder();
+  const blocos = partes.map(p => (p instanceof Uint8Array) ? p : encoder.encode(String(p)));
+  const total = blocos.reduce((s, b) => s + b.length, 0);
+  const saida = new Uint8Array(total);
+  let offset = 0;
+  blocos.forEach(b => { saida.set(b, offset); offset += b.length; });
+  return saida;
+}
+
+function _escposParaBase64(bytes) {
+  let binario = "";
+  bytes.forEach(b => { binario += String.fromCharCode(b); });
+  return btoa(binario);
+}
+
+// Monta a comanda no formato ESC/POS — mesmos dados que já usávamos no
+// texto simples, só formatados pra impressora térmica real.
+function montarComandaEscPos(numeroMesa, itensPedido, obsGeral) {
+  const partes = [
+    ESC_INIT, ESC_ALIGN_CENTER, ESC_BOLD_ON,
+    `MESA ${String(numeroMesa).padStart(2, "0")}\n`,
+    ESC_BOLD_OFF, ESC_ALIGN_LEFT,
+    "--------------------------------\n",
+  ];
+  (itensPedido || []).forEach(it => {
+    partes.push(`${it.q || it.quantidade || 1}x ${it.nome}\n`);
+    if (it.obs) partes.push(`   obs: ${it.obs}\n`);
+  });
+  if (obsGeral) partes.push(`OBS: ${obsGeral}\n`);
+  partes.push("--------------------------------\n", ESC_AVANCO_PAPEL, ESC_CORTE_PAPEL);
+  return _escposMontarBytes(...partes);
+}
+
+// Dispara a impressão real via RawBT (precisa do app instalado no
+// Android que está com a impressora térmica pareada/configurada).
+function ccImprimirViaRawBT(numeroMesa, itensPedido, obsGeral) {
+  try {
+    const bytes = montarComandaEscPos(numeroMesa, itensPedido, obsGeral);
+    const base64 = _escposParaBase64(bytes);
+    const url = "intent:base64," + base64 + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+    window.location.href = url;
+  } catch (e) {
+    toast("❌ Falha ao enviar pro RawBT: " + e.message + " — use o Ctrl+P como alternativa.");
+  }
 }
 
 console.log("✅ Módulo Celular/Balcão/Tempo-Real carregado! (parte 1/2)");
