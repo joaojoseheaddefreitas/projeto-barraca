@@ -4286,30 +4286,10 @@ function gerarQRSvg(text, size=200) {
 }
 
 // ─── DEEPLINKS MAQUININHAS ──────────────────────────────────────
-const MAQUININHAS = {
-  stone:       { nome:"Stone",          emoji:"🟢", cor:"#00A878",
-    link: v => `stone://payment?amount=${(v*100).toFixed(0)}&payment_type=credit_debit` },
-  cielo:       { nome:"Cielo LIO",      emoji:"🔵", cor:"#004B8D",
-    link: v => `cielo://payment?amount=${v.toFixed(2)}&type=debit_credit` },
-  pagseguro:   { nome:"PagSeguro",      emoji:"🟡", cor:"#F6A800",
-    link: v => `pagseguro://payment?amount=${v.toFixed(2)}` },
-  mercadopago: { nome:"Mercado Pago",   emoji:"🔷", cor:"#009EE3",
-    link: v => `mercadopago://payment?amount=${v.toFixed(2)}` },
-  getnet:      { nome:"GetNet",         emoji:"🔴", cor:"#E30613",
-    link: v => `getnet://payment?value=${(v*100).toFixed(0)}` },
-  rede:        { nome:"Rede",           emoji:"🟣", cor:"#6B2D8B",
-    link: v => `rede://payment?amount=${v.toFixed(2)}` },
-};
-
-function abrirDeeplink(tipo, valor) {
-  const maq = MAQUININHAS[tipo];
-  if(!maq) return;
-  const url = maq.link(valor);
-  toast(`Abrindo ${maq.nome}…`);
-  window.location.href = url;
-  // Fallback: após 2s se não abriu, avisa
-  setTimeout(() => toast(`Se o app não abriu, verifique se está instalado.`), 2000);
-}
+// (Removido: objeto de deep links falsos por marca — nenhuma dessas
+// empresas documenta publicamente um endereço que abra o app já com o
+// valor preenchido. O fluxo real de "maquininha física" agora é a
+// instrução honesta em renderDeeplinks(), abaixo.)
 
 // ─── TABS DO MODAL ──────────────────────────────────────────────
 function setMaqTab(tab, btn) {
@@ -4430,33 +4410,17 @@ function renderDeeplinks(valor) {
   const grid = document.getElementById("maq-deeplinks-grid");
   const outras = document.getElementById("maq-outras-grid");
   if(!grid) return;
-  const principal = config.maqTipo || "";
 
-  // Botão principal em destaque
-  if(principal && MAQUININHAS[principal]) {
-    const m = MAQUININHAS[principal];
-    grid.innerHTML = `
-      <button onclick="abrirDeeplink('${principal}',${valor})" class="col-span-2" style="background:${m.cor};color:#fff;border:none;border-radius:14px;padding:14px;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-        <span style="font-size:1.4rem">${m.emoji}</span>
-        <div style="text-align:left">
-          <div>${m.nome}</div>
-          <div style="font-size:.72rem;opacity:.8;font-weight:600">${fmtBRL(valor)} · Toque para abrir o app</div>
-        </div>
-      </button>`;
-  } else {
-    grid.innerHTML = `<p class="col-span-2 text-xs text-gray-400 text-center py-2">Configure sua maquininha principal em Admin</p>`;
-  }
-
-  // Outras maquininhas
-  if(outras) {
-    outras.innerHTML = Object.entries(MAQUININHAS)
-      .filter(([k])=>k!==principal)
-      .map(([k,m])=>`
-        <button onclick="abrirDeeplink('${k}',${valor})" style="background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:10px 6px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s" onmouseover="this.style.borderColor='${m.cor}'" onmouseout="this.style.borderColor='#e5e7eb'">
-          <span style="font-size:1.3rem">${m.emoji}</span>
-          <span style="font-size:.6rem;font-weight:700;color:#374151">${m.nome}</span>
-        </button>`).join("");
-  }
+  // Os "links diretos" pra abrir o app de cada maquininha foram removidos
+  // de propósito — não existe, documentado por nenhuma dessas empresas
+  // (Stone, Cielo, GetNet, Rede), um endereço que abra o app já com o
+  // valor preenchido. Prometer isso enganaria quem usa o sistema.
+  grid.innerHTML = `
+    <div class="col-span-2" style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:14px;text-align:center">
+      <p style="font-weight:800;color:#92400e;font-size:.85rem;margin-bottom:4px">💳 Opere na maquininha física</p>
+      <p style="font-size:.78rem;color:#a16207">Digite <strong>${fmtBRL(valor)}</strong> direto no aparelho e confirme abaixo.</p>
+    </div>`;
+  if(outras) outras.innerHTML = "";
 }
 
 function copiarPix() {
@@ -6536,7 +6500,7 @@ function abrirNovoDelivery(editId) {
       <!-- Maquininha info (aparece se pag = cartao_maq) -->
       <div id="dl-maq-info" style="display:none;background:#eff6ff;border-radius:12px;padding:12px;margin-bottom:14px">
         <p style="font-size:.78rem;font-weight:700;color:#1d4ed8;margin-bottom:6px">💳 Pagamento via Maquininha</p>
-        <p style="font-size:.72rem;color:#3b82f6">O pagamento será coletado na entrega pelo motoboy.<br/>Selecione a maquininha abaixo para gerar o deeplink:</p>
+        <p style="font-size:.72rem;color:#3b82f6">O pagamento será coletado na entrega pelo motoboy, direto na maquininha física.</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="dl-maq-btns"></div>
       </div>
 
@@ -6672,49 +6636,13 @@ function _syncDlPagOpts(pag) {
 function _renderDlMaqBtns() {
   const cont = document.getElementById("dl-maq-btns");
   if(!cont) return;
-  const MAQUININHAS_EXT = {
-    moderninha:  { nome:"Moderninha Smart 2", emoji:"🟠", cor:"#f59e0b",
-      link: v => `pagseguro://payment?amount=${v.toFixed(2)}&description=Delivery` },
-    stone:       { nome:"Stone",              emoji:"🟢", cor:"#00A878",
-      link: v => `stone://payment?amount=${(v*100).toFixed(0)}&payment_type=credit_debit` },
-    cielo:       { nome:"Cielo LIO",          emoji:"🔵", cor:"#004B8D",
-      link: v => `cielo://payment?amount=${v.toFixed(2)}&type=debit_credit` },
-    mercadopago: { nome:"Mercado Pago",       emoji:"🔷", cor:"#009EE3",
-      link: v => `mercadopago://payment?amount=${v.toFixed(2)}` },
-    getnet:      { nome:"GetNet",             emoji:"🔴", cor:"#E30613",
-      link: v => `getnet://payment?value=${(v*100).toFixed(0)}` },
-    rede:        { nome:"Rede",               emoji:"🟣", cor:"#6B2D8B",
-      link: v => `rede://payment?amount=${v.toFixed(2)}` },
-    sumup:       { nome:"SumUp",              emoji:"⚫", cor:"#1a1a1a",
-      link: v => `sumup://charge?amount=${v.toFixed(2)}&currency=BRL` },
-    pag4:        { nome:"Pag4",               emoji:"🟤", cor:"#92400e",
-      link: v => `pag4://payment?amount=${v.toFixed(2)}` },
-  };
   const total = _calcDlTotal();
-  cont.innerHTML = Object.entries(MAQUININHAS_EXT).map(([k, m]) => `
-    <button onclick="_abrirDeeplinkDl('${k}',${total})"
-      style="background:${m.cor};color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:opacity .15s"
-      onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-      ${m.emoji} ${m.nome}
-    </button>`).join("");
-}
-
-function _abrirDeeplinkDl(tipo, valor) {
-  const MAQUININHAS_EXT = {
-    moderninha:  { nome:"Moderninha Smart 2", link: v => `pagseguro://payment?amount=${v.toFixed(2)}&description=Delivery` },
-    stone:       { nome:"Stone",              link: v => `stone://payment?amount=${(v*100).toFixed(0)}&payment_type=credit_debit` },
-    cielo:       { nome:"Cielo LIO",          link: v => `cielo://payment?amount=${v.toFixed(2)}&type=debit_credit` },
-    mercadopago: { nome:"Mercado Pago",       link: v => `mercadopago://payment?amount=${v.toFixed(2)}` },
-    getnet:      { nome:"GetNet",             link: v => `getnet://payment?value=${(v*100).toFixed(0)}` },
-    rede:        { nome:"Rede",               link: v => `rede://payment?amount=${v.toFixed(2)}` },
-    sumup:       { nome:"SumUp",              link: v => `sumup://charge?amount=${v.toFixed(2)}&currency=BRL` },
-    pag4:        { nome:"Pag4",               link: v => `pag4://payment?amount=${v.toFixed(2)}` },
-  };
-  const maq = MAQUININHAS_EXT[tipo];
-  if(!maq) return;
-  toast(`💳 Abrindo ${maq.nome}…`);
-  window.location.href = maq.link(valor);
-  setTimeout(() => toast("Se o app não abriu, verifique se está instalado."), 2000);
+  // (Removido: botões de "abrir app da maquininha" por marca — nenhum
+  // desses endereços é real/documentado. Instrução honesta abaixo.)
+  cont.innerHTML = `
+    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:10px;text-align:center;font-size:.78rem;color:#92400e">
+      💳 Digite <strong>${fmtBRL(total)}</strong> direto na maquininha física
+    </div>`;
 }
 
 function _calcDlTotal() {
@@ -6993,24 +6921,15 @@ function _abrirMaqDelivery(pedId) {
 }
 
 function _modalMaqSimples(ped) {
-  const MAQUININHAS_EXT2 = {
-    moderninha:  { nome:"Moderninha Smart 2", emoji:"🟠", cor:"#f59e0b",  link: v => `pagseguro://payment?amount=${v.toFixed(2)}` },
-    stone:       { nome:"Stone",              emoji:"🟢", cor:"#00A878",  link: v => `stone://payment?amount=${(v*100).toFixed(0)}&payment_type=credit_debit` },
-    cielo:       { nome:"Cielo LIO",          emoji:"🔵", cor:"#004B8D",  link: v => `cielo://payment?amount=${v.toFixed(2)}` },
-    mercadopago: { nome:"Mercado Pago",       emoji:"🔷", cor:"#009EE3",  link: v => `mercadopago://payment?amount=${v.toFixed(2)}` },
-    getnet:      { nome:"GetNet",             emoji:"🔴", cor:"#E30613",  link: v => `getnet://payment?value=${(v*100).toFixed(0)}` },
-    rede:        { nome:"Rede",               emoji:"🟣", cor:"#6B2D8B",  link: v => `rede://payment?amount=${v.toFixed(2)}` },
-    sumup:       { nome:"SumUp",              emoji:"⚫", cor:"#1a1a1a",  link: v => `sumup://charge?amount=${v.toFixed(2)}&currency=BRL` },
-  };
-  const btns = Object.entries(MAQUININHAS_EXT2).map(([k,m]) =>
-    `<button onclick="window.location.href='${m.link(ped.total)}'"
-      style="flex:1;min-width:140px;background:${m.cor};color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-      ${m.emoji} ${m.nome}
-    </button>`).join("");
+  // (Removido: mesmo padrão de links falsos — instrução honesta abaixo.)
+  const bloco = `
+    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px;text-align:center">
+      <p style="font-weight:800;color:#92400e;font-size:.85rem">💳 Digite ${fmtBRL(ped.total)} direto na maquininha física</p>
+    </div>`;
   if(typeof _modalGen === "function") {
     _modalGen(`💳 Cobrar Delivery — ${fmtBRL(ped.total)}`,`
       <p style="font-size:.82rem;color:#374151;margin-bottom:12px">Cliente: <strong>${ped.cliente}</strong> · ${ped.endereco}</p>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">${btns}</div>`);
+      ${bloco}`);
   }
 }
 
@@ -7156,39 +7075,8 @@ showView = function(name, btn) {
 // O modal de maquininha existente já tem deeplinks via MAQUININHAS {}
 // Vamos adicionar as novas maquininhas à lista existente após o carregamento
 
-(function _expandirMaquininhas() {
-  if(typeof MAQUININHAS === "undefined") return;
-  MAQUININHAS.moderninha = {
-    nome: "Moderninha Smart 2",
-    emoji: "🟠",
-    cor: "#f59e0b",
-    link: v => `pagseguro://payment?amount=${v.toFixed(2)}&description=Pedido`
-  };
-  MAQUININHAS.sumup = {
-    nome: "SumUp Air",
-    emoji: "⚫",
-    cor: "#1a1a1a",
-    link: v => `sumup://charge?amount=${v.toFixed(2)}&currency=BRL`
-  };
-  MAQUININHAS.pag4 = {
-    nome: "Pag4",
-    emoji: "🟤",
-    cor: "#92400e",
-    link: v => `pag4://payment?amount=${v.toFixed(2)}`
-  };
-  MAQUININHAS.vero = {
-    nome: "Vero",
-    emoji: "🔶",
-    cor: "#ea580c",
-    link: v => `vero://payment?amount=${v.toFixed(2)}`
-  };
-  MAQUININHAS.safrapay = {
-    nome: "SafraPay",
-    emoji: "🟦",
-    cor: "#1e40af",
-    link: v => `safrapay://payment?amount=${v.toFixed(2)}`
-  };
-})();
+// (Removido: bloco que tentava expandir a lista de deep links falsos —
+// já era código morto desde que o objeto MAQUININHAS foi removido.)
 
 // ══════════════════════════════════════════════════════════════════
 //  SEÇÃO 11: ADMIN — Config de Maquininha Expandida
@@ -7465,81 +7353,20 @@ function _baixarQR(divId, label) {
 // ══════════════════════════════════════════════════════════════
 
 const MAQUININHAS_FULL = {
-  // PagSeguro / Moderninha
-  moderninha: {
-    nome: "Moderninha Smart 2",  emoji: "🟠", cor: "#f59e0b", marca: "PagSeguro",
-    deeplink: (v, desc) => `pagseguro://payment?amount=${v.toFixed(2)}&description=${encodeURIComponent(desc||"Pedido")}`,
-    fallback:  (v)      => `https://pag.ae/pay?amount=${v.toFixed(2)}`,
-    info: "App PagSeguro instalado no dispositivo Android da maquininha"
-  },
-  pagseguro: {
-    nome: "PagSeguro (Minizinha)", emoji: "🟠", cor: "#e88b00", marca: "PagSeguro",
-    deeplink: (v, desc) => `pagseguro://payment?amount=${v.toFixed(2)}&description=${encodeURIComponent(desc||"Pedido")}`,
-    fallback:  (v)      => `https://pag.ae/pay?amount=${v.toFixed(2)}`,
-    info: "Minizinha NFC, Chip e Tap"
-  },
-  // Stone
-  stone: {
-    nome: "Stone",  emoji: "🟢", cor: "#00A878", marca: "Stone",
-    deeplink: (v) => `stone://payment?amount=${Math.round(v*100)}&payment_type=credit_debit`,
-    fallback:  (v) => `https://stone.com.br`,
-    info: "Stone S920 — app Stone instalado no Android da maquininha"
-  },
-  ton: {
-    nome: "Ton (Stone)",  emoji: "🟩", cor: "#00875A", marca: "Stone/Ton",
-    deeplink: (v) => `stone://payment?amount=${Math.round(v*100)}&payment_type=credit_debit`,
-    fallback:  (v) => `https://ton.com.br`,
-    info: "T1, T2, T3 — mesmo deeplink da Stone"
-  },
-  // Cielo
-  cielo: {
-    nome: "Cielo LIO",  emoji: "🔵", cor: "#004B8D", marca: "Cielo",
-    deeplink: (v) => `cielo://payment?amount=${v.toFixed(2)}&type=debit_credit`,
-    fallback:  (v) => `https://www.cielo.com.br`,
-    info: "Cielo LIO V2/V3 — app Cielo Order instalado"
-  },
-  // Mercado Pago
-  mercadopago: {
-    nome: "Mercado Pago",  emoji: "🔷", cor: "#009EE3", marca: "Mercado Pago",
-    deeplink: (v) => `mercadopago://payment?amount=${v.toFixed(2)}`,
-    fallback:  (v) => `https://mpago.la/pay/${v.toFixed(2)}`,
-    info: "Point Mini / Smart — app MP instalado"
-  },
-  // GetNet
-  getnet: {
-    nome: "GetNet",  emoji: "🔴", cor: "#E30613", marca: "GetNet (Santander)",
-    deeplink: (v) => `getnet://payment?value=${Math.round(v*100)}`,
-    fallback:  (v) => `https://getnet.com.br`,
-    info: "Getnet Smart — app Getnet instalado"
-  },
-  // Rede
-  rede: {
-    nome: "Rede",  emoji: "🟣", cor: "#6B2D8B", marca: "Rede (Itaú)",
-    deeplink: (v) => `rede://payment?amount=${v.toFixed(2)}`,
-    fallback:  (v) => `https://www.userede.com.br`,
-    info: "Rede Smart — app Rede instalado no Android"
-  },
-  // SumUp
-  sumup: {
-    nome: "SumUp Air",  emoji: "⚫", cor: "#1a1a1a", marca: "SumUp",
-    deeplink: (v) => `sumup://charge?amount=${v.toFixed(2)}&currency=BRL`,
-    fallback:  (v) => `https://me.sumup.com/payments/simple/${v.toFixed(2)}`,
-    info: "SumUp Air — via Bluetooth com app SumUp"
-  },
-  // InfinitePay / CloudWalk
-  infinitepay: {
-    nome: "InfinitePay",  emoji: "🔮", cor: "#5b21b6", marca: "CloudWalk",
-    deeplink: (v) => `infinitepay://payment?amount=${v.toFixed(2)}`,
-    fallback:  (v) => `https://infinitepay.io`,
-    info: "InfinitePay maquininha — app InfinitePay"
-  },
-  // Vero
-  vero: {
-    nome: "Vero",  emoji: "🔶", cor: "#ea580c", marca: "Vero (Sicredi)",
-    deeplink: (v) => `vero://payment?amount=${v.toFixed(2)}`,
-    fallback:  (v) => `https://www.vero.com.br`,
-    info: "App Vero instalado"
-  },
+  // (Removidos os campos deeplink/fallback: nenhum desses endereços é
+  // documentado publicamente por essas empresas — abrir eles não
+  // funcionava de verdade, só fingia funcionar.)
+  moderninha:  { nome: "Moderninha Smart 2",   emoji: "🟠", cor: "#f59e0b", marca: "PagSeguro" },
+  pagseguro:   { nome: "PagSeguro (Minizinha)", emoji: "🟠", cor: "#e88b00", marca: "PagSeguro" },
+  stone:       { nome: "Stone",                emoji: "🟢", cor: "#00A878", marca: "Stone" },
+  ton:         { nome: "Ton (Stone)",          emoji: "🟩", cor: "#00875A", marca: "Stone/Ton" },
+  cielo:       { nome: "Cielo LIO",            emoji: "🔵", cor: "#004B8D", marca: "Cielo" },
+  mercadopago: { nome: "Mercado Pago",         emoji: "🔷", cor: "#009EE3", marca: "Mercado Pago" },
+  getnet:      { nome: "GetNet",               emoji: "🔴", cor: "#E30613", marca: "GetNet (Santander)" },
+  rede:        { nome: "Rede",                 emoji: "🟣", cor: "#6B2D8B", marca: "Rede (Itaú)" },
+  sumup:       { nome: "SumUp Air",            emoji: "⚫", cor: "#1a1a1a", marca: "SumUp" },
+  infinitepay: { nome: "InfinitePay",          emoji: "🔮", cor: "#5b21b6", marca: "CloudWalk" },
+  vero:        { nome: "Vero",                 emoji: "🔶", cor: "#ea580c", marca: "Vero (Sicredi)" },
 };
 
 // Expor globalmente
@@ -7609,24 +7436,11 @@ function abrirModalMaquininha(valor, descricao, pedidoId, cb) {
 function _acionarMaquininha(tipo, valor, desc, pedidoId) {
   const maq = MAQUININHAS_FULL[tipo];
   if(!maq) return;
-  // Salvar preferência
   salvarPrefMaquininha(tipo);
-  toast(`${maq.emoji} Abrindo ${maq.nome}…`);
-  // Atualizar info
   const infoEl = document.getElementById("_maq_info");
-  if(infoEl) infoEl.innerHTML = `<strong style="color:#0f2340">${maq.emoji} ${maq.nome}</strong><br/>${maq.info}`;
-  // Tentar deeplink
-  const dl = maq.deeplink(valor, desc);
-  window.location.href = dl;
-  // Fallback após 2.5s se não abriu
-  setTimeout(() => {
-    const fb = maq.fallback ? maq.fallback(valor) : null;
-    if(fb && fb.startsWith("http")) {
-      if(confirm(`O app ${maq.nome} não respondeu.\nAbrir site da ${maq.marca}?`)) {
-        window.open(fb, "_blank");
-      }
-    }
-  }, 2500);
+  if(infoEl) {
+    infoEl.innerHTML = `<strong style="color:#0f2340">${maq.emoji} ${maq.nome}</strong><br/>Digite ${fmtBRL(valor)} direto na maquininha física e confirme lá.`;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
