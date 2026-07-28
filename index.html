@@ -75,18 +75,23 @@ window.COOKCONTROL_CONFIG = {
   var empresaIdSalvo = localStorage.getItem('cookcontrol_empresa_id');
   window.COOKCONTROL_EMPRESA_ID_ATIVA = empresaIdSalvo || window.COOKCONTROL_CONFIG.empresaId || null;
 
+  // IMPORTANTE: isso NUNCA bloqueia a tela. Sem empresa_id ativa, o app
+  // funciona normalmente em modo local (localStorage) — só a sincronização
+  // entre dispositivos (Realtime) fica pausada até ativar. O Admin, as
+  // abas, os botões — tudo continua 100% acessível e clicável.
   if (!window.COOKCONTROL_EMPRESA_ID_ATIVA) {
     document.addEventListener('DOMContentLoaded', function () {
-      var bloqueio = document.createElement('div');
-      bloqueio.style.cssText = 'position:fixed;inset:0;background:#0f2340;color:#fff;z-index:99999;'
-        + 'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;'
-        + 'padding:24px;font-family:sans-serif';
-      bloqueio.innerHTML =
-        '<div style="font-size:3rem;margin-bottom:12px">📷</div>'
-        + '<h1 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">Ative este dispositivo</h1>'
-        + '<p style="font-size:.85rem;color:#bfdbfe;max-width:320px">Peça ao gerente para escanear '
-        + 'o QR Code de ativação, disponível no painel Admin do estabelecimento.</p>';
-      document.body.appendChild(bloqueio);
+      var aviso = document.createElement('div');
+      aviso.style.cssText = 'position:fixed;bottom:16px;left:16px;right:16px;max-width:360px;'
+        + 'margin:0 auto;background:#0f2340;color:#fff;z-index:9000;border-radius:14px;'
+        + 'padding:12px 16px;font-family:sans-serif;font-size:.78rem;box-shadow:0 8px 24px rgba(0,0,0,.3);'
+        + 'display:flex;align-items:center;gap:10px';
+      aviso.innerHTML =
+        '<span style="font-size:1.3rem">📷</span>'
+        + '<span style="flex:1">Dispositivo não ativado — Admin → gerar QR Code pra sincronizar com outros aparelhos.</span>'
+        + '<button onclick="this.closest(\'div\').remove()" style="background:none;border:none;color:#93c5fd;font-size:1.1rem;cursor:pointer;padding:0">✕</button>';
+      document.body.appendChild(aviso);
+      setTimeout(function () { if (aviso.parentNode) aviso.remove(); }, 15000);
     });
   }
 })();
@@ -759,7 +764,12 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         <option value="getnet">GetNet</option>
         <option value="rede">Rede</option>
       </select>
-      <p class="text-xs text-blue-600">Ao cobrar, o app da maquininha abre automaticamente com o valor preenchido.</p>
+      <label class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 block mt-2">Chave API / Token de Integração</label>
+      <input id="adm-maq-token" class="input-base mb-1" placeholder="Cole aqui a chave/token dessa maquininha (opcional)" style="border-color:#93c5fd"/>
+      <p class="text-xs text-blue-600">
+        Isso fica salvo só como anotação. <strong>Cobrança automática de verdade (sem digitar nada na maquininha) hoje só funciona pra Mercado Pago</strong>,
+        configurado no card "🔌 Conexão com Maquininhas (Nuvem)" mais abaixo. Pras outras marcas, o valor precisa ser digitado direto na maquininha física.
+      </p>
     </div>
     <button class="btn-primary w-full" onclick="salvarConfigMaquininha()">💾 Salvar Pagamento</button>
   </div>
@@ -4175,6 +4185,7 @@ function salvarConfigMaquininha() {
   config.pixNome    = (document.getElementById("adm-pix-nome")    ||{}).value?.trim()  || config.pixNome   || "";
   config.pixCidade  = (document.getElementById("adm-pix-cidade")  ||{}).value?.trim()  || config.pixCidade || "Salvador";
   config.maqTipo    = (document.getElementById("adm-maq-tipo")    ||{}).value          || "";
+  config.maqToken   = (document.getElementById("adm-maq-token")   ||{}).value?.trim()  || "";
   salvar("config", config);
   toast("✅ Config de pagamento salva!");
 }
@@ -4220,6 +4231,7 @@ renderAdmin = function() {
   if(f("adm-pix-nome"))   f("adm-pix-nome").value   = config.pixNome   || "";
   if(f("adm-pix-cidade")) f("adm-pix-cidade").value = config.pixCidade || "Salvador";
   if(f("adm-maq-tipo"))   f("adm-maq-tipo").value   = config.maqTipo   || "";
+  if(f("adm-maq-token"))  f("adm-maq-token").value  = config.maqToken  || "";
   if(f("adm-fone"))       f("adm-fone").value        = config.foneCozinha || "";
   // Modo operação
   if(f("adm-imprimir-comanda")) f("adm-imprimir-comanda").checked = !!config.imprimirComanda;
