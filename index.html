@@ -934,6 +934,11 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         class="w-full bg-gradient-to-r from-orange-600 to-amber-500 text-white font-black py-3.5 rounded-2xl shadow-lg hover:from-orange-700 hover:to-amber-600 transition-all text-base">
         🍽️ Confirmar Pedido
       </button>
+      <button onclick="ccClientePagarPix()" id="cc-cliente-pagar-btn"
+        class="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white font-black py-3.5 rounded-2xl shadow-lg mt-2 text-base">
+        💸 Pagar Conta Agora (Pix)
+      </button>
+      <div id="cc-cliente-pix-status" class="text-center text-xs text-gray-400 mt-2"></div>
       <button onclick="enviarWhatsApp()" class="wpp-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Enviar para Cozinha (WhatsApp)
@@ -1514,6 +1519,125 @@ function selPay(el) { S.pag = el.dataset.pay; renderModal(); }
 /* ═══════════════════════════════════════
    ENVIAR PEDIDO
 ═══════════════════════════════════════ */
+// ═══════════════════════════════════════════════════════════════
+// MESA POR PARÂMETRO DE URL (?mesa=05) + PAGAMENTO PIX DO CLIENTE
+// ═══════════════════════════════════════════════════════════════
+const CC_MESA_CLIENTE_KEY = "wl_mesa_atual_cliente";
+
+// PONTO 1 — Captura a mesa da URL (?mesa=05) e guarda no localStorage
+function ccCapturarMesaDaUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const mesaDaUrl = params.get("mesa");
+
+  if (mesaDaUrl) {
+    localStorage.setItem(CC_MESA_CLIENTE_KEY, mesaDaUrl);
+    params.delete("mesa");
+    const novaUrl = window.location.pathname
+      + (params.toString() ? "?" + params.toString() : "")
+      + window.location.hash;
+    window.history.replaceState({}, document.title, novaUrl);
+  }
+
+  // PONTO 3 — Se não veio mesa nova na URL, usa a última salva
+  // (assim o cliente que já leu um QR antes continua com a mesa dele
+  // mesmo navegando sem o parâmetro na URL de novo).
+  const mesaAtual = mesaDaUrl || localStorage.getItem(CC_MESA_CLIENTE_KEY);
+  if (mesaAtual) {
+    const sel = document.getElementById("mesa-select");
+    if (sel) {
+      sel.value = mesaAtual;
+      if (typeof sel.onchange === "function") sel.onchange();
+      else sel.dispatchEvent(new Event("change"));
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", ccCapturarMesaDaUrl);
+
+// PONTO 4 — Cliente paga a própria conta via Pix; some só depois de
+// confirmado de verdade pelo backend (mesmo padrão seguro já testado
+// pro garçom — nunca libera por parâmetro de URL, só por confirmação real).
+async function ccClientePagarPix() {
+  const cfg = window.COOKCONTROL_CONFIG || {};
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  const statusEl = document.getElementById("cc-cliente-pix-status");
+  const mesa = (typeof S !== "undefined" && S.mesa) || localStorage.getItem(CC_MESA_CLIENTE_KEY);
+
+  if (!mesa) { toast("⚠️ Leia o QR Code da mesa antes de pagar."); return; }
+  if (!empresaId) { if (statusEl) statusEl.textContent = "⚠️ Estabelecimento não ativado."; return; }
+  if (typeof S === "undefined" || !S.cart || !Object.keys(S.cart).length) {
+    toast("⚠️ Seu carrinho está vazio."); return;
+  }
+
+  const itensPedido = Object.entries(S.cart).map(([id, q]) => {
+    const it = (typeof getItem === "function") ? getItem(id) : null;
+    return it ? { nome: it.nome, quantidade: q, preco: it.preco || 0 } : null;
+  }).filter(Boolean);
+  const valorTotal = itensPedido.reduce((s, i) => s + i.preco * i.quantidade, 0);
+  const orderId = `cliente-mesa${mesa}-${Date.now()}`;
+
+  if (statusEl) statusEl.textContent = "⏳ Gerando Pix...";
+
+  try {
+    const resp = await fetch(`${cfg.paymentsApiBase}/payments/process`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-empresa-id": empresaId },
+      body: JSON.stringify({
+        provider: "mercadopago", serialNumber: "cliente-autoatendimento", tipoPagamento: "pix",
+        orderData: { orderId, numeroMesa: mesa, valorTotal, itensPedido },
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.pix?.qrCodeBase64) {
+      if (statusEl) statusEl.textContent = "❌ " + (data.erro || "Falha ao gerar Pix.");
+      return;
+    }
+    if (statusEl) {
+      statusEl.innerHTML =
+        `<img src="data:image/png;base64,${data.pix.qrCodeBase64}" style="width:190px;height:190px;margin:8px auto"/>`
+        + `<p>Escaneia e paga — a tela libera sozinha assim que confirmar.</p>`;
+    }
+    ccEscutarPagamentoCliente(orderId, empresaId, mesa);
+  } catch (err) {
+    if (statusEl) statusEl.textContent = "❌ Erro de conexão: " + err.message;
+  }
+}
+
+function ccEscutarPagamentoCliente(orderId, empresaId, mesa) {
+  const sb = window.supabase.createClient(window.COOKCONTROL_CONFIG.supabaseUrl, window.COOKCONTROL_CONFIG.supabaseKey);
+  const canal = sb
+    .channel(`cliente-pgto-${orderId}`)
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "cobrancas_mesa", filter: `order_id=eq.${orderId}` },
+      (payload) => {
+        if (payload.new.status !== "pago_confirmado") return;
+        ccFecharContaCliente(mesa);
+        sb.removeChannel(canal);
+      }
+    )
+    .subscribe();
+}
+
+// Limpa a sessão do celular do cliente e libera a mesa pro atendente —
+// a tela do atendente atualiza sozinha (já está ouvindo a tabela "mesas").
+function ccFecharContaCliente(mesa) {
+  if (typeof S !== "undefined") { S.cart = {}; if (typeof salvar === "function") salvar("cart", S.cart); }
+  localStorage.removeItem(CC_MESA_CLIENTE_KEY);
+  if (typeof ccSetMesaStatus === "function") ccSetMesaStatus(Number(mesa), "livre", 0);
+
+  const tela = document.createElement("div");
+  tela.style.cssText = "position:fixed;inset:0;background:#16a34a;color:#fff;z-index:99999;"
+    + "display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;"
+    + "padding:24px;font-family:sans-serif";
+  tela.innerHTML =
+    '<div style="font-size:4rem;margin-bottom:16px">✅</div>'
+    + '<h1 style="font-size:1.5rem;font-weight:900;margin-bottom:8px">CONTA PAGA</h1>'
+    + '<p style="font-size:.9rem;opacity:.9">Obrigado! Pode fechar essa tela.</p>'
+    + '<button onclick="this.closest(\'div\').remove()" style="margin-top:20px;background:#fff;color:#16a34a;border:none;border-radius:10px;padding:10px 20px;font-weight:800;cursor:pointer">Fechar</button>';
+  document.body.appendChild(tela);
+}
+
 function enviarPedido() {
   if(!S.mesa) return;
   const sub = cartTotal(), fee = S.taxa ? sub*0.1 : 0, tot = sub+fee;
