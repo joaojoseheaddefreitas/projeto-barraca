@@ -938,6 +938,10 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         class="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white font-black py-3.5 rounded-2xl shadow-lg mt-2 text-base">
         💸 Pagar Conta Agora (Pix)
       </button>
+      <button onclick="ccChamarGarcomCartao()" id="cc-chamar-garcom-btn"
+        class="w-full bg-gradient-to-r from-blue-600 to-sky-500 text-white font-black py-3.5 rounded-2xl shadow-lg mt-2 text-base hidden">
+        💳 Pagar com Cartão (Chamar Garçom)
+      </button>
       <div id="cc-cliente-pix-status" class="text-center text-xs text-gray-400 mt-2"></div>
       <button onclick="enviarWhatsApp()" class="wpp-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -4828,13 +4832,28 @@ function renderAtendente() {
       :pedsMesa.some(p=>p.status==="preparo")?"🍳 Preparando..."
       :"🟡 Aguardando cozinha";
 
+    // MODO SMART LINK: mesa chamando o garçom pra passar o cartão —
+    // pisca em azul com o valor total em destaque, por cima do estado normal.
+    const chamandoGarcom = _ccMesasChamandoGarcom.has(num);
+
     const card = document.createElement("div");
     card.className="admin-card";
-    card.style.borderLeft=`4px solid ${borderCor}`;
+    card.style.borderLeft=`4px solid ${chamandoGarcom ? "#2563eb" : borderCor}`;
     card.style.position="relative";
     if(temPronto) card.style.boxShadow="0 0 0 3px rgba(34,197,94,.2)";
+    if(chamandoGarcom) card.style.animation = "pulse 1s infinite";
 
-    card.innerHTML = `
+    card.innerHTML = chamandoGarcom ? `
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-black text-base" style="color:#0f2340">Mesa ${String(num).padStart(2,"0")}</span>
+        <span class="badge" style="background:#dbeafe;color:#2563eb">💳 Chamando garçom</span>
+      </div>
+      <p class="text-xs font-bold mb-2" style="color:#2563eb">Cliente quer pagar no cartão, direto na maquininha</p>
+      <p class="text-3xl font-black text-center my-3" style="color:#2563eb">${fmtBRL(_ccMesasChamandoGarcomTotal[num] || (ultimoPed?ultimoPed.total:0))}</p>
+      <button onclick="ccConfirmarPagamentoSmartLink(${num})" class="btn-primary w-full text-sm py-2" style="background:#2563eb">
+        ✅ Já passei o cartão — Confirmar Pagamento
+      </button>
+    ` : `
       <div class="flex items-center justify-between mb-2">
         <span class="font-black text-base" style="color:#0f2340">Mesa ${String(num).padStart(2,"0")}</span>
         <span class="badge" style="${isConta?"background:#fee2e2;color:#dc2626":"background:#fff7ed;color:#ea580c"}">
@@ -5366,11 +5385,13 @@ const SirAccess = (function() {
       views: ['caixa','mesas','relatorio','dashboard'],
       default: 'caixa',
     },
-    // Cliente (QR mesa): só cardápio da mesa
+    // Cliente (QR mesa ou delivery): só cardápio + carrinho + checkout —
+    // NUNCA a área "view-cliente" (essa é ferramenta interna do staff
+    // pra gerar QR Code, não a tela de pedido do cliente de verdade).
     cliente: {
       label: '📱 Mesa', cor: '#6b7280', bg: '#f9fafb',
-      views: ['cliente'],
-      default: 'cliente',
+      views: ['cardapio'],
+      default: 'cardapio',
     },
     // Sem role: acesso completo (modo local sem auth)
     livre: {
@@ -5388,10 +5409,27 @@ const SirAccess = (function() {
     const params = new URLSearchParams(window.location.search);
     const hash   = window.location.hash.replace('#','');
 
-    // /mesa/5/cardapio → role cliente, mesa 5
+    // /mesa/5/cardapio → role cliente, mesa 5 (formato antigo, path)
     const mesaMatch = window.location.pathname.match(/\/mesa\/(\d+)/);
     if (mesaMatch) {
       _mesaId = mesaMatch[1];
+      return 'cliente';
+    }
+
+    // ?mesa=05 → role cliente, mesa 05 (formato real usado pelo QR Code
+    // hoje, num deploy estático — sem isso, QUALQUER acesso pela raiz do
+    // site abria o painel completo pro cliente. Esse é o bug de segurança
+    // corrigido aqui.)
+    const mesaParam = params.get('mesa');
+    if (mesaParam) {
+      _mesaId = mesaParam;
+      return 'cliente';
+    }
+
+    // ?view=delivery → cliente pedindo de casa (link de Delivery Online).
+    // Mesma restrição de tela do cliente da mesa — nunca mostra Admin/
+    // Estoque/Caixa pra quem abriu pelo link de delivery.
+    if (params.get('view') === 'delivery') {
       return 'cliente';
     }
 
@@ -7376,10 +7414,10 @@ function _baseURL() {
 function getCardapioURLs() {
   const base = _baseURL();
   return {
-    praia:       base + "?m=praia",
-    restaurante: base + "?m=restaurante",
-    normal:      base,
-    delivery:    base + "?m=praia&view=delivery",
+    praia:       base + "?m=praia&role=cliente",
+    restaurante: base + "?m=restaurante&role=cliente",
+    normal:      base + "?role=cliente",
+    delivery:    base + "?m=praia&view=delivery&role=cliente",
   };
 }
 
@@ -11042,6 +11080,16 @@ function ccSetMesaStatus(numero, status, total) {
 }
 
 let _ccCanalMesasRealtime = null;
+// Mostra/esconde o botão "Chamar Garçom" pra QUALQUER pessoa que abrir a
+// página (cliente de verdade incluído) — não só quando o Admin renderiza.
+function ccAplicarVisibilidadeBotaoSmartLink() {
+  const btnCartao = document.getElementById("cc-chamar-garcom-btn");
+  if (btnCartao) btnCartao.classList.toggle("hidden", config.modoPagamentoPrincipal !== "smart_link");
+}
+document.addEventListener("DOMContentLoaded", function () {
+  setTimeout(ccAplicarVisibilidadeBotaoSmartLink, 300);
+});
+
 function ccIniciarEscutaMesasRealtime() {
   const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
   if (!empresaId || _ccCanalMesasRealtime) return;
@@ -11055,9 +11103,24 @@ function ccIniciarEscutaMesasRealtime() {
       (payload) => {
         if (payload.eventType === "DELETE") return;
         const linha = payload.new;
+
+        // MODO SMART LINK: cliente chamou o garçom pra passar o cartão.
+        // Toca alerta sonoro (já existente) e marca a mesa pra piscar
+        // na tela do garçom, com o valor em destaque.
+        if (linha.status === "chamando_garcom") {
+          _ccMesasChamandoGarcom.add(linha.numero);
+          _ccMesasChamandoGarcomTotal[linha.numero] = linha.total || 0;
+          ccTocarAlertaSonoro();
+        } else {
+          _ccMesasChamandoGarcom.delete(linha.numero);
+          delete _ccMesasChamandoGarcomTotal[linha.numero];
+        }
+
         // Traduz os 4 estados pedidos para os 3 que o sistema local já usa,
         // sem quebrar a lógica existente de mesaStatus/renderAtendente:
-        const statusLocal = linha.status === "pronto_entrega" ? "conta" : linha.status;
+        const statusLocal = linha.status === "pronto_entrega" ? "conta"
+          : linha.status === "chamando_garcom" ? "ocupada"
+          : linha.status;
         mesaStatus[linha.numero] = statusLocal;
         salvar("mesaStatus", mesaStatus);
         if (typeof renderAtendente === "function" && S.viewAtual === "atendente") renderAtendente();
@@ -11065,6 +11128,36 @@ function ccIniciarEscutaMesasRealtime() {
       }
     )
     .subscribe();
+}
+
+// ─── MODO SMART LINK: cliente chama o garçom pra passar o cartão ───────
+const _ccMesasChamandoGarcom = new Set();
+const _ccMesasChamandoGarcomTotal = {};
+
+async function ccChamarGarcomCartao() {
+  const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
+  const mesa = (typeof S !== "undefined" && S.mesa) || localStorage.getItem(CC_MESA_CLIENTE_KEY);
+  if (!mesa) { toast("⚠️ Leia o QR Code da mesa primeiro."); return; }
+  if (!empresaId) { toast("⚠️ Estabelecimento não ativado."); return; }
+
+  const total = (typeof S !== "undefined" && S.cart)
+    ? Object.entries(S.cart).reduce((s, [id, q]) => {
+        const it = (typeof getItem === "function") ? getItem(id) : null;
+        return s + (it ? (it.preco || 0) * q : 0);
+      }, 0)
+    : 0;
+
+  await ccAtualizarMesaSupabase(empresaId, Number(mesa), "chamando_garcom", total);
+  toast("📟 Garçom chamado! Ele já está vendo o valor na maquininha.");
+}
+
+// Chamado pelo garçom, na tela dele, quando termina de passar o cartão
+// fisicamente — reaproveita o modal já existente e testado (não duplica
+// lógica de baixa de estoque/caixa/liberação de mesa).
+function ccConfirmarPagamentoSmartLink(numeroMesa) {
+  _ccMesasChamandoGarcom.delete(numeroMesa);
+  delete _ccMesasChamandoGarcomTotal[numeroMesa];
+  if (typeof abrirMaquininha === "function") abrirMaquininha(numeroMesa);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -11310,6 +11403,64 @@ function _ccInjetarPainelPerfilEQr() {
   `;
   const resetCard = adminEl.querySelector('[style*="border-color:#fca5a5"]') || null;
   adminEl.insertBefore(painel, resetCard);
+
+  const painelModo = document.createElement("div");
+  painelModo.className = "admin-card";
+  painelModo.id = "cc-modo-pagamento-painel";
+  painelModo.innerHTML = `
+    <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:6px">⚙️ Configuração de Maquininhas e Pagamento</h3>
+    <p style="font-size:.74rem;color:#9ca3af;margin-bottom:12px">Escolha como o cartão físico é cobrado no seu estabelecimento.</p>
+
+    <label style="display:flex;gap:10px;align-items:flex-start;border:1.5px solid #d1d5db;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer" id="cc-modo-label-digital">
+      <input type="radio" name="cc-modo-pagamento" value="checkout_digital" style="margin-top:3px"/>
+      <div>
+        <p style="font-weight:700;font-size:.82rem;color:#0f2340">💸 Checkout Digital (Token/API)</p>
+        <p style="font-size:.74rem;color:#6b7280">Pix e cartão direto pela API do Mercado Pago, sem o garçom tocar em nada — já configurado no card "Conexão com Maquininhas" abaixo.</p>
+      </div>
+    </label>
+
+    <label style="display:flex;gap:10px;align-items:flex-start;border:1.5px solid #d1d5db;border-radius:12px;padding:12px;cursor:pointer" id="cc-modo-label-smartlink">
+      <input type="radio" name="cc-modo-pagamento" value="smart_link" style="margin-top:3px"/>
+      <div>
+        <p style="font-weight:700;font-size:.82rem;color:#0f2340">📟 Smart Link (maquininha com Chrome)</p>
+        <p style="font-size:.74rem;color:#6b7280">Pra Moderninha Smart, Point Smart, Stone Smart etc. O cliente chama o garçom pelo celular; a mesa pisca em azul na maquininha com o valor, o garçom passa o cartão no app nativo dela e confirma manualmente aqui.</p>
+      </div>
+    </label>
+
+    <div id="cc-smartlink-link-wrap" class="hidden" style="margin-top:12px;background:#eff6ff;border-radius:10px;padding:10px">
+      <p style="font-size:.72rem;font-weight:700;color:#1d4ed8;margin-bottom:4px">Link pra abrir no Chrome da maquininha (aba Atendente):</p>
+      <p id="cc-smartlink-link" style="font-size:.68rem;color:#374151;word-break:break-all"></p>
+    </div>
+  `;
+  adminEl.insertBefore(painelModo, resetCard);
+
+  const radios = painelModo.querySelectorAll('input[name="cc-modo-pagamento"]');
+  const modoAtual = config.modoPagamentoPrincipal || "checkout_digital";
+  radios.forEach(r => {
+    r.checked = r.value === modoAtual;
+    r.onchange = function () {
+      config.modoPagamentoPrincipal = this.value;
+      salvar("config", config);
+      _ccAtualizarVisibilidadeSmartLink();
+      toast("✅ Modo de pagamento: " + (this.value === "smart_link" ? "Smart Link" : "Checkout Digital"));
+    };
+  });
+  _ccAtualizarVisibilidadeSmartLink();
+
+  function _ccAtualizarVisibilidadeSmartLink() {
+    const ativo = config.modoPagamentoPrincipal === "smart_link";
+    const wrap = document.getElementById("cc-smartlink-link-wrap");
+    if (wrap) {
+      wrap.classList.toggle("hidden", !ativo);
+      if (ativo) {
+        document.getElementById("cc-smartlink-link").textContent =
+          window.location.origin + window.location.pathname + "#atendente";
+      }
+    }
+    const btnCartao = document.getElementById("cc-chamar-garcom-btn");
+    if (btnCartao) btnCartao.classList.toggle("hidden", !ativo);
+  }
+  ccAplicarVisibilidadeBotaoSmartLink();
 
   const sel = document.getElementById("cc-perfil-select");
   sel.value = config.perfil_atendimento || "hibrido";
