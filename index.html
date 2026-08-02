@@ -196,7 +196,7 @@ window.COOKCONTROL_CONFIG = {
 </script>
 <script>
 (function(){
-  var VER="gv_v10";
+  var VER="gv_v11";
   if(localStorage.getItem("gv_ver")!==VER){
     localStorage.removeItem("solbahia_categorias");
     localStorage.setItem("gv_ver",VER);
@@ -670,9 +670,8 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
       </div>
     </div>
     <div class="mt-3 p-3 rounded-xl border-2 border-green-200 bg-green-50">
-        <label class="text-xs font-bold text-green-700 uppercase tracking-wider mb-1 block">📱 WhatsApp da Cozinha (DDI+DDD+número)</label>
-        <input id="adm-fone" class="input-base mt-1" placeholder="5571999998888" style="border-color:#86efac" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/>
-        <p class="text-xs text-green-600 mt-1">Ex: 55 71 99999-8888 → digite: 5571999998888</p>
+        <label class="text-xs font-bold text-green-700 uppercase tracking-wider mb-1 block">📟 Painel Digital da Cozinha</label>
+        <p class="text-xs text-green-600 mt-1">Os pedidos confirmados são enviados automaticamente para o Painel Digital (Tela de Produção) da cozinha. Não é necessário WhatsApp.</p>
       </div>
       <button class="btn-primary mt-4 w-full" onclick="salvarInfoEstab()">💾 Salvar Dados</button>
   </div>
@@ -727,12 +726,8 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
           <input type="checkbox" id="adm-imprimir-comanda" class="rounded" onchange="salvarModoOp()"/>
           Imprimir comanda ao enviar pedido
         </label>
-        <label class="flex items-center gap-2 text-sm text-green-800 cursor-pointer">
-          <input type="checkbox" id="adm-comanda-cozinha" class="rounded" onchange="salvarModoOp()"/>
-          Enviar via WhatsApp para cozinha
-        </label>
       </div>
-      <p class="text-xs text-green-600 mt-2">Use <strong>Ctrl+P</strong> ou o botão "🖨️ Imprimir" na comanda para imprimir em qualquer impressora ou térmica.</p>
+      <p class="text-xs text-green-600 mt-2">📟 Pedidos vão automaticamente para o Painel Digital da Cozinha. Use <strong>Ctrl+P</strong> ou o botão "🖨️ Imprimir" na comanda para imprimir em qualquer impressora ou térmica.</p>
     </div>
     <button class="btn-primary w-full" onclick="salvarModoOp()">💾 Salvar Configurações</button>
   </div>
@@ -943,10 +938,6 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         💳 Pagar com Cartão (Chamar Garçom)
       </button>
       <div id="cc-cliente-pix-status" class="text-center text-xs text-gray-400 mt-2"></div>
-      <button onclick="enviarWhatsApp()" class="wpp-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Enviar para Cozinha (WhatsApp)
-      </button>
       <button onclick="imprimirComanda()" class="w-full btn-ghost text-sm py-2.5 mt-2">🖨️ Imprimir Comanda</button>
     </div>
   </div>
@@ -1642,11 +1633,58 @@ function ccFecharContaCliente(mesa) {
   document.body.appendChild(tela);
 }
 
+// ─── TRAVA PRÉ-PAGO / PÓS-PAGO POR ÁREA ────────────────────────
+// Mesas 50 a 100 = Área Externa/Praia. Com o Modo Praia ativo,
+// essas mesas exigem confirmação de pagamento Pix pelo caixa antes
+// de o pedido ir para a cozinha. Mesas 1 a 49 (Salão) seguem sempre
+// o fluxo Pós-pago padrão (vai direto para a cozinha).
+function ccMesaEhPraia(mesa) {
+  const n = parseInt(mesa, 10);
+  return !isNaN(n) && n >= 50 && n <= 100;
+}
+function ccRequerPrePago(mesa) {
+  return !!(config.modo_praia_ativo && ccMesaEhPraia(mesa));
+}
+
+// Chamado pelo botão "💸 Confirmar Recebimento PIX" no Caixa.
+// Libera manualmente um pedido retido no Pré-pago para a cozinha.
+function confirmarRecebimentoPix(pedidoId) {
+  const ped = historico.find(p => p.id === pedidoId);
+  if(!ped) { toast("Pedido não encontrado!"); return; }
+  if(ped.status !== "aguardando_pagamento") { toast("Este pedido já está confirmado."); return; }
+  ped.status = "pago";
+  salvar("historico", historico);
+  syncHistoricoCozinha();
+  toast("✅ Pagamento confirmado! Pedido liberado para a cozinha.");
+  if(S.viewAtual === "cozinha") renderCozinha();
+  if(S.viewAtual === "atendente") renderAtendente();
+  if(typeof renderCaixa === "function") renderCaixa();
+}
+
+// Lista, no painel do Caixa, os pedidos Pré-pago retidos aguardando Pix.
+function renderPedidosAguardandoPagamento() {
+  const wrap = document.getElementById("cx-aguardando-wrap");
+  const box = document.getElementById("cx-aguardando-box");
+  if(!wrap || !box) return;
+  const pendentes = historico.filter(p => p.status === "aguardando_pagamento");
+  if(!pendentes.length) { wrap.classList.add("hidden"); box.innerHTML = ""; return; }
+  wrap.classList.remove("hidden");
+  box.innerHTML = pendentes.map(p => `
+    <div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-none">
+      <div>
+        <p class="font-semibold text-sm">Mesa ${String(p.mesa).padStart(2,"0")} · ${p.id.slice(0,15)}</p>
+        <p class="text-xs text-gray-400">${new Date(p.data).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})} · ${fmtBRL(p.total)}</p>
+      </div>
+      <button onclick="confirmarRecebimentoPix('${p.id}')" class="btn-primary text-xs px-3 py-2" style="background:#25d366">💸 Confirmar Recebimento PIX</button>
+    </div>`).join("");
+}
+
 function enviarPedido() {
   if(!S.mesa) return;
   const sub = cartTotal(), fee = S.taxa ? sub*0.1 : 0, tot = sub+fee;
   const payNames = {pix:"Pix",credito:"Cartão de Crédito",debito:"Cartão de Débito",dinheiro:"Dinheiro"};
   const obs = document.getElementById("obs-txt").value.trim();
+  const prePago = ccRequerPrePago(S.mesa);
 
   // Registrar no histórico
   const registro = {
@@ -1659,6 +1697,7 @@ function enviarPedido() {
     taxaVal: fee,
     total: tot,
     obs: obs,
+    status: prePago ? "aguardando_pagamento" : "pago",
     itens: Object.entries(S.cart).filter(([,q])=>q>0).map(([id,q])=>{
       const it = getItem(id);
       return {id, nome: it ? it.nome : id, preco: it ? it.preco : 0, q};
@@ -1682,11 +1721,19 @@ function enviarPedido() {
   if(obs) txt += `\n📝 Obs: ${obs}`;
   txt += `\n━━━━━━━━━━━━━━━━━━━━━━`;
 
-  document.getElementById("s-text").textContent = txt;
-  // Atualizar cozinha imediatamente
-  syncHistoricoCozinha();
-  if(S.viewAtual === "cozinha") renderCozinha();
-  if(S.viewAtual === "atendente") renderAtendente();
+  if(prePago) {
+    // Pré-pago (Área Externa/Praia): fica retido — NÃO chama syncHistoricoCozinha()
+    // até o caixa confirmar o recebimento do Pix.
+    txt += `\n\n⏳ AGUARDANDO PAGAMENTO\nSeu pedido só será enviado à cozinha após a confirmação do Pix pelo caixa.`;
+    document.getElementById("s-text").textContent = txt;
+    if(typeof renderCaixa === "function") renderCaixa();
+  } else {
+    // Pós-pago (padrão de mercado / Salão): vai direto para a cozinha.
+    document.getElementById("s-text").textContent = txt;
+    syncHistoricoCozinha();
+    if(S.viewAtual === "cozinha") renderCozinha();
+    if(S.viewAtual === "atendente") renderAtendente();
+  }
   closeModal();
   document.getElementById("success-ov").classList.remove("hidden");
 }
@@ -2265,7 +2312,7 @@ let estoque    = carregar("estoque", {});
 let mesaTimers = carregar("mesaTimers", {});
 const FONE_PLACEHOLDER = "";
 
-// ═══ WHATSAPP COZINHA ═══
+// ═══ ENVIO LEGADO — substituído pelo Painel Digital da Cozinha (função mantida por compatibilidade, sem botão na UI) ═══
 function gerarRegistro() {
   const sub = cartTotal(), fee = S.taxa ? sub*0.1 : 0, tot = sub+fee;
   const obs = document.getElementById("obs-txt").value.trim();
@@ -2291,7 +2338,7 @@ function enviarWhatsApp() {
   if(!S.mesa) { toast("Selecione a mesa primeiro!"); return; }
   if(!cartCount()) { toast("Carrinho vazio!"); return; }
   const fone = config.foneCozinha && config.foneCozinha.length >= 10 ? config.foneCozinha : "";
-  if(!fone) { toast("Configure o WhatsApp da cozinha no Admin!"); return; }
+  if(!fone) { toast("Painel Digital da Cozinha: função de WhatsApp desativada."); return; }
   const reg = gerarRegistro();
   salvarRegistro(reg);
   const pn = {pix:"Pix",credito:"Credito",debito:"Debito",dinheiro:"Dinheiro"};
@@ -2607,6 +2654,12 @@ render();
       <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Dinheiro</p>
       <p class="font-black text-xl" style="color:#d97706" id="cx-dinheiro">R$ 0,00</p>
     </div>
+  </div>
+
+  <!-- Pedidos aguardando pagamento Pix (Pré-pago / Área Externa) -->
+  <div id="cx-aguardando-wrap" class="hidden mb-6">
+    <h3 class="font-bold text-sm uppercase tracking-widest text-orange-400 mb-3">⏳ Aguardando Pagamento Pix</h3>
+    <div class="admin-card" id="cx-aguardando-box"></div>
   </div>
 
   <!-- Pagamentos do dia -->
@@ -3787,7 +3840,7 @@ const getStatusEstoque = getInsStatus;
 // A baixa de estoque é feita dentro do confirmarPgto principal.
 // Este bloco de override foi removido para evitar duplicidade.
 
-// Também ao enviar pedido via WhatsApp
+// Também ao enviar pedido pelo fluxo legado (Painel Digital da Cozinha)
 const _enviarWhatsAppOriginal = enviarWhatsApp;
 enviarWhatsApp = function() {
   // Baixa insumos antes de enviar
@@ -3795,7 +3848,7 @@ enviarWhatsApp = function() {
     const ins = insumos.find(i => i.itemId === itemId);
     if(ins) {
       ins.qtd = Math.max(0, ins.qtd - qty);
-      registrarMovimento(ins.id, "saida", -qty, "Venda via WhatsApp");
+      registrarMovimento(ins.id, "saida", -qty, "Venda via Painel Digital da Cozinha");
     }
   });
   salvar("insumos_v2", insumos);
@@ -4029,6 +4082,7 @@ function registrarEntrada() {
 // ─── CAIXA ─────────────────────────────────────────────────
 function renderCaixa() {
   if(!document.getElementById("cx-total-hoje")) return;
+  renderPedidosAguardandoPagamento();
   const hoje = new Date().toDateString();
   const pgtsHoje = Object.entries(pagamentos2).filter(([,p]) => new Date(p.data).toDateString() === hoje);
 
@@ -7145,7 +7199,7 @@ function _abrirPixDelivery(pedId) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  SEÇÃO 7: WHATSAPP — Notificar Cliente/Cozinha
+//  SEÇÃO 7: WHATSAPP — Notificar Cliente (Delivery). Não usado para a cozinha.
 // ══════════════════════════════════════════════════════════════════
 
 function _whatsDelivery(pedId) {
