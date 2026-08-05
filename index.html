@@ -797,10 +797,10 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         </div>
       </label>
 
-      <!-- Espeto Corrido -->
+      <!-- Rodízio / Consumo Direto -->
       <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50/50 cursor-pointer flex-wrap">
         <input type="checkbox" id="adm-chk-espeto" class="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-0">
-        <span class="text-sm font-bold text-gray-700 flex-1">🍢 Espeto Corrido</span>
+        <span class="text-sm font-bold text-gray-700 flex-1">🍢 Rodízio / Consumo Direto</span>
         <div class="flex items-center rounded-lg border border-gray-200 bg-white overflow-hidden">
           <span class="px-2 text-xs font-bold text-gray-400">R$</span>
           <input type="number" id="adm-p-espeto" step="0.01" min="0" value="" placeholder="49.90" class="w-24 p-2 bg-transparent text-sm font-semibold focus:outline-none">
@@ -811,7 +811,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
       <!-- Valor Único Combinado -->
       <label class="flex items-center gap-3 p-3 rounded-xl border border-blue-200 bg-blue-50/30 cursor-pointer flex-wrap">
         <input type="checkbox" id="adm-chk-comb" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-0">
-        <span class="text-sm font-bold text-blue-800 flex-1">🔥 Valor Único Combinado (Espeto + Buffet)</span>
+        <span class="text-sm font-bold text-blue-800 flex-1">🔥 Valor Único Combinado (Rodízio + Buffet)</span>
         <div class="flex items-center rounded-lg border border-gray-200 bg-white overflow-hidden">
           <span class="px-2 text-xs font-bold text-gray-400">R$</span>
           <input type="number" id="adm-p-comb" step="0.01" min="0" value="" placeholder="79.90" class="w-24 p-2 bg-transparent text-sm font-semibold focus:outline-none">
@@ -5211,10 +5211,19 @@ function renderPreviewCliente(mesa) {
   if(prevNome) prevNome.textContent = config.nome || "Barraca de Praia";
   prevMesa.textContent = `Mesa ${String(mesa).padStart(2,"0")} · Acompanhe seu pedido`;
 
-  // Pegar pedidos desta mesa da cozinha
-  const pedsMesa = (typeof pedidosCozinha !== "undefined")
+  // Pedidos da cozinha (cardápio normal/bebidas) + lançamentos de Buffet/Rodízio.
+  // Buffet/Rodízio já sai pronto da estufa/rodízio e nunca entra na fila da
+  // cozinha (pedidosCozinha) — por isso é somado à parte, já como "pronto/entregue".
+  const pedsCozinha = (typeof pedidosCozinha !== "undefined")
     ? pedidosCozinha.filter(p => p.mesa === mesa && p.status !== "entregue")
     : [];
+  const idsSemCozinha = typeof CC_ITENS_SEM_COZINHA !== "undefined" ? CC_ITENS_SEM_COZINHA : [];
+  const pedsBuffet = (typeof historico !== "undefined")
+    ? historico
+        .filter(h => h.mesa === mesa && Array.isArray(h.itens) && h.itens.some(i => idsSemCozinha.includes(i.id)))
+        .map(h => Object.assign({}, h, { status: "pronto", _semCozinha: true }))
+    : [];
+  const pedsMesa = [...pedsBuffet, ...pedsCozinha];
 
   if(!pedsMesa.length) {
     prevPed.innerHTML = `
@@ -5239,7 +5248,7 @@ function renderPreviewCliente(mesa) {
           <div style="background:#f8fafc;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
             <span style="font-size:.75rem;font-weight:700;color:#374151">${new Date(ped.data).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span>
             <span style="font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:999px;background:${ped.status==="pronto"?"#dcfce7":ped.status==="preparo"?"#fff7ed":"#fef9c3"};color:${ped.status==="pronto"?"#16a34a":ped.status==="preparo"?"#ea580c":"#854d0e"}">
-              ${statusEmoji[ped.status]||"🟡"} ${statusLabel[ped.status]||"Processando"}
+              ${ped._semCozinha ? "✅ Pronto/Entregue" : `${statusEmoji[ped.status]||"🟡"} ${statusLabel[ped.status]||"Processando"}`}
             </span>
           </div>
           <div style="padding:10px 14px">
@@ -11803,9 +11812,14 @@ function ccRequerPrePago(mesa) {
 const CC_SERVICOS = {
   quilo:  { chk: "svcQuilo",  precoKey: "precoKg",     precoPadrao: 89.90, itemId: "COMP_QUILO",  unidade: "kg",     passo: 0.001, min: 0.001, label: "Buffet Quilo",        nomeItem: p => `Buffet Livre/Quilo (${p.toFixed(3)}kg)` },
   livre:  { chk: "svcLivre",  precoKey: "precoLivre",  precoPadrao: 59.90, itemId: "COMP_LIVRE",  unidade: "pessoa(s)", passo: 1,     min: 1,     label: "Buffet Livre",        nomeItem: p => `Buffet Livre (${p} pessoa${p>1?"s":""})` },
-  espeto: { chk: "svcEspeto", precoKey: "precoEspeto", precoPadrao: 49.90, itemId: "COMP_ESPETO", unidade: "pessoa(s)", passo: 1,     min: 1,     label: "Espeto Corrido",      nomeItem: p => `Espeto Corrido (${p} pessoa${p>1?"s":""})` },
-  comb:   { chk: "svcComb",   precoKey: "precoComb",   precoPadrao: 79.90, itemId: "COMP_COMB",   unidade: "pessoa(s)", passo: 1,     min: 1,     label: "Churrasco Completo (Espeto Corrido + Buffet)", nomeItem: p => `Churrasco Completo — Valor Único (${p} pessoa${p>1?"s":""})` }
+  espeto: { chk: "svcEspeto", precoKey: "precoEspeto", precoPadrao: 49.90, itemId: "COMP_ESPETO", unidade: "pessoa(s)", passo: 1,     min: 1,     label: "Rodízio / Consumo Direto", nomeItem: p => `Rodízio / Consumo Direto (${p} pessoa${p>1?"s":""})` },
+  comb:   { chk: "svcComb",   precoKey: "precoComb",   precoPadrao: 79.90, itemId: "COMP_COMB",   unidade: "pessoa(s)", passo: 1,     min: 1,     label: "Churrasco Completo (Rodízio + Buffet)", nomeItem: p => `Churrasco Completo — Valor Único (${p} pessoa${p>1?"s":""})` }
 };
+
+// Itens de Buffet/Rodízio nunca passam pela fila de produção (pedidosCozinha):
+// o alimento já está pronto na estufa/rodízio, então entram direto na comanda
+// como "pronto/entregue" — só as bebidas do cardápio normal seguem o KDS.
+const CC_ITENS_SEM_COZINHA = Object.values(CC_SERVICOS).map(s => s.itemId);
 
 function ccServicosAtivos() {
   return Object.keys(CC_SERVICOS).filter(k => !!config[CC_SERVICOS[k].chk]);
@@ -11977,6 +11991,11 @@ function lancarPratoQuilo() {
     subtotal: valorCalculado,
     total: valorCalculado,
     status: modoGeral === "prepago" ? "aguardando_pagamento" : "pago",
+    // Buffet/Rodízio já sai pronto da estufa/rodízio: nunca entra na fila da
+    // cozinha (pedidosCozinha), então marcamos a produção como concluída
+    // desde o lançamento — libera a conta na hora, sem trava de "Aguardando Cozinha".
+    statusProducao: "pronto_entregue",
+    semCozinha: true,
     obs: `Lançamento — ${s.label}: ${qtd}`,
     itens: [{ id: s.itemId, nome: s.nomeItem(qtd), preco: valorCalculado, q: 1 }]
   };
