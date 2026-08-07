@@ -639,24 +639,15 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 <!-- ║  Meus Pedidos / Minha Conta / Avaliar) — ?mesa=X      ║ -->
 <!-- ╚══════════════════════════════════════════════════════╝ -->
 <style>
-  #cc-cli-header{position:fixed;top:0;left:0;right:0;z-index:60;background:#0f2340;color:#fff;padding:10px 16px;text-align:center;font-weight:800;font-size:.85rem;letter-spacing:.03em;box-shadow:0 2px 10px rgba(0,0,0,.15)}
-  body.cc-modo-cliente{padding-top:38px}
-  /* CAUSA RAIZ do travamento de cliques nas 11 abas gerenciais: um seletor
-     de ID como "#cc-cli-tabbar{display:grid}" tem especificidade MAIOR que
-     a classe ".hidden{display:none}" do Tailwind — então mesmo com
-     class="hidden" no elemento, o grid continuava desenhado e fixo no
-     rodapé, interceptando cliques em qualquer tela (Admin incluso). A regra
-     abaixo, com id+classe juntos, tem especificidade maior ainda e garante
-     que ".hidden" sempre vence, não importa a ordem de carregamento do CSS. */
-  #cc-cli-tabbar{position:fixed;bottom:0;left:0;right:0;z-index:60;background:#fff;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:repeat(3,1fr);box-shadow:0 -4px 14px rgba(0,0,0,.08)}
-  #cc-cli-tabbar.hidden{display:none!important}
-  #cc-cli-header.hidden{display:none!important}
-  #cc-cli-tabbar,#cc-cli-header{pointer-events:none}
-  #cc-cli-tabbar:not(.hidden),#cc-cli-header:not(.hidden){pointer-events:auto}
-  #cc-cli-tabbar button{flex:1;padding:10px 4px 8px;background:none;border:none;font-size:.64rem;font-weight:700;color:#9ca3af;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
-  #cc-cli-tabbar button.active{color:#ea580c}
-  #cc-cli-tabbar button .ico{font-size:1.15rem}
-  .cc-cli-painel{display:none;max-width:36rem;margin:0 auto;padding:16px 16px 128px}
+  /* #view-mesa-cliente é o único container da tela do cliente/garçom no
+     salão — igual à raiz do bug antigo (um seletor de ID vencendo a classe
+     ".hidden" por especificidade), aqui a regra de esconder tem prioridade
+     máxima garantida por id+classe juntos, então não tem como vazar pra
+     fora de "?mesa=" de novo. */
+  #view-mesa-cliente.hidden{display:none!important}
+  #view-mesa-cliente{pointer-events:none}
+  #view-mesa-cliente:not(.hidden){pointer-events:auto}
+  .cc-cli-painel{display:none}
   .cc-vip-status{border-radius:12px;padding:10px 12px;font-size:.78rem;font-weight:700;margin-top:10px}
   .cc-cli-painel.active{display:block}
   .cc-timeline-card{border:1px solid #e5e7eb;border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff}
@@ -677,59 +668,112 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   .cc-sub-btn.active{border-color:#ea580c;color:#ea580c;background:#fff7ed}
 </style>
 
-<div id="cc-cli-header" class="hidden">📍 Mesa <span id="cc-cli-header-mesa">—</span></div>
+<!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
+<div id="view-mesa-cliente" class="hidden min-h-screen bg-slate-50 font-sans pb-24">
+    <!-- Topo Fixo Identificador da Mesa -->
+    <div class="fixed top-0 left-0 right-0 bg-slate-900 text-white p-4 text-center font-bold shadow-md z-50 flex items-center justify-center gap-2">
+        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 01-6 0z"></path></svg>
+        <span id="label-mesa-ativa">Mesa Ativa</span>
+    </div>
 
-<!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
-<div id="cc-painel-pedidos" class="cc-cli-painel">
-  <h2 class="serif text-lg mb-3" style="color:#0f2340">⏳ Acompanhamento dos Pedidos</h2>
-  <div id="cc-pedidos-lista"></div>
-</div>
+    <!-- Conteúdo Dinâmico das Seções da Mesa -->
+    <div id="conteudo-secao-mesa" class="pt-20 px-4 space-y-4">
 
-<!-- ABA: ACOMPANHAMENTO DA CONTA (somente extrato) -->
-<div id="cc-painel-conta" class="cc-cli-painel">
-  <h2 class="serif text-lg mb-3" style="color:#0f2340">🧾 Acompanhamento da Conta</h2>
-  <div id="cc-conta-lista" class="mb-4"></div>
-  <div class="flex items-center justify-between p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50">
-    <span class="font-bold text-emerald-700 text-sm">Total da Mesa</span>
-    <span id="cc-conta-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
-  </div>
-  <p id="cc-conta-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
-</div>
+      <!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
+      <div id="cc-painel-pedidos" class="cc-cli-painel">
+        <h2 class="serif text-lg mb-3" style="color:#0f2340">Acompanhamento dos Pedidos</h2>
+        <div id="cc-pedidos-lista"></div>
+      </div>
 
-<!-- ABA: FECHAMENTO / PAGAMENTO (Pix) -->
-<div id="cc-painel-fechamento" class="cc-cli-painel">
-  <h2 class="serif text-lg mb-3" style="color:#0f2340">🏁 Fechamento / Pagamento</h2>
-  <div id="cc-fechamento-lista" class="mb-4"></div>
-  <div class="flex items-center justify-between p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 mb-4">
-    <span class="font-bold text-emerald-700 text-sm">Total a Pagar</span>
-    <span id="cc-fechamento-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
-  </div>
-  <button class="btn-primary w-full" onclick="ccPedirContaCliente()">🏁 Fechar e Pagar via Pix</button>
-  <p id="cc-fechamento-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
-</div>
+      <!-- ABA: ACOMPANHAMENTO DA CONTA (somente extrato) -->
+      <div id="cc-painel-conta" class="cc-cli-painel">
+        <h2 class="serif text-lg mb-3" style="color:#0f2340">Acompanhamento da Conta</h2>
+        <div id="cc-conta-lista" class="mb-4"></div>
+        <div class="flex items-center justify-between p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50">
+          <span class="font-bold text-emerald-700 text-sm">Total da Mesa</span>
+          <span id="cc-conta-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
+        </div>
+        <p id="cc-conta-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
+      </div>
 
-<!-- ABA: PAGAR COMO VIP (CONTA FIADO) -->
-<div id="cc-painel-vip" class="cc-cli-painel">
-  <h2 class="serif text-lg mb-3" style="color:#0f2340">💳 Pagar como VIP (Conta Fiado)</h2>
-  <p class="text-xs text-gray-400 mb-3">Disponível apenas para clientes cadastrados e autorizados pelo estabelecimento.</p>
-  <label style="font-size:.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;display:block;margin-bottom:4px">Telefone cadastrado</label>
-  <input id="cc-vip-tel" class="input-base" placeholder="(71) 9 0000-0000"/>
-  <button class="btn-primary w-full mt-3" onclick="ccPedirContaClienteFiado()">💳 Confirmar e Fechar no Fiado</button>
-  <div id="cc-vip-status"></div>
-</div>
+      <!-- ABA: FECHAMENTO / PAGAMENTO (Pix) -->
+      <div id="cc-painel-fechamento" class="cc-cli-painel">
+        <h2 class="serif text-lg mb-3" style="color:#0f2340">Fechamento / Pagamento</h2>
+        <div id="cc-fechamento-lista" class="mb-4"></div>
+        <div class="flex items-center justify-between p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 mb-4">
+          <span class="font-bold text-emerald-700 text-sm">Total a Pagar</span>
+          <span id="cc-fechamento-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
+        </div>
+        <button class="btn-primary w-full" onclick="ccPedirContaCliente()">Fechar e Pagar via Pix</button>
+        <p id="cc-fechamento-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
+      </div>
 
-<!-- ABA: AVALIAR -->
-<div id="cc-painel-avaliar" class="cc-cli-painel">
-  <h2 class="serif text-lg mb-3" style="color:#0f2340">⭐ Avalie sua experiência</h2>
-  <div class="flex justify-center gap-2 mb-4" id="cc-estrelas">
-    <span class="cc-star" data-n="1" onclick="ccSelecionarNota(1)">★</span>
-    <span class="cc-star" data-n="2" onclick="ccSelecionarNota(2)">★</span>
-    <span class="cc-star" data-n="3" onclick="ccSelecionarNota(3)">★</span>
-    <span class="cc-star" data-n="4" onclick="ccSelecionarNota(4)">★</span>
-    <span class="cc-star" data-n="5" onclick="ccSelecionarNota(5)">★</span>
-  </div>
-  <textarea id="cc-avaliar-texto" class="input-base" rows="4" placeholder="Conte pra gente: sugestões, elogios ou reclamações..."></textarea>
-  <button class="btn-primary w-full mt-3" onclick="ccEnviarAvaliacaoCliente()">📨 Enviar Avaliação</button>
+      <!-- ABA: PAGAR COMO VIP (CONTA FIADO) -->
+      <div id="cc-painel-vip" class="cc-cli-painel">
+        <h2 class="serif text-lg mb-3" style="color:#0f2340">Pagar como VIP (Conta Fiado)</h2>
+        <p class="text-xs text-gray-400 mb-3">Disponível apenas para clientes cadastrados e autorizados pelo estabelecimento.</p>
+        <label style="font-size:.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;display:block;margin-bottom:4px">Telefone cadastrado</label>
+        <input id="cc-vip-tel" class="input-base" placeholder="(71) 9 0000-0000"/>
+        <button class="btn-primary w-full mt-3" onclick="ccPedirContaClienteFiado()">Confirmar e Fechar no Fiado</button>
+        <div id="cc-vip-status"></div>
+      </div>
+
+      <!-- ABA: AVALIAR -->
+      <div id="cc-painel-avaliar" class="cc-cli-painel">
+        <h2 class="serif text-lg mb-3" style="color:#0f2340">Avalie sua experiência</h2>
+        <div class="flex justify-center gap-2 mb-4" id="cc-estrelas">
+          <span class="cc-star" data-n="1" onclick="ccSelecionarNota(1)">★</span>
+          <span class="cc-star" data-n="2" onclick="ccSelecionarNota(2)">★</span>
+          <span class="cc-star" data-n="3" onclick="ccSelecionarNota(3)">★</span>
+          <span class="cc-star" data-n="4" onclick="ccSelecionarNota(4)">★</span>
+          <span class="cc-star" data-n="5" onclick="ccSelecionarNota(5)">★</span>
+        </div>
+        <textarea id="cc-avaliar-texto" class="input-base" rows="4" placeholder="Conte pra gente: sugestões, elogios ou reclamações..."></textarea>
+        <button class="btn-primary w-full mt-3" onclick="ccEnviarAvaliacaoCliente()">Enviar Avaliação</button>
+      </div>
+
+    </div>
+
+    <!-- GRADE CORPORATIVA INTERIOR DE 6 BOTÕES SÉRIOS -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-xl z-50">
+        <div class="grid grid-cols-3 gap-3 max-w-md mx-auto">
+            <!-- 1. CARDÁPIO -->
+            <button onclick="alternarOpcaoMesa('cardapio')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
+                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Cardápio</span>
+            </button>
+
+            <!-- 2. PEDIDOS (Acompanhamento com Cronômetro) -->
+            <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
+                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Pedidos</span>
+            </button>
+
+            <!-- 3. CONTA (Extrato de Leitura) -->
+            <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
+                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Conta</span>
+            </button>
+
+            <!-- 4. PAGAR / FECHAR (Pix + Luz Verde) -->
+            <button onclick="dispararFechamentoPix()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
+                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Pagar/Fechar</span>
+            </button>
+
+            <!-- 5. VIP / FIADO -->
+            <button onclick="acionarFluxoFiadoVIP()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
+                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">VIP / Fiado</span>
+            </button>
+
+            <!-- 6. AVALIAR -->
+            <button onclick="abrirPainelAvaliacaoMesa()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
+                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.367 1.242.583 1.828l-3.978 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.978-2.888a1 1 0 00-1.176 0l-3.978 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.978-2.888c-.784-.57-.378-1.828.583-1.828h4.906a1 1 0 00.95-.69l1.519-4.674z"></path></svg>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Avaliar</span>
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- LUZ VERDE -->
@@ -738,16 +782,6 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   <h2 style="font-size:1.4rem;font-weight:900;margin-top:8px">Pagamento Confirmado!</h2>
   <p style="opacity:.9;margin-top:6px;font-size:.9rem">Seu recibo digital foi salvo neste celular.</p>
   <button onclick="document.getElementById('cc-luz-verde-ov').classList.remove('show')" style="margin-top:22px;background:#fff;color:#15803d;border:none;border-radius:12px;padding:10px 24px;font-weight:800;cursor:pointer">Fechar</button>
-</div>
-
-<!-- TABBAR -->
-<div id="cc-cli-tabbar" class="hidden">
-  <button class="active" data-tab="cardapio" onclick="ccAbaCliente('cardapio')"><span class="ico">🍽️</span>Cardápio</button>
-  <button data-tab="pedidos" onclick="ccAbaCliente('pedidos')"><span class="ico">⏳</span>Pedidos</button>
-  <button data-tab="conta" onclick="ccAbaCliente('conta')"><span class="ico">🧾</span>Conta</button>
-  <button data-tab="fechamento" onclick="ccAbaCliente('fechamento')"><span class="ico">🏁</span>Fechar/Pagar</button>
-  <button data-tab="vip" onclick="ccAbaCliente('vip')"><span class="ico">💳</span>VIP/Fiado</button>
-  <button data-tab="avaliar" onclick="ccAbaCliente('avaliar')"><span class="ico">⭐</span>Avaliar</button>
 </div>
 
 <div id="view-mesas" class="hidden p-4 max-w-3xl mx-auto">
@@ -12231,65 +12265,86 @@ function ccModoClienteAtivo() {
   return !!mesaNaUrl && !!S.mesa && role === "cliente";
 }
 
-// Blindagem definitiva: se a URL não tem "?mesa=" de verdade, a barra e o
-// cabeçalho do cliente são REMOVIDOS do DOM (não só escondidos por CSS).
-// Isso elimina de vez qualquer possibilidade de uma película invisível
-// sobrepor as telas de gerência, mesmo que uma regra de CSS futura erre.
+// Blindagem definitiva: se a URL não tem "?mesa=" de verdade, a tela do
+// cliente é REMOVIDA do DOM inteira (não só escondida por CSS). Elimina de
+// vez qualquer possibilidade de sobra visual em cima das telas de gerência.
 function ccRemoverOverlayClienteSeNaoAplicavel() {
   const mesaNaUrl = new URLSearchParams(window.location.search).get("mesa");
   if (mesaNaUrl) return;
-  ["cc-cli-tabbar", "cc-cli-header"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-  });
+  const el = document.getElementById("view-mesa-cliente");
+  if (el) el.remove();
 }
 document.addEventListener("DOMContentLoaded", ccRemoverOverlayClienteSeNaoAplicavel);
 ccRemoverOverlayClienteSeNaoAplicavel();
 
+let _ccAbaAtual = "cardapio";
+
 function ccIniciarModoCliente() {
   if (!ccModoClienteAtivo()) return;
   document.body.classList.add("cc-modo-cliente");
-  // Oculta completamente o menu superior de gerência (abas + barra de papel)
+  // Oculta completamente o menu superior de gerência
   const topbar = document.getElementById("cc-topbar-wrapper");
   if (topbar) topbar.style.display = "none";
-  const header = document.getElementById("cc-cli-header");
-  const tabbar = document.getElementById("cc-cli-tabbar");
-  if (header) { header.classList.remove("hidden"); const m = document.getElementById("cc-cli-header-mesa"); if (m) m.textContent = String(S.mesa).padStart(2, "0"); }
-  if (tabbar) tabbar.classList.remove("hidden");
-  ccAbaCliente("cardapio");
+  const shell = document.getElementById("view-mesa-cliente");
+  if (shell) shell.classList.remove("hidden");
+  const label = document.getElementById("label-mesa-ativa");
+  if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
+
+  // O Cardápio (header+main de #view-cardapio) é realocado, uma única vez,
+  // pra dentro do container único #conteudo-secao-mesa — as outras 5 seções
+  // já nascem lá dentro no HTML. Não recria nada do cardápio, só reloca.
+  const secao = document.getElementById("conteudo-secao-mesa");
+  const cardHeader = document.querySelector("#view-cardapio > header");
+  const cardMain = document.querySelector("#view-cardapio > main");
+  if (secao && cardHeader && !secao.contains(cardHeader)) secao.insertBefore(cardHeader, secao.firstChild);
+  if (secao && cardMain && !secao.contains(cardMain)) secao.insertBefore(cardMain, secao.children[1] || null);
+
+  alternarOpcaoMesa("cardapio");
   if (!_ccTimerInterval) _ccTimerInterval = setInterval(ccAtualizarTimers, 1000);
   if (!_ccPedidosPollInterval) {
     _ccPedidosPollInterval = setInterval(() => {
       if (!S.mesa) return;
       pedidosCozinha = carregar("pedidosCozinha_v1", pedidosCozinha);
       historico = carregar("historico", historico);
-      const abaAtiva = document.querySelector("#cc-cli-tabbar button.active")?.dataset.tab;
-      if (abaAtiva === "pedidos") ccRenderPedidosCliente();
-      if (abaAtiva === "conta") ccRenderContaCliente();
-      if (abaAtiva === "fechamento") ccRenderFechamentoCliente();
+      if (_ccAbaAtual === "pedidos") ccRenderPedidosCliente();
+      if (_ccAbaAtual === "conta") ccRenderContaCliente();
+      if (_ccAbaAtual === "fechamento") ccRenderFechamentoCliente();
     }, 5000);
   }
 }
 
-function ccAbaCliente(tab) {
+// Roteador único dos 6 botões físicos da grade 3x2.
+function alternarOpcaoMesa(tab) {
   if (!ccModoClienteAtivo()) return;
-  document.querySelectorAll("#cc-cli-tabbar button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
-  const hdr = document.querySelector("#view-cardapio > header");
-  const main = document.querySelector("#view-cardapio > main");
+  _ccAbaAtual = tab;
+  const secao = document.getElementById("conteudo-secao-mesa");
+  if (!secao) return;
+  Array.from(secao.children).forEach(child => { child.style.display = "none"; });
   document.querySelectorAll(".cc-cli-painel").forEach(p => p.classList.remove("active"));
-  const mostrarCardapio = tab === "cardapio";
-  if (hdr) hdr.style.display = mostrarCardapio ? "" : "none";
-  if (main) main.style.display = mostrarCardapio ? "" : "none";
-  if (!mostrarCardapio) {
+  if (tab === "cardapio") {
+    const cardHeader = document.querySelector("#conteudo-secao-mesa > header");
+    const cardMain = document.querySelector("#conteudo-secao-mesa > main");
+    if (cardHeader) cardHeader.style.display = "";
+    if (cardMain) cardMain.style.display = "";
+  } else {
     const alvo = document.getElementById("cc-painel-" + tab);
-    if (alvo) alvo.classList.add("active");
+    if (alvo) { alvo.style.display = "block"; alvo.classList.add("active"); }
     if (tab === "pedidos") ccRenderPedidosCliente();
     if (tab === "conta") ccRenderContaCliente();
     if (tab === "fechamento") ccRenderFechamentoCliente();
   }
   const cf = document.getElementById("cart-footer");
-  if (cf) cf.classList.toggle("hide", !mostrarCardapio || cartCount() === 0);
+  if (cf) cf.classList.toggle("hide", tab !== "cardapio" || cartCount() === 0);
 }
+
+// Botões 4, 5 e 6 da grade chamam funções com nome próprio — todas roteiam
+// pro mesmo alternarOpcaoMesa(), sem duplicar lógica.
+function dispararFechamentoPix() { alternarOpcaoMesa("fechamento"); }
+function acionarFluxoFiadoVIP() { alternarOpcaoMesa("vip"); }
+function abrirPainelAvaliacaoMesa() { alternarOpcaoMesa("avaliar"); }
+
+// Compatibilidade: qualquer chamada antiga a ccAbaCliente continua funcionando.
+function ccAbaCliente(tab) { alternarOpcaoMesa(tab); }
 
 function ccInicioSessaoMesa(mesa) {
   return mesaSessaoInicio[mesa] ? new Date(mesaSessaoInicio[mesa]).getTime() : 0;
