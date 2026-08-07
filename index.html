@@ -12596,6 +12596,40 @@ function ccEncerrarTurno() {
   toast("🔚 Turno encerrado. Aparelho liberado para o próximo atendente.");
 }
 
+/* ═══════════════════════════════════════════════════════════
+   QR DE ATIVAÇÃO DO ATENDENTE (?ativar_empresa=) — PONTO ELETRÔNICO
+   Permissão de DISPOSITIVO (persistida via salvar/carregar, prefixo
+   cookcontrol_/solbahia_ automático), separada do papel de sessão do
+   SirAccess: uma vez ativado neste aparelho, some para sempre com as
+   5 abas confidenciais do dono, mesmo depois de fechar o navegador.
+   ═══════════════════════════════════════════════════════════ */
+(function ccPerfilAtendenteDispositivo() {
+  const params = new URLSearchParams(window.location.search);
+  let ativo = carregar("perfilAtendenteAtivo", false);
+  if (params.get("ativar_empresa")) {
+    ativo = true;
+    salvar("perfilAtendenteAtivo", true);
+  }
+  if (!ativo) return;
+
+  const ABAS_DONO = ["estoque2", "caixa", "relatorio", "dashboard", "admin"];
+  const ABAS_SALAO = ["cardapio", "mesas", "atendente", "cozinha", "delivery", "vip"];
+
+  function aplicar() {
+    ABAS_DONO.forEach(v => {
+      const btn = document.querySelector('.nav-tab[data-view="' + v + '"]');
+      if (btn) btn.remove();
+    });
+    ABAS_SALAO.forEach(v => {
+      const btn = document.querySelector('.nav-tab[data-view="' + v + '"]');
+      if (btn) btn.style.display = "";
+    });
+  }
+  document.addEventListener("DOMContentLoaded", () => setTimeout(aplicar, 300));
+  setTimeout(aplicar, 800);
+  setTimeout(aplicar, 1600); // reforço pós-injeção da aba Clientes unificada
+})();
+
 // ─── FLUXO DINÂMICO VIA QR: aparelho já logado como atendente que
 // escaneia o QR de uma mesa se conecta direto àquela comanda, em vez de
 // cair na tela do cliente. Não interfere no fluxo normal do cliente.
