@@ -5816,6 +5816,16 @@ const SirAccess = (function() {
     const mesaParam = params.get('mesa');
     if (mesaParam) {
       _mesaId = mesaParam;
+      // Correção: ?mesa= sozinho NÃO pode forçar "cliente" por cima de um
+      // atendente com turno ativo neste aparelho, nem de um role explícito
+      // pedido na própria URL — senão qualquer refresh/reabertura do app
+      // com a mesa ainda na barra de endereço derruba o atendente de volta
+      // pra tela do cliente (era a causa da barra de 6 botões vazando).
+      const roleParam = params.get('role');
+      if (roleParam && roleParam !== 'cliente' && ROLES[roleParam]) return roleParam;
+      try {
+        if (typeof carregar === 'function' && carregar('turnoAtivo', null)) return 'atendente';
+      } catch (e) {}
       return 'cliente';
     }
 
@@ -12189,7 +12199,11 @@ let _ccPedidosPollInterval = null;
 
 function ccModoClienteAtivo() {
   const role = (window.SirAccess && typeof window.SirAccess.getRole === "function") ? window.SirAccess.getRole() : null;
-  return !!S.mesa && role === "cliente";
+  // A grade de 6 botões só pode existir com "?mesa=" de verdade na barra de
+  // endereço agora — S.mesa sozinho não basta (também é usado pelo seletor
+  // manual de mesa no Cardápio, sem nenhuma relação com a tela do cliente).
+  const mesaNaUrl = new URLSearchParams(window.location.search).get("mesa");
+  return !!mesaNaUrl && !!S.mesa && role === "cliente";
 }
 
 function ccIniciarModoCliente() {
@@ -12529,13 +12543,24 @@ function _ccDecorarCardsMesaAtendente() {
     const seqTxt = seq.length
       ? seq.map((l, i) => `${i + 1}ª ${l.label.replace(/^\S+\s/, "")}`).join(" → ")
       : "Sem pedidos lançados ainda";
+    // Cronômetro ativo (segundos e minutos reais) — mesmo motor de tick do
+    // Passo 2 (ccAtualizarTimers, já roda a cada 1s), só reaproveitado aqui
+    // pra ditar prioridade de atendimento no mapa do salão.
+    const timerHtml = desde
+      ? `<span class="cc-timer" data-inicio="${desde.toISOString()}" data-parado="0">⏱ 00:00</span>`
+      : `<span class="cc-timer">⏱ —</span>`;
     card.insertAdjacentHTML("beforeend", `
-      <div style="border-top:1px dashed #e5e7eb;margin-top:10px;padding-top:8px">
+      <div style="border-top:1px dashed #e5e7eb;margin-top:10px;padding-top:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
         <p style="font-size:.68rem;color:#9ca3af">🕐 Mesa aberta desde <strong style="color:#0f2340">${horaTxt}</strong></p>
-        <p style="font-size:.68rem;color:#9ca3af;margin-top:2px">📶 Sequência: ${seqTxt}</p>
+        ${timerHtml}
       </div>
+      <p style="font-size:.68rem;color:#9ca3af;margin-top:2px">📶 Sequência: ${seqTxt}</p>
     `);
   });
+  if (typeof ccAtualizarTimers === "function") ccAtualizarTimers();
+}
+if (!window._ccTimerInterval) {
+  window._ccTimerInterval = setInterval(() => { if (typeof ccAtualizarTimers === "function") ccAtualizarTimers(); }, 1000);
 }
 
 const _renderAtendenteOrig = renderAtendente;
@@ -12543,6 +12568,47 @@ renderAtendente = function() {
   _renderAtendenteOrig();
   ccAtualizarBoxTurno();
   _ccDecorarCardsMesaAtendente();
+};
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   PASSO 3 (parte 2) — IMPRESSÃO AUTOMÁTICA DE PRODUÇÃO
+   Aditivo: não altera enviarPedido() nem imprimirComanda() —
+   só dispara por cima, depois que o pedido já foi registrado.
+   ═══════════════════════════════════════════════════════════ */
+function imprimirComandaProducaoAuto(registro) {
+  if (!registro) return;
+  const agora = new Date(registro.data || Date.now()).toLocaleString("pt-BR");
+  const atendenteNome = (typeof turnoAtivo !== "undefined" && turnoAtivo) ? turnoAtivo.nome : "Cliente (Autoatendimento)";
+  let c = `<div style="text-align:center;margin-bottom:10px">`;
+  c += `<strong>COMANDA DE PRODUÇÃO</strong><br/>`;
+  c += `<small>${config.nome || ""}</small><br/>`;
+  c += `<small>${agora}</small></div>`;
+  c += `<div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:6px 0;margin:8px 0;text-align:center">`;
+  c += `<strong style="font-size:18px">MESA ${String(registro.mesa).padStart(2, "0")}</strong></div>`;
+  c += `<div style="font-size:12px;margin-bottom:6px">Atendente: <strong>${atendenteNome}</strong></div>`;
+  c += `<table style="width:100%;font-size:13px;border-collapse:collapse">`;
+  c += `<tr><th style="text-align:left">Item</th><th>Qtd</th></tr>`;
+  (registro.itens || []).forEach(it => {
+    c += `<tr><td>${it.nome}</td><td style="text-align:center">${it.q}</td></tr>`;
+  });
+  c += `</table>`;
+  if (registro.obs) c += `<div style="margin-top:6px;border-top:1px dashed #000;padding-top:4px">Obs: ${registro.obs}</div>`;
+  c += `<div style="text-align:center;margin-top:12px">🍽️ Enviar para a cozinha/copa</div>`;
+  const pc = document.getElementById("print-content");
+  if (pc) { pc.innerHTML = c; window.print(); }
+}
+
+const _enviarPedidoOrig = enviarPedido;
+enviarPedido = function() {
+  const tamanhoAntes = historico.length;
+  _enviarPedidoOrig();
+  // Se um novo registro entrou no topo do histórico e a config de impressão
+  // automática está ligada, dispara o disparo térmico com mesa/hora/itens/atendente.
+  if (config.imprimirComanda && historico.length > tamanhoAntes) {
+    imprimirComandaProducaoAuto(historico[0]);
+  }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
