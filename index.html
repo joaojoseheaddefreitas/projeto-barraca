@@ -3366,8 +3366,8 @@ render();
         </select>
       </div>
       <div style="grid-column:1/-1">
-        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Horário de Entrada *</label>
-        <input id="at-turno-hora" type="time" class="input-base">
+        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Horário de Entrada (travado no escaneamento do QR)</label>
+        <div id="at-turno-hora-auto" style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;font-weight:800;color:#0f2340;font-size:.9rem">--:--</div>
       </div>
       <button style="grid-column:1/-1" class="btn-primary w-full" onclick="ccSalvarTurno()">✅ Iniciar Turno</button>
     </div>
@@ -12555,6 +12555,7 @@ function ccAtualizarBoxTurno() {
     if (nomeEl) nomeEl.textContent = turnoAtivo.nome;
     if (infoEl) infoEl.textContent = `${TURNO_LABEL[turnoAtivo.turno] || turnoAtivo.turno} · Entrada ${turnoAtivo.horaEntrada} · ${turnoAtivo.telefone}`;
   }
+  ccExibirHoraTravada();
   // Retificação: a balança NUNCA fica travada/apagada por causa do turno —
   // o registro de jornada é só um cadastro informativo, não um bloqueio
   // operacional. Removida a opacidade e o disabled que existiam aqui antes,
@@ -12567,33 +12568,56 @@ function ccAtualizarBoxTurno() {
   });
 }
 
+// Horário de Entrada TRAVADO no milissegundo exato do escaneamento do QR
+// de ativação (gravado por ccPerfilAtendenteDispositivo, mais abaixo) —
+// nenhum relógio roda na tela, só exibe o valor já congelado.
+function ccExibirHoraTravada() {
+  const el = document.getElementById("at-turno-hora-auto");
+  if (!el) return;
+  const travada = carregar("horaEntradaTravada", null);
+  el.textContent = travada ? new Date(travada).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "— (escaneie o QR de ativação)";
+}
+
 function ccSalvarTurno() {
   const nome = (document.getElementById("at-turno-nome")?.value || "").trim();
   const tel = (document.getElementById("at-turno-tel")?.value || "").trim();
   const periodo = document.getElementById("at-turno-periodo")?.value || "";
-  const hora = document.getElementById("at-turno-hora")?.value || "";
-  if (!nome || !tel || !periodo || !hora) { toast("⚠️ Preencha nome, telefone, turno e horário de entrada."); return; }
-  turnoAtivo = { nome, telefone: tel, turno: periodo, horaEntrada: hora, iniciadoEm: new Date().toISOString() };
+  if (!nome || !tel || !periodo) { toast("⚠️ Preencha nome, telefone e turno."); return; }
+  const travada = carregar("horaEntradaTravada", null);
+  const hora = travada
+    ? new Date(travada).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); // fallback se abriu sem escanear o QR
+  turnoAtivo = { nome, telefone: tel, turno: periodo, horaEntrada: hora, iniciadoEm: travada || new Date().toISOString() };
   salvar("turnoAtivo", turnoAtivo);
   ccAtualizarBoxTurno();
-  toast(`✅ Turno de ${nome} iniciado!`);
+  toast(`✅ Turno de ${nome} iniciado às ${hora}!`);
 }
 
 function ccEncerrarTurno() {
-  // Limpa os dados do aparelho para o próximo garçom registrar o dele —
-  // não mexe em pedidos, mesas ou histórico, só na identificação do turno.
+  if (!turnoAtivo) return;
+  // Horário de Saída + comissão de 10% computados de forma síncrona ANTES
+  // de limpar os dados do aparelho — não mexe em pedidos, mesas ou
+  // histórico, só lê o que já existe (mesma base do Relatório de Comissões).
+  const horaSaida = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const hojeStr = new Date().toDateString();
+  const vendasDoTurno = historico.filter(h => h.atendente === turnoAtivo.nome && new Date(h.data).toDateString() === hojeStr);
+  const totalVendido = vendasDoTurno.reduce((s, h) => s + (h.total || 0), 0);
+  const comissao = totalVendido * 0.10;
+  toast(`🔚 Turno de ${turnoAtivo.nome} encerrado às ${horaSaida} — Vendido: ${fmtBRL(totalVendido)} · Comissão: ${fmtBRL(comissao)}`);
+
+  // Limpa os dados de identificação do aparelho para o próximo garçom —
+  // não mexe em pedidos, mesas ou histórico.
   turnoAtivo = null;
   salvar("turnoAtivo", null);
+  salvar("horaEntradaTravada", null);
   const nomeInput = document.getElementById("at-turno-nome");
   const telInput = document.getElementById("at-turno-tel");
   const periodoInput = document.getElementById("at-turno-periodo");
-  const horaInput = document.getElementById("at-turno-hora");
   if (nomeInput) nomeInput.value = "";
   if (telInput) telInput.value = "";
   if (periodoInput) periodoInput.value = "";
-  if (horaInput) horaInput.value = "";
+  ccExibirHoraTravada();
   ccAtualizarBoxTurno();
-  toast("🔚 Turno encerrado. Aparelho liberado para o próximo atendente.");
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -12605,8 +12629,12 @@ function ccEncerrarTurno() {
    ═══════════════════════════════════════════════════════════ */
 (function ccPerfilAtendenteDispositivo() {
   const params = new URLSearchParams(window.location.search);
+  const escaneouAgora = !!params.get("ativar_empresa");
   let ativo = carregar("perfilAtendenteAtivo", false);
-  if (params.get("ativar_empresa")) {
+  if (escaneouAgora) {
+    // Trava o Horário de Entrada no milissegundo EXATO da leitura do QR —
+    // antes de qualquer outra coisa rodar, antes do formulário até abrir.
+    salvar("horaEntradaTravada", new Date().toISOString());
     ativo = true;
     salvar("perfilAtendenteAtivo", true);
   }
@@ -12624,6 +12652,12 @@ function ccEncerrarTurno() {
       const btn = document.querySelector('.nav-tab[data-view="' + v + '"]');
       if (btn) btn.style.display = "";
     });
+    // Crachá universal de ponto: ao ler o QR de ativação, o aparelho vai
+    // direto para a aba Atendente pra já capturar o Horário de Entrada.
+    if (escaneouAgora) {
+      const btnAtendente = document.querySelector('.nav-tab[data-view="atendente"]');
+      showView("atendente", btnAtendente);
+    }
   }
   document.addEventListener("DOMContentLoaded", () => setTimeout(aplicar, 300));
   setTimeout(aplicar, 800);
