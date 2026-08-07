@@ -12231,6 +12231,21 @@ function ccModoClienteAtivo() {
   return !!mesaNaUrl && !!S.mesa && role === "cliente";
 }
 
+// Blindagem definitiva: se a URL não tem "?mesa=" de verdade, a barra e o
+// cabeçalho do cliente são REMOVIDOS do DOM (não só escondidos por CSS).
+// Isso elimina de vez qualquer possibilidade de uma película invisível
+// sobrepor as telas de gerência, mesmo que uma regra de CSS futura erre.
+function ccRemoverOverlayClienteSeNaoAplicavel() {
+  const mesaNaUrl = new URLSearchParams(window.location.search).get("mesa");
+  if (mesaNaUrl) return;
+  ["cc-cli-tabbar", "cc-cli-header"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+}
+document.addEventListener("DOMContentLoaded", ccRemoverOverlayClienteSeNaoAplicavel);
+ccRemoverOverlayClienteSeNaoAplicavel();
+
 function ccIniciarModoCliente() {
   if (!ccModoClienteAtivo()) return;
   document.body.classList.add("cc-modo-cliente");
@@ -12485,13 +12500,15 @@ function ccAtualizarBoxTurno() {
     if (nomeEl) nomeEl.textContent = turnoAtivo.nome;
     if (infoEl) infoEl.textContent = `${TURNO_LABEL[turnoAtivo.turno] || turnoAtivo.turno} · Entrada ${turnoAtivo.horaEntrada} · ${turnoAtivo.telefone}`;
   }
-  // Bloqueia o resto do painel enquanto a jornada não é registrada
-  ["atend-quilo-box"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.opacity = ativo ? "1" : ".35";
+  // Retificação: a balança NUNCA fica travada/apagada por causa do turno —
+  // o registro de jornada é só um cadastro informativo, não um bloqueio
+  // operacional. Removida a opacidade e o disabled que existiam aqui antes,
+  // e revertido qualquer resquício que uma sessão antiga tenha deixado.
+  document.querySelectorAll('[id*="quilo"],[id*="balanca"],[id*="atend-quilo"]').forEach(el => {
+    if (el.style && el.style.opacity) el.style.opacity = "";
   });
-  document.querySelectorAll("#atend-quilo-box input, #atend-quilo-box select, #atend-quilo-box button").forEach(el => {
-    el.disabled = !ativo;
+  document.querySelectorAll('#atend-quilo-box input, #atend-quilo-box select, #atend-quilo-box button, [id*="quilo"] input, [id*="quilo"] select, [id*="quilo"] button').forEach(el => {
+    el.disabled = false;
   });
 }
 
@@ -12728,72 +12745,46 @@ setTimeout(() => { ccAtualizarBoxTurno(); ccDetectarMesaViaQRAtendente(); }, 100
     const viewContas = document.getElementById("view-contas");
     const viewMonitor = document.getElementById("view-cliente");
     if (!btnVip || !btnContas || !viewVip || !viewContas) { setTimeout(montar, 500); return; }
-    if (document.getElementById("view-clientes-unificado")) return;
+    if (document.getElementById("cc-clientes-feedbacks-card")) return;
 
+    // Renomeia definitivamente com "S" e some com a aba duplicada "Cliente"
     btnVip.textContent = "👥 Clientes";
     btnContas.style.display = "none";
-    // Página única de scroll contínuo — sem sub-abas escondidas. O
-    // simulador antigo (Monitor/Preview de Mesas) some da navegação por
-    // completo, como pedido — o painel view-cliente continua no código,
-    // só não é mais aberto por aqui.
-    viewVip.classList.add("hidden");
-    viewContas.classList.add("hidden");
+    const btnClienteFantasma = document.querySelector('.nav-tab[data-view="cliente"]');
+    if (btnClienteFantasma) btnClienteFantasma.remove();
+    // O simulador antigo (Monitor/Preview de Mesas) não faz mais parte da
+    // navegação — o painel view-cliente continua no código, só não abre por
+    // aqui, e nenhuma tela de gerência mistura componente mobile.
     if (viewMonitor) viewMonitor.classList.add("hidden");
 
-    const pagina = document.createElement("div");
-    pagina.id = "view-clientes-unificado";
-    pagina.className = "hidden p-4 max-w-3xl mx-auto pb-10";
-    pagina.innerHTML = `
-      <div class="admin-card mb-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 style="font-weight:800;font-size:.9rem;color:#0f2340">📋 Cadastro & Limites de Fiado VIP</h3>
-          <button onclick="abrirModalVip()" class="btn-primary" style="padding:8px 14px;font-size:.76rem">+ Novo Cliente</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;font-size:.8rem">
-            <thead>
-              <tr style="border-bottom:2px solid #e5e7eb;text-align:left">
-                <th style="padding:6px 8px">Nome</th>
-                <th style="padding:6px 8px">Telefone</th>
-                <th style="padding:6px 8px">Aniversário</th>
-                <th style="padding:6px 8px;text-align:right">Saldo Devedor</th>
-                <th style="padding:6px 8px"></th>
-              </tr>
-            </thead>
-            <tbody id="cc-clientes-tbody"></tbody>
-          </table>
-          <p id="cc-clientes-vazio" class="hidden text-center text-gray-400 text-sm py-8">Nenhum cliente cadastrado ainda.</p>
-        </div>
-      </div>
+    // Página única de scroll contínuo — as 3 seções pedidas, nesta ordem
+    // exata: Cadastro Geral (view-vip original) → Contas e Fiados VIP
+    // (view-contas original) → Feedbacks. Nenhuma tabela nova reinventada:
+    // reaproveita os dois painéis já existentes e testados, só empilhados.
+    viewVip.classList.remove("hidden");
+    viewContas.classList.remove("hidden");
+    viewVip.classList.add("mb-4");
 
-      <div class="admin-card mb-4">
-        <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:10px">📅 Agenda, Reservas de Mesas e Eventos</h3>
-        <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:12px">
-          <input id="cc-res-nome" class="input-base" placeholder="Nome do cliente">
-          <input id="cc-res-tel" class="input-base" placeholder="Telefone">
-          <input id="cc-res-data" class="input-base" type="date">
-          <input id="cc-res-hora" class="input-base" type="time">
-          <input id="cc-res-obs" class="input-base" style="grid-column:1/-1" placeholder="Evento/observação (ex: aniversário, 8 pessoas)">
-        </div>
-        <button onclick="ccAdicionarReserva()" class="btn-primary w-full">📌 Adicionar Reserva</button>
-        <div id="cc-reservas-lista" class="mt-4"></div>
-        <p id="cc-reservas-vazio" class="hidden text-center text-gray-400 text-sm py-6">Nenhuma reserva agendada.</p>
-      </div>
-
-      <div class="admin-card">
-        <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:10px">💬 Mural de Feedbacks</h3>
-        <div id="cc-feedbacks-lista"></div>
-      </div>
+    const painelFeed = document.createElement("div");
+    painelFeed.id = "cc-clientes-feedbacks-card";
+    painelFeed.className = "admin-card mt-4";
+    painelFeed.innerHTML = `
+      <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:10px">💬 Feedbacks e Avaliações</h3>
+      <div id="cc-feedbacks-lista"></div>
     `;
-    viewVip.parentNode.insertBefore(pagina, viewVip);
+    viewContas.parentNode.insertBefore(painelFeed, viewContas.nextSibling);
 
     const _swAnterior = showView;
     showView = function(name, b) {
       _swAnterior(name, b);
-      pagina.classList.toggle("hidden", name !== "vip");
-      if (name === "vip") {
-        renderClientesTabelaUnificada();
-        ccRenderReservas();
+      const ativo = (name === "vip");
+      viewVip.classList.toggle("hidden", !ativo);
+      viewContas.classList.toggle("hidden", !ativo);
+      painelFeed.classList.toggle("hidden", !ativo);
+      if (ativo) {
+        if (typeof renderVips === "function") renderVips();
+        if (typeof renderContasReceber === "function") renderContasReceber();
+        if (typeof _renderHistoricoCredito === "function") _renderHistoricoCredito();
         ccRenderFeedbacksPainel();
       }
     };
@@ -12801,81 +12792,6 @@ setTimeout(() => { ccAtualizarBoxTurno(); ccDetectarMesaViaQRAtendente(); }, 100
   document.addEventListener("DOMContentLoaded", () => setTimeout(montar, 700));
   setTimeout(montar, 1500);
 })();
-
-// Tabela unificada Cadastro + Saldo Devedor — só LÊ clientesVip (não recria
-// o cadastro), reaproveitando abrirModalVip()/salvarVip() já existentes.
-function renderClientesTabelaUnificada() {
-  const tbody = document.getElementById("cc-clientes-tbody");
-  const vazio = document.getElementById("cc-clientes-vazio");
-  if (!tbody) return;
-  if (!clientesVip.length) {
-    tbody.innerHTML = "";
-    vazio?.classList.remove("hidden");
-    return;
-  }
-  vazio?.classList.add("hidden");
-  tbody.innerHTML = clientesVip.map(v => {
-    const aniv = v.aniversario ? new Date(v.aniversario + "T00:00:00").toLocaleDateString("pt-BR") : "—";
-    const saldo = v.saldo_devedor || 0;
-    return `<tr style="border-bottom:1px solid #f3f4f6">
-      <td style="padding:6px 8px;font-weight:700;color:#0f2340">${v.nome}</td>
-      <td style="padding:6px 8px">${v.telefone || "—"}</td>
-      <td style="padding:6px 8px">${aniv}</td>
-      <td style="padding:6px 8px;text-align:right;font-weight:700;color:${saldo > 0 ? "#dc2626" : "#15803d"}">${fmtBRL(saldo)}</td>
-      <td style="padding:6px 8px;text-align:right"><button onclick="abrirModalVip('${v.id}')" class="btn-ghost" style="padding:4px 10px;font-size:.7rem">Editar</button></td>
-    </tr>`;
-  }).join("");
-}
-
-// Agenda/Reservas — novo módulo simples e independente (não mexe em mesas
-// nem em pedidos: é só uma lista de compromissos futuros do salão).
-let reservasSalao = carregar("reservasSalao", []);
-
-function ccAdicionarReserva() {
-  const nome = (document.getElementById("cc-res-nome")?.value || "").trim();
-  const tel = (document.getElementById("cc-res-tel")?.value || "").trim();
-  const data = document.getElementById("cc-res-data")?.value || "";
-  const hora = document.getElementById("cc-res-hora")?.value || "";
-  const obs = (document.getElementById("cc-res-obs")?.value || "").trim();
-  if (!nome || !data) { toast("⚠️ Informe ao menos o nome e a data."); return; }
-  reservasSalao.push({ id: "RES_" + Date.now(), nome, telefone: tel, data, hora, obs });
-  reservasSalao.sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
-  salvar("reservasSalao", reservasSalao);
-  ["cc-res-nome", "cc-res-tel", "cc-res-data", "cc-res-hora", "cc-res-obs"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
-  ccRenderReservas();
-  toast("✅ Reserva adicionada!");
-}
-
-function ccRemoverReserva(id) {
-  reservasSalao = reservasSalao.filter(r => r.id !== id);
-  salvar("reservasSalao", reservasSalao);
-  ccRenderReservas();
-}
-
-function ccRenderReservas() {
-  const wrap = document.getElementById("cc-reservas-lista");
-  const vazio = document.getElementById("cc-reservas-vazio");
-  if (!wrap) return;
-  const hojeStr = new Date().toISOString().slice(0, 10);
-  const futuras = reservasSalao.filter(r => r.data >= hojeStr);
-  if (!futuras.length) {
-    wrap.innerHTML = "";
-    vazio?.classList.remove("hidden");
-    return;
-  }
-  vazio?.classList.add("hidden");
-  wrap.innerHTML = futuras.map(r => {
-    const dataTxt = new Date(r.data + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
-    return `<div class="cc-timeline-card">
-      <div class="flex items-center justify-between mb-1">
-        <span style="font-weight:700;color:#0f2340">${dataTxt}${r.hora ? " · " + r.hora : ""}</span>
-        <button onclick="ccRemoverReserva('${r.id}')" style="color:#dc2626;font-size:.7rem;font-weight:700;background:none;border:none;cursor:pointer">Remover</button>
-      </div>
-      <p class="text-sm text-gray-700">${r.nome}${r.telefone ? " · " + r.telefone : ""}</p>
-      ${r.obs ? `<p class="text-xs text-gray-400 mt-1">${r.obs}</p>` : ""}
-    </div>`;
-  }).join("");
-}
 
 function ccRenderFeedbacksPainel() {
   const wrap = document.getElementById("cc-feedbacks-lista");
