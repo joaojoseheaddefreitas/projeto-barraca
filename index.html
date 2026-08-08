@@ -697,47 +697,44 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 </style>
 
 <!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
-<div id="view-mesa-cliente" class="hidden min-h-screen bg-slate-50 font-sans pb-8">
-    <!-- Topo Fixo: identificação da mesa + grade 3x2 gigante, empilhados -->
-    <div id="cc-topo-fixo-cliente" class="fixed top-0 left-0 right-0 z-50">
-        <div class="bg-slate-900 text-white p-4 text-center font-bold shadow-md flex items-center justify-center gap-2">
-            <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 01-6 0z"></path></svg>
-            <span id="label-mesa-ativa">Mesa Ativa</span>
-        </div>
-        <!-- GRADE CORPORATIVA GIGANTE DE 6 BOTÕES, NO TOPO -->
-        <div class="bg-white border-b-2 border-slate-200 shadow-lg p-3">
-            <div class="grid grid-cols-3 gap-3">
-                <button onclick="alternarOpcaoMesa('cardapio')" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
-                    <span class="text-3xl">🍽️</span>
-                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Cardápio</span>
-                </button>
-                <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
-                    <span class="text-3xl">⏳</span>
-                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Pedidos</span>
-                </button>
-                <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
-                    <span class="text-3xl">🧾</span>
-                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Conta</span>
-                </button>
-                <button onclick="dispararFechamentoPix()" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
-                    <span class="text-3xl">🏁</span>
-                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Fechamento</span>
-                </button>
-                <button onclick="acionarFluxoFiadoVIP()" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
-                    <span class="text-3xl">💳</span>
-                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">VIP / Fiado</span>
-                </button>
-                <button onclick="abrirPainelAvaliacaoMesa()" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
-                    <span class="text-3xl">⭐</span>
-                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Avaliação</span>
-                </button>
-            </div>
-        </div>
+<div id="view-mesa-cliente" class="hidden">
+<!-- 1. BLOCO MESTRE FIXO E UNITÁRIO NO TOPO (Não divide telas) -->
+<div id="cc-topo-fixo-cliente" class="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
+    <!-- Nível 1: Barra Escura Nativa do Sistema -->
+    <div class="bg-[#0f172a] h-14 flex items-center justify-center border-b border-slate-800">
+        <span class="text-orange-500 font-bold mr-2 text-base">⚙️</span>
+        <span id="label-mesa-ativa" class="text-white font-black text-sm tracking-widest uppercase">Mesa Ativa</span>
     </div>
-
-    <!-- Conteúdo Dinâmico das Seções da Mesa — recuo de segurança pra nunca
-         ficar embaixo do menu gigante fixo no topo -->
-    <div id="conteudo-secao-mesa" class="pt-52 px-4 space-y-4" style="padding-top:230px">
+    <!-- Nível 2: Grade 3x2 Gigante e de Alto Contraste (Cards Premium) -->
+    <div class="bg-slate-100 p-4 grid grid-cols-3 gap-3 border-b-2 border-slate-200">
+        <button onclick="alternarOpcaoMesa('cardapio')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
+            <span class="text-3xl mb-1">🍽️</span>
+            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Cardápio</span>
+        </button>
+        <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
+            <span class="text-3xl mb-1">⏳</span>
+            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Pedidos</span>
+        </button>
+        <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
+            <span class="text-3xl mb-1">🧾</span>
+            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Conta</span>
+        </button>
+        <button onclick="alternarOpcaoMesa('fechamento')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
+            <span class="text-3xl mb-1">🏁</span>
+            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Fechamento</span>
+        </button>
+        <button onclick="alternarOpcaoMesa('fiado')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
+            <span class="text-3xl mb-1">💳</span>
+            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">VIP / Fiado</span>
+        </button>
+        <button onclick="alternarOpcaoMesa('avaliacao')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
+            <span class="text-3xl mb-1">⭐</span>
+            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Avaliação</span>
+        </button>
+    </div>
+</div>
+<!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
+<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 280px !important;">
 
       <!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
       <div id="cc-painel-pedidos" class="cc-cli-painel">
@@ -12351,6 +12348,10 @@ function ccIniciarModoCliente() {
 // Roteador único dos 6 botões físicos da grade 3x2.
 function alternarOpcaoMesa(tab) {
   if (!ccModoClienteAtivo()) return;
+  // A grade nova usa 'fiado'/'avaliacao' como nome do botão — traduz pros
+  // ids reais dos painéis (cc-painel-vip / cc-painel-avaliar), já testados.
+  const ALIAS_PAINEL = { fiado: "vip", avaliacao: "avaliar" };
+  const painelId = ALIAS_PAINEL[tab] || tab;
   _ccAbaAtual = tab;
   const secao = document.getElementById("conteudo-secao-mesa");
   if (!secao) return;
@@ -12362,7 +12363,7 @@ function alternarOpcaoMesa(tab) {
     if (cardHeader) cardHeader.style.display = "";
     if (cardMain) cardMain.style.display = "";
   } else {
-    const alvo = document.getElementById("cc-painel-" + tab);
+    const alvo = document.getElementById("cc-painel-" + painelId);
     if (alvo) { alvo.style.display = "block"; alvo.classList.add("active"); }
     if (tab === "pedidos") ccRenderPedidosCliente();
     if (tab === "conta") ccRenderContaCliente();
