@@ -66,6 +66,14 @@ window.COOKCONTROL_CONFIG = {
 
   if (idDaUrl) {
     localStorage.setItem('solbahia_empresa_id', idDaUrl);
+    // Trava aqui o Horário de Entrada e a permissão de dispositivo, no
+    // ÚNICO ponto do código que lê a URL antes dela ser reescrita —
+    // ccPerfilAtendenteDispositivo() roda bem depois (DOMContentLoaded) e
+    // pegaria a URL já sem o parâmetro, sempre achando que não foi um
+    // escaneamento novo. sessionStorage avisa ele que acabou de acontecer.
+    localStorage.setItem('solbahia_perfilAtendenteAtivo', JSON.stringify(true));
+    localStorage.setItem('solbahia_horaEntradaTravada', JSON.stringify(new Date().toISOString()));
+    sessionStorage.setItem('cc_ativacao_fresca', '1');
     params.delete('ativar_empresa');
     var novaUrl = window.location.pathname +
       (params.toString() ? '?' + params.toString() : '') + window.location.hash;
@@ -746,31 +754,31 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
             <!-- 2. PEDIDOS (Acompanhamento com Cronômetro) -->
             <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
                 <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Pedidos</span>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Andamento do Pedido</span>
             </button>
 
             <!-- 3. CONTA (Extrato de Leitura) -->
             <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
                 <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Conta</span>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Andamento da Conta</span>
             </button>
 
             <!-- 4. PAGAR / FECHAR (Pix + Luz Verde) -->
             <button onclick="dispararFechamentoPix()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
                 <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Pagar/Fechar</span>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Fechamento</span>
             </button>
 
             <!-- 5. VIP / FIADO -->
             <button onclick="acionarFluxoFiadoVIP()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
                 <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">VIP / Fiado</span>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Cliente VIP</span>
             </button>
 
             <!-- 6. AVALIAR -->
             <button onclick="abrirPainelAvaliacaoMesa()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
                 <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.367 1.242.583 1.828l-3.978 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.978-2.888a1 1 0 00-1.176 0l-3.978 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.978-2.888c-.784-.57-.378-1.828.583-1.828h4.906a1 1 0 00.95-.69l1.519-4.674z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Avaliar</span>
+                <span class="text-[11px] font-bold mt-1 text-slate-700">Avaliação</span>
             </button>
         </div>
     </div>
@@ -1864,18 +1872,17 @@ function selPay(el) { S.pag = el.dataset.pay; renderModal(); }
 // ═══════════════════════════════════════════════════════════════
 const CC_MESA_CLIENTE_KEY = "wl_mesa_atual_cliente";
 
-// PONTO 1 — Captura a mesa da URL (?mesa=05) e guarda no localStorage
+// PONTO 1 — Captura a mesa da URL (?mesa=05) e guarda no localStorage.
+// CORREÇÃO: não apaga mais "?mesa=" da barra de endereço — isso quebrava
+// TODA a detecção de papel/modo cliente (SirAccess, ccModoClienteAtivo,
+// ccPerfilAtendenteDispositivo), que roda depois e relê a URL. Era a causa
+// real do menu de gerência não sumir no celular do cliente.
 function ccCapturarMesaDaUrl() {
   const params = new URLSearchParams(window.location.search);
   const mesaDaUrl = params.get("mesa");
 
   if (mesaDaUrl) {
     localStorage.setItem(CC_MESA_CLIENTE_KEY, mesaDaUrl);
-    params.delete("mesa");
-    const novaUrl = window.location.pathname
-      + (params.toString() ? "?" + params.toString() : "")
-      + window.location.hash;
-    window.history.replaceState({}, document.title, novaUrl);
   }
 
   // PONTO 3 — Se não veio mesa nova na URL, usa a última salva
@@ -12628,23 +12635,21 @@ function ccEncerrarTurno() {
    5 abas confidenciais do dono, mesmo depois de fechar o navegador.
    ═══════════════════════════════════════════════════════════ */
 (function ccPerfilAtendenteDispositivo() {
-  const params = new URLSearchParams(window.location.search);
-  const escaneouAgora = !!params.get("ativar_empresa");
-  let ativo = carregar("perfilAtendenteAtivo", false);
-  if (escaneouAgora) {
-    // Trava o Horário de Entrada no milissegundo EXATO da leitura do QR —
-    // antes de qualquer outra coisa rodar, antes do formulário até abrir.
-    salvar("horaEntradaTravada", new Date().toISOString());
-    ativo = true;
-    salvar("perfilAtendenteAtivo", true);
-  }
+  // O timestamp já foi travado (e a permissão já foi salva) lá no topo do
+  // arquivo, no único ponto que lê "?ativar_empresa=" antes da URL ser
+  // limpa — aqui só lemos o aviso de "acabou de escanear agora" pra saber
+  // se navegamos pro Atendente automaticamente.
+  const escaneouAgora = sessionStorage.getItem("cc_ativacao_fresca") === "1";
+  if (escaneouAgora) sessionStorage.removeItem("cc_ativacao_fresca");
+  const ativo = carregar("perfilAtendenteAtivo", false);
   if (!ativo) return;
 
   const ABAS_DONO = ["estoque2", "caixa", "relatorio", "dashboard", "admin"];
-  const ABAS_SALAO = ["cardapio", "mesas", "atendente", "cozinha", "delivery", "vip"];
+  const ABAS_REMOVER_TAMBEM = ["delivery", "vip"];
+  const ABAS_SALAO = ["cardapio", "mesas", "atendente", "cozinha"];
 
   function aplicar() {
-    ABAS_DONO.forEach(v => {
+    ABAS_DONO.concat(ABAS_REMOVER_TAMBEM).forEach(v => {
       const btn = document.querySelector('.nav-tab[data-view="' + v + '"]');
       if (btn) btn.remove();
     });
