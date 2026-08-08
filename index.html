@@ -675,7 +675,9 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
      cliente ela só fica visível junto da aba Cardápio com item no
      carrinho, e sobe pra ficar ACIMA da grade 3x2 em vez de vazar por trás
      dela — nunca mais se sobrepõe à grade branca dos 6 botões SVG. */
-  body.cc-modo-cliente #cart-footer{bottom:92px!important;z-index:45}
+  /* O menu gigante agora fica no TOPO, não mais no rodapé — o carrinho
+     pode voltar a ficar grudado embaixo, sem risco de sobrepor a grade. */
+  body.cc-modo-cliente #cart-footer{z-index:45}
   .cc-timeline-card{border:1px solid #e5e7eb;border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff}
   .cc-timeline-card.entregue{border-color:#bbf7d0;background:#f0fdf4}
   .cc-badge{display:inline-block;font-size:.66rem;font-weight:800;padding:3px 9px;border-radius:999px}
@@ -695,15 +697,47 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 </style>
 
 <!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
-<div id="view-mesa-cliente" class="hidden min-h-screen bg-slate-50 font-sans pb-24">
-    <!-- Topo Fixo Identificador da Mesa -->
-    <div class="fixed top-0 left-0 right-0 bg-slate-900 text-white p-4 text-center font-bold shadow-md z-50 flex items-center justify-center gap-2">
-        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 01-6 0z"></path></svg>
-        <span id="label-mesa-ativa">Mesa Ativa</span>
+<div id="view-mesa-cliente" class="hidden min-h-screen bg-slate-50 font-sans pb-8">
+    <!-- Topo Fixo: identificação da mesa + grade 3x2 gigante, empilhados -->
+    <div id="cc-topo-fixo-cliente" class="fixed top-0 left-0 right-0 z-50">
+        <div class="bg-slate-900 text-white p-4 text-center font-bold shadow-md flex items-center justify-center gap-2">
+            <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 01-6 0z"></path></svg>
+            <span id="label-mesa-ativa">Mesa Ativa</span>
+        </div>
+        <!-- GRADE CORPORATIVA GIGANTE DE 6 BOTÕES, NO TOPO -->
+        <div class="bg-white border-b-2 border-slate-200 shadow-lg p-3">
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="alternarOpcaoMesa('cardapio')" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
+                    <span class="text-3xl">🍽️</span>
+                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Cardápio</span>
+                </button>
+                <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
+                    <span class="text-3xl">⏳</span>
+                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Pedidos</span>
+                </button>
+                <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
+                    <span class="text-3xl">🧾</span>
+                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Conta</span>
+                </button>
+                <button onclick="dispararFechamentoPix()" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
+                    <span class="text-3xl">🏁</span>
+                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Fechamento</span>
+                </button>
+                <button onclick="acionarFluxoFiadoVIP()" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
+                    <span class="text-3xl">💳</span>
+                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">VIP / Fiado</span>
+                </button>
+                <button onclick="abrirPainelAvaliacaoMesa()" class="flex flex-col items-center justify-center bg-white border-2 border-slate-100 rounded-2xl p-3 gap-1 active:scale-95 transition">
+                    <span class="text-3xl">⭐</span>
+                    <span class="text-xs font-black uppercase text-slate-800 tracking-wider">Avaliação</span>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Conteúdo Dinâmico das Seções da Mesa -->
-    <div id="conteudo-secao-mesa" class="pt-20 px-4 space-y-4">
+    <!-- Conteúdo Dinâmico das Seções da Mesa — recuo de segurança pra nunca
+         ficar embaixo do menu gigante fixo no topo -->
+    <div id="conteudo-secao-mesa" class="pt-52 px-4 space-y-4" style="padding-top:230px">
 
       <!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
       <div id="cc-painel-pedidos" class="cc-cli-painel">
@@ -729,6 +763,14 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         <div class="flex items-center justify-between p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 mb-4">
           <span class="font-bold text-emerald-700 text-sm">Total a Pagar</span>
           <span id="cc-fechamento-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
+        </div>
+        <div id="cc-fechamento-pix-wrap" class="hidden mb-4 p-3 rounded-xl border border-gray-200 bg-gray-50">
+          <p class="text-[11px] font-bold text-gray-500 uppercase mb-2">Pix Copia e Cola</p>
+          <div class="flex gap-2">
+            <input id="cc-fechamento-pix-txt" class="input-base flex-1 text-xs font-mono" readonly/>
+            <button onclick="copiarPix('cc-fechamento-pix-txt')" class="btn-ghost px-3">📋</button>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-1" id="cc-fechamento-pix-hint"></p>
         </div>
         <button class="btn-primary w-full" onclick="ccPedirContaCliente()">Fechar e Pagar via Pix</button>
         <p id="cc-fechamento-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
@@ -760,46 +802,6 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 
     </div>
 
-    <!-- GRADE CORPORATIVA INTERIOR DE 6 BOTÕES SÉRIOS -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-xl z-50">
-        <div class="grid grid-cols-3 gap-3 max-w-md mx-auto">
-            <!-- 1. CARDÁPIO -->
-            <button onclick="alternarOpcaoMesa('cardapio')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
-                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Cardápio</span>
-            </button>
-
-            <!-- 2. PEDIDOS (Acompanhamento com Cronômetro) -->
-            <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
-                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Andamento do Pedido</span>
-            </button>
-
-            <!-- 3. CONTA (Extrato de Leitura) -->
-            <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
-                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Andamento da Conta</span>
-            </button>
-
-            <!-- 4. PAGAR / FECHAR (Pix + Luz Verde) -->
-            <button onclick="dispararFechamentoPix()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
-                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Fechamento</span>
-            </button>
-
-            <!-- 5. VIP / FIADO -->
-            <button onclick="acionarFluxoFiadoVIP()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
-                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Cliente VIP</span>
-            </button>
-
-            <!-- 6. AVALIAR -->
-            <button onclick="abrirPainelAvaliacaoMesa()" class="flex flex-col items-center justify-center p-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition group">
-                <svg class="w-6 h-6 text-slate-700 group-hover:text-orange-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.367 1.242.583 1.828l-3.978 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.978-2.888a1 1 0 00-1.176 0l-3.978 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.978-2.888c-.784-.57-.378-1.828.583-1.828h4.906a1 1 0 00.95-.69l1.519-4.674z"></path></svg>
-                <span class="text-[11px] font-bold mt-1 text-slate-700">Avaliação</span>
-            </button>
-        </div>
-    </div>
 </div>
 
 <!-- LUZ VERDE -->
@@ -5045,8 +5047,8 @@ function renderDeeplinks(valor) {
   if(outras) outras.innerHTML = "";
 }
 
-function copiarPix() {
-  const txt = document.getElementById("pix-copiacola-txt");
+function copiarPix(alvoId) {
+  const txt = document.getElementById(alvoId || "pix-copiacola-txt");
   if(!txt) return;
   navigator.clipboard.writeText(txt.value).then(()=>toast("📋 Código Pix copiado!")).catch(()=>{
     txt.select(); document.execCommand("copy"); toast("📋 Copiado!");
@@ -12479,7 +12481,25 @@ function _ccRenderExtratoGenerico(prefixo) {
 }
 
 function ccRenderContaCliente() { _ccRenderExtratoGenerico("conta"); }
-function ccRenderFechamentoCliente() { _ccRenderExtratoGenerico("fechamento"); }
+function ccRenderFechamentoCliente() {
+  _ccRenderExtratoGenerico("fechamento");
+  // Pix Copia e Cola real (mesma função gerarPixPayload() usada na
+  // maquininha do Caixa — não inventa nada novo).
+  const wrap = document.getElementById("cc-fechamento-pix-wrap");
+  const txt = document.getElementById("cc-fechamento-pix-txt");
+  const hint = document.getElementById("cc-fechamento-pix-hint");
+  if (!wrap || !txt || !S.mesa) return;
+  const linhas = ccContaAtualMesa(S.mesa);
+  const total = linhas.reduce((s, l) => s + (l.total || 0), 0);
+  const temPix = config.pixChave && config.pixChave.length > 3;
+  if (temPix && total > 0 && typeof gerarPixPayload === "function") {
+    txt.value = gerarPixPayload(config.pixChave, config.pixNome || "Meu Estabelecimento", config.pixCidade || "Salvador", total);
+    if (hint) hint.textContent = `Chave: ${config.pixChave} · ${fmtBRL(total)}`;
+    wrap.classList.remove("hidden");
+  } else {
+    wrap.classList.add("hidden");
+  }
+}
 
 // Encerra a sessão atual da mesa e salva o recibo pessoal do cliente —
 // usado tanto pelo fechamento via Pix quanto pelo fechamento no Fiado VIP.
