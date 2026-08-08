@@ -3361,18 +3361,19 @@ render();
 <div id="view-atendente" class="hidden max-w-5xl mx-auto px-4 py-4 pb-24">
 
   <!-- ── Registro de Jornada / Troca de Turno ── -->
-  <div id="at-turno-box" class="admin-card mb-5">
-    <div style="text-align:center;margin-bottom:16px;padding-bottom:16px;border-bottom:1px dashed #e5e7eb">
-      <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:6px">📷 QR Code de Ativação</h3>
-      <p style="font-size:.72rem;color:#9ca3af;margin-bottom:10px">Escaneie uma vez, no seu celular, pra ativar o CookControl neste aparelho.</p>
-      <div id="cc-qr-ativacao" style="width:150px;height:150px;margin:0 auto 8px"></div>
-      <p style="font-size:.66rem;color:#6b7280;word-break:break-all" id="cc-link-ativacao"></p>
-    </div>
-    <div class="flex items-center justify-between mb-3">
+  <div id="painel-qr-ativacao" class="admin-card mb-5" style="text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)">
+    <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:6px">📷 QR Code de Ativação</h3>
+    <p style="font-size:.72rem;color:#9ca3af;margin-bottom:14px">Escaneie uma vez, no seu celular, pra ativar o CookControl neste aparelho.</p>
+    <div id="cc-qr-ativacao" style="width:150px;height:150px;margin:0 auto 10px"></div>
+    <p style="font-size:.66rem;color:#6b7280;word-break:break-all" id="cc-link-ativacao"></p>
+  </div>
+
+  <div id="painel-formulario-jornada" class="admin-card mb-5" style="box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)">
+    <div class="flex items-center justify-between mb-4">
       <h3 class="font-bold text-sm text-gray-600">🕐 Registro de Jornada</h3>
       <span id="at-turno-ativo-badge" class="hidden badge" style="background:#dcfce7;color:#15803d">Turno ativo</span>
     </div>
-    <div id="at-turno-form" style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+    <div id="at-turno-form" style="display:grid;gap:14px;grid-template-columns:1fr 1fr">
       <div style="grid-column:1/-1">
         <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Nome do Atendente *</label>
         <input id="at-turno-nome" class="input-base" placeholder="Nome completo">
@@ -12315,14 +12316,21 @@ function ccIniciarModoCliente() {
   const label = document.getElementById("label-mesa-ativa");
   if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
 
-  // O Cardápio (header+main de #view-cardapio) é realocado, uma única vez,
-  // pra dentro do container único #conteudo-secao-mesa — as outras 5 seções
-  // já nascem lá dentro no HTML. Não recria nada do cardápio, só reloca.
+  // O Cardápio inteiro (TODOS os filhos diretos de #view-cardapio — header
+  // do banner, busca, categorias E main dos itens; não são só 2, são 4) é
+  // realocado, uma única vez, pra dentro de #conteudo-secao-mesa — as
+  // outras 5 seções já nascem lá dentro no HTML. Não recria nada do
+  // cardápio, só reloca. Antes só header+main eram movidos, deixando busca
+  // e categorias órfãs dentro de #view-cardapio (que nunca tem a classe
+  // "hidden" por padrão) — isso fazia elas aparecerem soltas, fora de
+  // ordem, era a "tela desconfigurada com buraco cinza" reportada.
   const secao = document.getElementById("conteudo-secao-mesa");
-  const cardHeader = document.querySelector("#view-cardapio > header");
-  const cardMain = document.querySelector("#view-cardapio > main");
-  if (secao && cardHeader && !secao.contains(cardHeader)) secao.insertBefore(cardHeader, secao.firstChild);
-  if (secao && cardMain && !secao.contains(cardMain)) secao.insertBefore(cardMain, secao.children[1] || null);
+  const origemCardapio = document.getElementById("view-cardapio");
+  if (secao && origemCardapio && !secao.dataset.cardapioRealocado) {
+    Array.from(origemCardapio.children).forEach(filho => secao.appendChild(filho));
+    secao.dataset.cardapioRealocado = "1";
+    origemCardapio.style.display = "none"; // casca vazia, não pode sobrar visível
+  }
 
   alternarOpcaoMesa("cardapio");
   if (!_ccTimerInterval) _ccTimerInterval = setInterval(ccAtualizarTimers, 1000);
@@ -12566,6 +12574,12 @@ let turnoAtivo = carregar("turnoAtivo", null);
 const TURNO_LABEL = { manha: "🌅 Manhã", tarde: "🌤️ Tarde", noite: "🌙 Noite" };
 
 function ccAtualizarBoxTurno() {
+  // Some com o painel do QR de Ativação assim que o dispositivo já estiver
+  // ativado — não pode ficar visível junto do formulário de jornada.
+  const painelQr = document.getElementById("painel-qr-ativacao");
+  const dispositivoAtivado = carregar("perfilAtendenteAtivo", false);
+  if (painelQr) painelQr.style.display = dispositivoAtivado ? "none" : "";
+
   const form = document.getElementById("at-turno-form");
   const resumo = document.getElementById("at-turno-resumo");
   const badge = document.getElementById("at-turno-ativo-badge");
