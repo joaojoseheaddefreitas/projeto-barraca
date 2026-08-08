@@ -658,6 +658,24 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   .cc-cli-painel{display:none}
   .cc-vip-status{border-radius:12px;padding:10px 12px;font-size:.78rem;font-weight:700;margin-top:10px}
   .cc-cli-painel.active{display:block}
+
+  /* Correção do cardápio "esmagado": o cardápio real (header+main de
+     #view-cardapio) é realocado pra dentro de #conteudo-secao-mesa, que já
+     tem px-4 próprio — como o cardápio também tem seu próprio px-4
+     interno, o padding dobrava e apertava categorias/produtos. Cancela a
+     duplicação só nesses dois elementos reaproveitados, sem tocar no
+     cardápio original (que continua intacto pra Admin/Atendente/Staff). */
+  #conteudo-secao-mesa > header,
+  #conteudo-secao-mesa > main{margin-left:-1rem;margin-right:-1rem}
+  #conteudo-secao-mesa #cat-nav{flex-wrap:nowrap}
+
+  /* A barra de checkout do carrinho (#cart-footer, com emojis 🛒/🗑/🧾) é
+     usada em TODAS as telas do sistema — não pode ser deletada, senão o
+     cliente perde o botão de confirmar o pedido no cardápio. Em modo
+     cliente ela só fica visível junto da aba Cardápio com item no
+     carrinho, e sobe pra ficar ACIMA da grade 3x2 em vez de vazar por trás
+     dela — nunca mais se sobrepõe à grade branca dos 6 botões SVG. */
+  body.cc-modo-cliente #cart-footer{bottom:92px!important;z-index:45}
   .cc-timeline-card{border:1px solid #e5e7eb;border-radius:14px;padding:12px 14px;margin-bottom:10px;background:#fff}
   .cc-timeline-card.entregue{border-color:#bbf7d0;background:#f0fdf4}
   .cc-badge{display:inline-block;font-size:.66rem;font-weight:800;padding:3px 9px;border-radius:999px}
