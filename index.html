@@ -12314,6 +12314,7 @@ function ccIniciarModoCliente() {
   if (shell) shell.classList.remove("hidden");
   const label = document.getElementById("label-mesa-ativa");
   if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
+  ccInjetarComandaTeste(S.mesa);
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
   // busca, categorias e main (itens). Banner e itens rolam livremente
@@ -12497,20 +12498,43 @@ function _ccRenderExtratoGenerico(prefixo) {
 }
 
 function ccRenderContaCliente() { _ccRenderExtratoGenerico("conta"); }
+function ccInjetarComandaTeste(mesa) {
+  if (!mesa) return;
+  const linhas = ccContaAtualMesa(mesa);
+  if (linhas.length) return;
+  const itensTeste = [
+    { id: "TESTE_MOQUECA", nome: "Moqueca de Camarão", q: 1, preco: 120.00 },
+    { id: "TESTE_COCO", nome: "Água de Coco", q: 2, preco: 8.00 }
+  ];
+  const total = itensTeste.reduce((s, i) => s + i.preco * i.q, 0);
+  historico.unshift({
+    id: "TESTE_" + Date.now(),
+    data: new Date().toISOString(),
+    mesa: mesa,
+    itens: itensTeste,
+    total: total,
+    pag: "pos_pago",
+    status: "pago",
+    obs: "⚠️ Comanda de teste (homologação) — sem consumo real",
+    atendente: null,
+    teste: true
+  });
+  salvar("historico", historico);
+}
+
 function ccRenderFechamentoCliente() {
   _ccRenderExtratoGenerico("fechamento");
-  // Pix Copia e Cola real (mesma função gerarPixPayload() usada na
-  // maquininha do Caixa — não inventa nada novo).
   const wrap = document.getElementById("cc-fechamento-pix-wrap");
   const txt = document.getElementById("cc-fechamento-pix-txt");
   const hint = document.getElementById("cc-fechamento-pix-hint");
   if (!wrap || !txt || !S.mesa) return;
   const linhas = ccContaAtualMesa(S.mesa);
   const total = linhas.reduce((s, l) => s + (l.total || 0), 0);
-  const temPix = config.pixChave && config.pixChave.length > 3;
-  if (temPix && total > 0 && typeof gerarPixPayload === "function") {
-    txt.value = gerarPixPayload(config.pixChave, config.pixNome || "Meu Estabelecimento", config.pixCidade || "Salvador", total);
-    if (hint) hint.textContent = `Chave: ${config.pixChave} · ${fmtBRL(total)}`;
+  const temPixReal = config.pixChave && config.pixChave.length > 3;
+  const chave = temPixReal ? config.pixChave : "teste@cookcontrol.app";
+  if (total > 0 && typeof gerarPixPayload === "function") {
+    txt.value = gerarPixPayload(chave, config.pixNome || "CookControl (Teste)", config.pixCidade || "Salvador", total);
+    if (hint) hint.textContent = (temPixReal ? `Chave: ${chave}` : `⚠️ Chave de teste: ${chave}`) + ` · ${fmtBRL(total)}`;
     wrap.classList.remove("hidden");
   } else {
     wrap.classList.add("hidden");
@@ -12537,6 +12561,8 @@ function _ccEncerrarMesaComRecibo(total, itens, formaPagamento) {
 
   const ov = document.getElementById("cc-luz-verde-ov");
   if (ov) ov.classList.add("show");
+  const pixWrap = document.getElementById("cc-fechamento-pix-wrap");
+  if (pixWrap) pixWrap.classList.add("hidden");
   ccRenderContaCliente();
   ccRenderFechamentoCliente();
 }
