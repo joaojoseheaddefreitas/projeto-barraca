@@ -706,6 +706,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         <span id="label-mesa-ativa" class="text-white font-black text-sm tracking-widest uppercase">Mesa Ativa</span>
     </div>
     <!-- Nível 2: Carrossel horizontal único das 6 abas móveis, em pílulas -->
+    <div style="position:relative">
     <div class="flex flex-row overflow-x-auto whitespace-nowrap scrollbar-none gap-2 p-2 bg-white border-b border-slate-100 sticky top-14 z-40">
         <button onclick="alternarOpcaoMesa('cardapio')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
             <span>🍽️</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Cardápio</span>
@@ -725,6 +726,25 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         <button onclick="alternarOpcaoMesa('avaliacao')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
             <span>⭐</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Avaliação</span>
         </button>
+    </div>
+    <div id="cc-abas-nav-arrow" style="
+      position:absolute;right:0;top:0;bottom:0;
+      width:44px;pointer-events:none;
+      display:flex;align-items:center;justify-content:flex-end;
+      background:linear-gradient(to right, transparent, rgba(255,255,255,.95) 55%);
+      border-radius:0 999px 999px 0;
+      transition:opacity .3s;
+    ">
+      <span style="
+        display:flex;align-items:center;justify-content:center;
+        width:28px;height:28px;
+        background:#f97316;border-radius:50%;
+        color:#fff;font-size:.85rem;
+        animation:cat-pulse 1.4s ease-in-out infinite;
+        box-shadow:0 2px 8px rgba(249,115,22,.35);
+        pointer-events:none;
+      ">›</span>
+    </div>
     </div>
     <!-- Nível 3: slot real da barra de busca do cardápio (#search-input),
          realocada aqui via JS — não é um input novo, é o de sempre -->
@@ -12315,6 +12335,7 @@ function ccIniciarModoCliente() {
   const label = document.getElementById("label-mesa-ativa");
   if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
   ccInjetarComandaTeste(S.mesa);
+  _ccSyncSetaCarrosselAbas();
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
   // busca, categorias e main (itens). Banner e itens rolam livremente
@@ -12498,6 +12519,21 @@ function _ccRenderExtratoGenerico(prefixo) {
 }
 
 function ccRenderContaCliente() { _ccRenderExtratoGenerico("conta"); }
+function _ccSyncSetaCarrosselAbas() {
+  const nav = document.querySelector("#cc-topo-fixo-cliente .overflow-x-auto");
+  const arrow = document.getElementById("cc-abas-nav-arrow");
+  if (!nav || !arrow || nav._arrowOk) return;
+  function sync() {
+    const hasMore = nav.scrollWidth > nav.clientWidth + 8;
+    const atEnd = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 12;
+    arrow.style.opacity = (hasMore && !atEnd) ? "1" : "0";
+  }
+  nav.addEventListener("scroll", sync, { passive: true });
+  window.addEventListener("resize", sync, { passive: true });
+  requestAnimationFrame(sync);
+  nav._arrowOk = true;
+}
+
 function ccInjetarComandaTeste(mesa) {
   if (!mesa) return;
   const linhas = ccContaAtualMesa(mesa);
