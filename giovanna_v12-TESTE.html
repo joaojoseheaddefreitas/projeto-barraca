@@ -674,6 +674,12 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   #conteudo-secao-mesa #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
   #conteudo-secao-mesa #cat-nav-arrow{display:none}
   #cc-slot-categorias-cardapio{display:none}
+  /* Mesmo tratamento vertical de categorias, agora pra QUALQUER acesso de
+     cliente comum — Cardápio Digital e Delivery incluídos, não só ?mesa=.
+     Reaproveita o mesmo #cat-nav real, só amplia onde a regra se aplica. */
+  body.sir-cliente #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px;flex-wrap:nowrap}
+  body.sir-cliente #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  body.sir-cliente #cat-nav-arrow{display:none}
 
   /* A barra de checkout do carrinho (#cart-footer, com emojis 🛒/🗑/🧾) é
      usada em TODAS as telas do sistema — não pode ser deletada, senão o
@@ -5969,12 +5975,20 @@ const SirAccess = (function() {
     const cfg = ROLES[role];
     if (!cfg) return;
 
-    // Mostrar/esconder botões do nav
+    // Mostrar/esconder botões do nav — pra QUALQUER cliente comum (mesa,
+    // Cardápio Digital ou Delivery), as abas não permitidas são REMOVIDAS
+    // do DOM de vez, não só escondidas por CSS. Trava física, não visual.
     document.querySelectorAll('#nav-main [data-view]').forEach(btn => {
       const view = btn.dataset.view;
       const permitido = cfg.views.includes(view);
+      if (!permitido && role === 'cliente') { btn.remove(); return; }
       btn.style.display = permitido ? '' : 'none';
     });
+    if (role === 'cliente') {
+      document.body.classList.add('sir-cliente');
+      const wrapperTopo = document.getElementById('cc-topbar-wrapper');
+      if (wrapperTopo) wrapperTopo.remove();
+    }
 
     // Barra de perfil
     const bar   = document.getElementById('role-bar');
