@@ -698,43 +698,43 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 
 <!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
 <div id="view-mesa-cliente" class="hidden">
-<!-- 1. BLOCO MESTRE FIXO E UNITÁRIO NO TOPO (Não divide telas) -->
+<!-- BLOCO MESTRE FIXO EM CASCATA DE 4 NÍVEIS -->
 <div id="cc-topo-fixo-cliente" class="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
     <!-- Nível 1: Barra Escura Nativa do Sistema -->
     <div class="bg-[#0f172a] h-14 flex items-center justify-center border-b border-slate-800">
         <span class="text-orange-500 font-bold mr-2 text-base">⚙️</span>
         <span id="label-mesa-ativa" class="text-white font-black text-sm tracking-widest uppercase">Mesa Ativa</span>
     </div>
-    <!-- Nível 2: Grade 3x2 Gigante e de Alto Contraste (Cards Premium) -->
-    <div class="bg-slate-100 p-4 grid grid-cols-3 gap-3 border-b-2 border-slate-200">
-        <button onclick="alternarOpcaoMesa('cardapio')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
-            <span class="text-3xl mb-1">🍽️</span>
-            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Cardápio</span>
+    <!-- Nível 2: Carrossel horizontal único das 6 abas móveis, em pílulas -->
+    <div class="flex flex-row overflow-x-auto whitespace-nowrap scrollbar-none gap-2 p-2 bg-white border-b border-slate-100 sticky top-14 z-40">
+        <button onclick="alternarOpcaoMesa('cardapio')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
+            <span>🍽️</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Cardápio</span>
         </button>
-        <button onclick="alternarOpcaoMesa('pedidos')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
-            <span class="text-3xl mb-1">⏳</span>
-            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Pedidos</span>
+        <button onclick="alternarOpcaoMesa('pedidos')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
+            <span>⏳</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Pedidos</span>
         </button>
-        <button onclick="alternarOpcaoMesa('conta')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
-            <span class="text-3xl mb-1">🧾</span>
-            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Conta</span>
+        <button onclick="alternarOpcaoMesa('conta')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
+            <span>🧾</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Conta</span>
         </button>
-        <button onclick="alternarOpcaoMesa('fechamento')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
-            <span class="text-3xl mb-1">🏁</span>
-            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Fechamento</span>
+        <button onclick="alternarOpcaoMesa('fechamento')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
+            <span>🏁</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Fechamento</span>
         </button>
-        <button onclick="alternarOpcaoMesa('fiado')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
-            <span class="text-3xl mb-1">💳</span>
-            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">VIP / Fiado</span>
+        <button onclick="alternarOpcaoMesa('fiado')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
+            <span>💳</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">VIP / Fiado</span>
         </button>
-        <button onclick="alternarOpcaoMesa('avaliacao')" class="flex flex-col items-center justify-center p-4 bg-white border border-slate-200/60 rounded-2xl shadow-md active:scale-95 transition-transform">
-            <span class="text-3xl mb-1">⭐</span>
-            <span class="text-[11px] font-black uppercase text-slate-900 tracking-wider">Avaliação</span>
+        <button onclick="alternarOpcaoMesa('avaliacao')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
+            <span>⭐</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Avaliação</span>
         </button>
     </div>
+    <!-- Nível 3: slot real da barra de busca do cardápio (#search-input),
+         realocada aqui via JS — não é um input novo, é o de sempre -->
+    <div id="cc-slot-busca-cardapio" class="bg-white border-b border-slate-100 p-2"></div>
+    <!-- Nível 4: slot real do carrossel de categorias (#cat-nav),
+         realocado aqui via JS — mesmas categorias reais do Admin -->
+    <div id="cc-slot-categorias-cardapio" class="bg-white border-b shadow-sm p-2"></div>
 </div>
 <!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
-<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 280px !important;">
+<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 300px !important;">
 
       <!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
       <div id="cc-painel-pedidos" class="cc-cli-painel">
@@ -12315,18 +12315,27 @@ function ccIniciarModoCliente() {
   const label = document.getElementById("label-mesa-ativa");
   if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
 
-  // O Cardápio inteiro (TODOS os filhos diretos de #view-cardapio — header
-  // do banner, busca, categorias E main dos itens; não são só 2, são 4) é
-  // realocado, uma única vez, pra dentro de #conteudo-secao-mesa — as
-  // outras 5 seções já nascem lá dentro no HTML. Não recria nada do
-  // cardápio, só reloca. Antes só header+main eram movidos, deixando busca
-  // e categorias órfãs dentro de #view-cardapio (que nunca tem a classe
-  // "hidden" por padrão) — isso fazia elas aparecerem soltas, fora de
-  // ordem, era a "tela desconfigurada com buraco cinza" reportada.
+  // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
+  // busca, categorias e main (itens). Banner e itens rolam livremente
+  // dentro de #conteudo-secao-mesa; busca e categorias ficam fixas na
+  // cascata do topo (níveis 3 e 4) — são os elementos REAIS do cardápio
+  // (#search-input com onSearch() já reativo, #cat-nav já populado pelas
+  // categorias do Admin), só realocados, nada recriado.
   const secao = document.getElementById("conteudo-secao-mesa");
   const origemCardapio = document.getElementById("view-cardapio");
+  const slotBusca = document.getElementById("cc-slot-busca-cardapio");
+  const slotCategorias = document.getElementById("cc-slot-categorias-cardapio");
   if (secao && origemCardapio && !secao.dataset.cardapioRealocado) {
-    Array.from(origemCardapio.children).forEach(filho => secao.appendChild(filho));
+    const filhos = Array.from(origemCardapio.children);
+    filhos.forEach(filho => {
+      if (filho.querySelector("#search-input") && slotBusca) {
+        slotBusca.appendChild(filho);
+      } else if (filho.querySelector("#cat-nav") && slotCategorias) {
+        slotCategorias.appendChild(filho);
+      } else {
+        secao.appendChild(filho);
+      }
+    });
     secao.dataset.cardapioRealocado = "1";
     origemCardapio.style.display = "none"; // casca vazia, não pode sobrar visível
   }
@@ -12357,12 +12366,18 @@ function alternarOpcaoMesa(tab) {
   if (!secao) return;
   Array.from(secao.children).forEach(child => { child.style.display = "none"; });
   document.querySelectorAll(".cc-cli-painel").forEach(p => p.classList.remove("active"));
+  const slotBusca = document.getElementById("cc-slot-busca-cardapio");
+  const slotCategorias = document.getElementById("cc-slot-categorias-cardapio");
   if (tab === "cardapio") {
     const cardHeader = document.querySelector("#conteudo-secao-mesa > header");
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
     if (cardHeader) cardHeader.style.display = "";
     if (cardMain) cardMain.style.display = "";
+    if (slotBusca) slotBusca.style.display = "";
+    if (slotCategorias) slotCategorias.style.display = "";
   } else {
+    if (slotBusca) slotBusca.style.display = "none";
+    if (slotCategorias) slotCategorias.style.display = "none";
     const alvo = document.getElementById("cc-painel-" + painelId);
     if (alvo) { alvo.style.display = "block"; alvo.classList.add("active"); }
     if (tab === "pedidos") ccRenderPedidosCliente();
