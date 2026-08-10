@@ -722,12 +722,19 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
      agora vivem no conteúdo que rola, sem carrossel escondendo nada. -->
 <div id="cc-topo-fixo-cliente" class="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
     <!-- Nível 1: Barra Escura Nativa do Sistema — clique volta ao menu -->
-    <button onclick="alternarOpcaoMesa('home')" class="bg-[#0f172a] h-14 flex items-center justify-center border-b border-slate-800 w-full">
-        <span class="text-orange-500 font-bold mr-2 text-base">⚙️</span>
+    <button onclick="alternarOpcaoMesa('home')" class="bg-[#0f172a] h-14 flex items-center justify-center gap-2 border-b border-slate-800 w-full px-3">
+        <span class="text-orange-500 font-bold text-base">⚙️</span>
+        <span id="cc-nome-estabelecimento" class="text-white font-black text-xs uppercase tracking-wider truncate"></span>
+        <span class="text-white/40">·</span>
         <span id="label-mesa-ativa" class="text-white font-black text-sm tracking-widest uppercase">Mesa Ativa</span>
     </button>
-    <!-- Nível 2: slot real da barra de busca do cardápio (#search-input),
-         realocada aqui via JS — não é um input novo, é o de sempre -->
+    <!-- Nível 2: botão Voltar + slot real da barra de busca do cardápio
+         (#search-input), realocada aqui via JS — não é um input novo -->
+    <div id="cc-voltar-cardapio-wrap" class="hidden bg-white border-b border-slate-100 p-2">
+        <button onclick="alternarOpcaoMesa('home')" class="w-full flex items-center gap-2 text-slate-700 font-black text-sm px-2 py-1">
+            <span>⬅️</span><span>Voltar para o Início</span>
+        </button>
+    </div>
     <div id="cc-slot-busca-cardapio" class="bg-white border-b border-slate-100 p-2"></div>
     <!-- Nível 3: slot real do carrossel de categorias (#cat-nav) — não usado
          mais fixo, categorias vão pro conteúdo; mantido oculto por
@@ -735,7 +742,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
     <div id="cc-slot-categorias-cardapio" class="bg-white border-b shadow-sm p-2"></div>
 </div>
 <!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
-<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 130px !important;">
+<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 190px !important;">
 
   <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
        carrossel, todas abertas de uma vez, clique direto -->
@@ -756,6 +763,15 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         <span class="text-3xl">💳</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cliente VIP / Especial</span>
     </button>
+    <!-- Banner institucional de rodapé da capa (mesma identidade visual do
+         cardápio, só decorativo aqui) -->
+    <div class="rounded-2xl overflow-hidden relative mt-2" style="min-height:120px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
+      <div id="cc-home-banner-img" class="absolute inset-0" style="background-size:cover;background-position:center;opacity:.55"></div>
+      <div class="relative flex items-center gap-2 p-4">
+        <span class="text-2xl">🌴</span>
+        <span class="text-white font-black text-sm uppercase tracking-wider" id="cc-home-banner-nome"></span>
+      </div>
+    </div>
   </div>
 
       <!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
@@ -12353,6 +12369,12 @@ function ccIniciarModoCliente() {
   if (shell) shell.classList.remove("hidden");
   const label = document.getElementById("label-mesa-ativa");
   if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
+  const nomeTopo = document.getElementById("cc-nome-estabelecimento");
+  if (nomeTopo) nomeTopo.textContent = config.nome || "";
+  const nomeBanner = document.getElementById("cc-home-banner-nome");
+  if (nomeBanner) nomeBanner.textContent = config.nome || "";
+  const bannerImg = document.getElementById("cc-home-banner-img");
+  if (bannerImg && config.designBanner) bannerImg.style.backgroundImage = "url(" + config.designBanner + ")";
   ccInjetarComandaTeste(S.mesa);
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
@@ -12405,10 +12427,12 @@ function alternarOpcaoMesa(tab) {
   Array.from(secao.children).forEach(child => { child.style.display = "none"; });
   document.querySelectorAll(".cc-cli-painel").forEach(p => p.classList.remove("active"));
   const slotBusca = document.getElementById("cc-slot-busca-cardapio");
+  const voltarWrap = document.getElementById("cc-voltar-cardapio-wrap");
   if (tab === "home") {
     const home = document.getElementById("cc-painel-home");
     if (home) { home.style.display = "flex"; home.classList.add("active"); }
     if (slotBusca) slotBusca.style.display = "none";
+    if (voltarWrap) voltarWrap.classList.add("hidden");
   } else if (tab === "cardapio") {
     const cardHeader = document.querySelector("#conteudo-secao-mesa > header");
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
@@ -12417,8 +12441,10 @@ function alternarOpcaoMesa(tab) {
     if (cardMain) cardMain.style.display = "";
     if (cardCat) cardCat.style.display = "";
     if (slotBusca) slotBusca.style.display = "";
+    if (voltarWrap) voltarWrap.classList.remove("hidden");
   } else {
     if (slotBusca) slotBusca.style.display = "none";
+    if (voltarWrap) voltarWrap.classList.add("hidden");
     const alvo = document.getElementById("cc-painel-" + painelId);
     if (alvo) { alvo.style.display = "block"; alvo.classList.add("active"); }
     if (tab === "pedidos") ccRenderPedidosCliente();
