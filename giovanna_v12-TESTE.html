@@ -589,7 +589,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 
   <!-- CATEGORY NAV -->
   <div class="max-w-xl mx-auto px-4 mb-6" style="position:relative">
-    <div id="cat-nav" class="cat-scroll flex gap-2 overflow-x-auto pb-1" style="scroll-behavior:smooth"></div>
+    <div id="cat-nav" class="cat-scroll flex flex-col gap-3 p-3 w-full" style="scroll-behavior:smooth"></div>
     <div id="cat-nav-arrow" style="
       position:absolute;right:0;top:0;bottom:0;
       width:44px;pointer-events:none;
@@ -674,12 +674,13 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   #conteudo-secao-mesa #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
   #conteudo-secao-mesa #cat-nav-arrow{display:none}
   #cc-slot-categorias-cardapio{display:none}
-  /* Mesmo tratamento vertical de categorias, agora pra QUALQUER acesso de
-     cliente comum — Cardápio Digital e Delivery incluídos, não só ?mesa=.
-     Reaproveita o mesmo #cat-nav real, só amplia onde a regra se aplica. */
-  body.sir-cliente #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px;flex-wrap:nowrap}
-  body.sir-cliente #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-  body.sir-cliente #cat-nav-arrow{display:none}
+  /* Coluna vertical PERMANENTE de categorias — não é mais uma sobreposição
+     condicional por classe de papel, é o layout base do próprio elemento
+     #cat-nav no código-fonte. Vale pra qualquer acesso de cliente comum:
+     mesa, Cardápio Digital ou Delivery. */
+  #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px;flex-wrap:nowrap;width:100%}
+  #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  #cat-nav-arrow{display:none}
 
   /* A barra de checkout do carrinho (#cart-footer, com emojis 🛒/🗑/🧾) é
      usada em TODAS as telas do sistema — não pode ser deletada, senão o
