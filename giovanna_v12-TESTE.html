@@ -681,6 +681,12 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px;flex-wrap:nowrap;width:100%}
   #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
   #cat-nav-arrow{display:none}
+  /* 11 abas gerenciais em grade aberta, sem rolagem lateral nem setas —
+     só pro acesso geral do dono (URL sem parâmetros, papel "livre"). */
+  body.sir-livre #nav-main{overflow-x:visible;flex-wrap:wrap;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
+  body.sir-livre #nav-main [data-view]{width:100%;justify-content:center;padding:14px 10px;font-size:.85rem}
+  body.sir-livre #nav-arrow-left,
+  body.sir-livre #nav-arrow-right{display:none!important}
 
   /* A barra de checkout do carrinho (#cart-footer, com emojis 🛒/🗑/🧾) é
      usada em TODAS as telas do sistema — não pode ser deletada, senão o
@@ -711,63 +717,70 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 
 <!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
 <div id="view-mesa-cliente" class="hidden">
-<!-- BLOCO MESTRE FIXO EM CASCATA DE 4 NÍVEIS -->
+<!-- BLOCO MESTRE FIXO — só a barra da mesa (clicável, volta ao menu) e a
+     busca do cardápio quando ele está aberto. As 4 abas e as categorias
+     agora vivem no conteúdo que rola, sem carrossel escondendo nada. -->
 <div id="cc-topo-fixo-cliente" class="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
-    <!-- Nível 1: Barra Escura Nativa do Sistema -->
-    <div class="bg-[#0f172a] h-14 flex items-center justify-center border-b border-slate-800">
-        <span class="text-orange-500 font-bold mr-2 text-base">⚙️</span>
+    <!-- Nível 1: Barra Escura Nativa do Sistema — clique volta ao menu -->
+    <button onclick="alternarOpcaoMesa('home')" class="bg-[#0f172a] h-14 flex items-center justify-center gap-2 border-b border-slate-800 w-full px-3">
+        <span class="text-orange-500 font-bold text-base">⚙️</span>
+        <span id="cc-nome-estabelecimento" class="text-white font-black text-xs uppercase tracking-wider truncate"></span>
+        <span class="text-white/40">·</span>
         <span id="label-mesa-ativa" class="text-white font-black text-sm tracking-widest uppercase">Mesa Ativa</span>
-    </div>
-    <!-- Nível 2: Carrossel horizontal único das 6 abas móveis, em pílulas -->
-    <div style="position:relative">
-    <div class="flex flex-row overflow-x-auto whitespace-nowrap scrollbar-none gap-2 p-2 bg-white border-b border-slate-100 sticky top-14 z-40">
-        <button onclick="alternarOpcaoMesa('cardapio')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
-            <span>🍽️</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Cardápio</span>
-        </button>
-        <button onclick="alternarOpcaoMesa('pedidos')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
-            <span>⏳</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Pedidos</span>
-        </button>
-        <button onclick="alternarOpcaoMesa('conta')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
-            <span>🧾</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Conta</span>
-        </button>
-        <button onclick="alternarOpcaoMesa('fechamento')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
-            <span>🏁</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Fechamento</span>
-        </button>
-        <button onclick="alternarOpcaoMesa('fiado')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
-            <span>💳</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">VIP / Fiado</span>
-        </button>
-        <button onclick="alternarOpcaoMesa('avaliacao')" class="px-4 py-2 bg-slate-50 border rounded-full flex items-center space-x-1.5 flex-shrink-0">
-            <span>⭐</span><span class="text-xs font-black uppercase text-slate-800 tracking-wider">Avaliação</span>
+    </button>
+    <!-- Nível 2: botão Voltar + slot real da barra de busca do cardápio
+         (#search-input), realocada aqui via JS — não é um input novo -->
+    <div id="cc-voltar-cardapio-wrap" class="hidden bg-white border-b border-slate-100 p-2">
+        <button onclick="alternarOpcaoMesa('home')" class="w-full flex items-center gap-2 text-slate-700 font-black text-sm px-2 py-1">
+            <span>⬅️</span><span>Voltar para o Início</span>
         </button>
     </div>
-    <div id="cc-abas-nav-arrow" style="
-      position:absolute;right:0;top:0;bottom:0;
-      width:44px;pointer-events:none;
-      display:flex;align-items:center;justify-content:flex-end;
-      background:linear-gradient(to right, transparent, rgba(255,255,255,.95) 55%);
-      border-radius:0 999px 999px 0;
-      transition:opacity .3s;
-    ">
-      <span style="
-        display:flex;align-items:center;justify-content:center;
-        width:28px;height:28px;
-        background:#f97316;border-radius:50%;
-        color:#fff;font-size:.85rem;
-        animation:cat-pulse 1.4s ease-in-out infinite;
-        box-shadow:0 2px 8px rgba(249,115,22,.35);
-        pointer-events:none;
-      ">›</span>
-    </div>
-    </div>
-    <!-- Nível 3: slot real da barra de busca do cardápio (#search-input),
-         realocada aqui via JS — não é um input novo, é o de sempre -->
     <div id="cc-slot-busca-cardapio" class="bg-white border-b border-slate-100 p-2"></div>
-    <!-- Nível 4: slot real do carrossel de categorias (#cat-nav),
-         realocado aqui via JS — mesmas categorias reais do Admin -->
+    <!-- Nível 3: slot real do carrossel de categorias (#cat-nav) — não usado
+         mais fixo, categorias vão pro conteúdo; mantido oculto por
+         compatibilidade -->
     <div id="cc-slot-categorias-cardapio" class="bg-white border-b shadow-sm p-2"></div>
 </div>
 <!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
-<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 240px !important;">
+<div id="conteudo-secao-mesa" class="w-full px-4 pb-36 bg-slate-50 min-h-screen" style="padding-top: 190px !important;">
+
+  <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
+       carrossel, todas abertas de uma vez, clique direto -->
+  <div id="cc-painel-home" class="cc-cli-painel flex flex-col gap-3 p-3 w-full">
+    <button onclick="alternarOpcaoMesa('cardapio')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="text-3xl">🍽️</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cardápio / Carta / Menu</span>
+    </button>
+    <button onclick="alternarOpcaoMesa('pedidos')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="text-3xl">⏳</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Meu Pedido / Andamento</span>
+    </button>
+    <button onclick="alternarOpcaoMesa('conta')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="text-3xl">🧾</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Minha Conta</span>
+    </button>
+    <button onclick="alternarOpcaoMesa('fechamento')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="text-3xl">🏁</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Fechamento</span>
+    </button>
+    <button onclick="alternarOpcaoMesa('fiado')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="text-3xl">💳</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cliente VIP / Especial</span>
+    </button>
+    <button onclick="alternarOpcaoMesa('avaliacao')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="text-3xl">⭐</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Avaliação</span>
+    </button>
+    <!-- Banner institucional de rodapé da capa (mesma identidade visual do
+         cardápio, só decorativo aqui) -->
+    <div class="rounded-2xl overflow-hidden relative mt-2" style="min-height:120px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
+      <div id="cc-home-banner-img" class="absolute inset-0" style="background-size:cover;background-position:center;opacity:.55"></div>
+      <div class="relative flex items-center gap-2 p-4">
+        <span class="text-2xl">🌴</span>
+        <span class="text-white font-black text-sm uppercase tracking-wider" id="cc-home-banner-nome"></span>
+      </div>
+    </div>
+  </div>
 
       <!-- ABA: ACOMPANHAMENTO DOS PEDIDOS -->
       <div id="cc-painel-pedidos" class="cc-cli-painel">
@@ -831,6 +844,12 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
       </div>
 
     </div>
+
+    <!-- BOTÃO FLUTUANTE: CHAMAR ATENDENTE (reaproveita ccChamarGarcomCartao(),
+         já real e já sincronizado por Realtime com Atendente/Mesas/alerta sonoro) -->
+    <button onclick="ccChamarGarcomCartao()" class="fixed bottom-6 right-6 z-50 bg-red-600 text-white rounded-full shadow-2xl flex items-center gap-2 px-5 py-4 font-black text-sm active:scale-95 transition-transform">
+        <span class="text-xl">🔔</span><span>Chamar Atendente</span>
+    </button>
 
 </div>
 
@@ -5989,6 +6008,9 @@ const SirAccess = (function() {
       document.body.classList.add('sir-cliente');
       const wrapperTopo = document.getElementById('cc-topbar-wrapper');
       if (wrapperTopo) wrapperTopo.remove();
+    }
+    if (role === 'livre') {
+      document.body.classList.add('sir-livre');
     }
 
     // Barra de perfil
@@ -12355,8 +12377,13 @@ function ccIniciarModoCliente() {
   if (shell) shell.classList.remove("hidden");
   const label = document.getElementById("label-mesa-ativa");
   if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
+  const nomeTopo = document.getElementById("cc-nome-estabelecimento");
+  if (nomeTopo) nomeTopo.textContent = config.nome || "";
+  const nomeBanner = document.getElementById("cc-home-banner-nome");
+  if (nomeBanner) nomeBanner.textContent = config.nome || "";
+  const bannerImg = document.getElementById("cc-home-banner-img");
+  if (bannerImg && config.designBanner) bannerImg.style.backgroundImage = "url(" + config.designBanner + ")";
   ccInjetarComandaTeste(S.mesa);
-  _ccSyncSetaCarrosselAbas();
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
   // busca, categorias e main (itens). Banner e itens rolam livremente
@@ -12383,7 +12410,7 @@ function ccIniciarModoCliente() {
     origemCardapio.style.display = "none"; // casca vazia, não pode sobrar visível
   }
 
-  alternarOpcaoMesa("cardapio");
+  alternarOpcaoMesa("home");
   if (!_ccTimerInterval) _ccTimerInterval = setInterval(ccAtualizarTimers, 1000);
   if (!_ccPedidosPollInterval) {
     _ccPedidosPollInterval = setInterval(() => {
@@ -12397,11 +12424,9 @@ function ccIniciarModoCliente() {
   }
 }
 
-// Roteador único dos 6 botões físicos da grade 3x2.
+// Roteador único das 4 abas unificadas + menu inicial (home).
 function alternarOpcaoMesa(tab) {
   if (!ccModoClienteAtivo()) return;
-  // A grade nova usa 'fiado'/'avaliacao' como nome do botão — traduz pros
-  // ids reais dos painéis (cc-painel-vip / cc-painel-avaliar), já testados.
   const ALIAS_PAINEL = { fiado: "vip", avaliacao: "avaliar" };
   const painelId = ALIAS_PAINEL[tab] || tab;
   _ccAbaAtual = tab;
@@ -12410,7 +12435,13 @@ function alternarOpcaoMesa(tab) {
   Array.from(secao.children).forEach(child => { child.style.display = "none"; });
   document.querySelectorAll(".cc-cli-painel").forEach(p => p.classList.remove("active"));
   const slotBusca = document.getElementById("cc-slot-busca-cardapio");
-  if (tab === "cardapio") {
+  const voltarWrap = document.getElementById("cc-voltar-cardapio-wrap");
+  if (tab === "home") {
+    const home = document.getElementById("cc-painel-home");
+    if (home) { home.style.display = "flex"; home.classList.add("active"); }
+    if (slotBusca) slotBusca.style.display = "none";
+    if (voltarWrap) voltarWrap.classList.add("hidden");
+  } else if (tab === "cardapio") {
     const cardHeader = document.querySelector("#conteudo-secao-mesa > header");
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
     const cardCat = Array.from(secao.children).find(el => el.querySelector && el.querySelector("#cat-nav"));
@@ -12418,8 +12449,10 @@ function alternarOpcaoMesa(tab) {
     if (cardMain) cardMain.style.display = "";
     if (cardCat) cardCat.style.display = "";
     if (slotBusca) slotBusca.style.display = "";
+    if (voltarWrap) voltarWrap.classList.remove("hidden");
   } else {
     if (slotBusca) slotBusca.style.display = "none";
+    if (voltarWrap) voltarWrap.classList.add("hidden");
     const alvo = document.getElementById("cc-painel-" + painelId);
     if (alvo) { alvo.style.display = "block"; alvo.classList.add("active"); }
     if (tab === "pedidos") ccRenderPedidosCliente();
@@ -12430,8 +12463,18 @@ function alternarOpcaoMesa(tab) {
   if (cf) cf.classList.toggle("hide", tab !== "cardapio" || cartCount() === 0);
 }
 
-// Botões 4, 5 e 6 da grade chamam funções com nome próprio — todas roteiam
-// pro mesmo alternarOpcaoMesa(), sem duplicar lógica.
+// trocarTela() — nome único pedido pra alternar QUALQUER tela do sistema.
+// Roteia pra alternarOpcaoMesa() no contexto do cliente (?mesa=) e pro
+// showView() real do painel administrativo nos outros casos — nenhuma
+// lógica nova, só um nome só pros dois roteadores já reais e testados.
+function trocarTela(tela) {
+  if (ccModoClienteAtivo()) { alternarOpcaoMesa(tela); return; }
+  const btn = document.querySelector('.nav-tab[data-view="' + tela + '"]');
+  showView(tela, btn);
+}
+
+// Aliases mantidos por compatibilidade — não ligados a nenhum botão do
+// menu inicial agora, mas continuam funcionais se chamados.
 function dispararFechamentoPix() { alternarOpcaoMesa("fechamento"); }
 function acionarFluxoFiadoVIP() { alternarOpcaoMesa("vip"); }
 function abrirPainelAvaliacaoMesa() { alternarOpcaoMesa("avaliar"); }
