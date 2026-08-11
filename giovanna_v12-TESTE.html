@@ -12473,6 +12473,39 @@ function trocarTela(tela) {
   showView(tela, btn);
 }
 
+// ISOLAMENTO FÍSICO DA GRADE DE 11 ABAS (acesso "livre"/dono, sem ?mesa=):
+// ao abrir qualquer módulo, a grade inteira some (display:none) e um botão
+// "⬅️ Voltar para o Painel" aparece fixo pra trazer ela de volta — sem
+// isso, o módulo abria empilhado embaixo da grade ainda visível.
+(function ccIsolarPainelGeralDono() {
+  function montarBotaoVoltar() {
+    if (document.getElementById("cc-btn-voltar-painel")) return;
+    const btn = document.createElement("button");
+    btn.id = "cc-btn-voltar-painel";
+    btn.className = "hidden";
+    btn.style.cssText = "position:fixed;top:10px;left:10px;z-index:60;background:#0f172a;color:#fff;border:none;border-radius:12px;padding:10px 16px;font-weight:800;font-size:.82rem;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer";
+    btn.innerHTML = "⬅️ Voltar para o Painel";
+    btn.onclick = function() {
+      const nav = document.getElementById("nav-main-wrapper");
+      if (nav) nav.style.display = "";
+      btn.classList.add("hidden");
+    };
+    document.body.appendChild(btn);
+  }
+  document.addEventListener("DOMContentLoaded", () => setTimeout(montarBotaoVoltar, 300));
+  setTimeout(montarBotaoVoltar, 800);
+
+  const _swAnteriorPainel = showView;
+  showView = function(name, b) {
+    _swAnteriorPainel(name, b);
+    if (!document.body.classList.contains("sir-livre")) return;
+    const nav = document.getElementById("nav-main-wrapper");
+    const btnVoltar = document.getElementById("cc-btn-voltar-painel");
+    if (nav) nav.style.display = "none";
+    if (btnVoltar) btnVoltar.classList.remove("hidden");
+  };
+})();
+
 // Aliases mantidos por compatibilidade — não ligados a nenhum botão do
 // menu inicial agora, mas continuam funcionais se chamados.
 function dispararFechamentoPix() { alternarOpcaoMesa("fechamento"); }
