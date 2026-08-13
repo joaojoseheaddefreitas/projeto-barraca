@@ -13306,5 +13306,501 @@ document.addEventListener("DOMContentLoaded", () => setTimeout(ccIniciarModoClie
 setTimeout(ccIniciarModoCliente, 900);
 
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     AUTO BEACH — CARDÁPIO PREMIUM UNIVERSAL / CLIENTE 4 ABAS
+     Última camada estrutural: não substitui as funções existentes; cria uma
+     única experiência visual para Dono e Cliente e impede sobreposição.
+════════════════════════════════════════════════════════════════════════ -->
+<style>
+#cc-premium-cardapio-owner,#cc-premium-cardapio-cliente{min-height:100vh;background:#f5f7fa;position:relative;z-index:30}
+.ccp-banner{position:relative;min-height:220px;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:4px solid #ea580c}
+.ccp-banner-img{position:absolute;inset:0;background-position:center;background-size:cover;opacity:.48}
+.ccp-banner-shade{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.92),rgba(30,58,95,.58) 55%,rgba(15,23,42,.88))}
+.ccp-banner-content{position:relative;z-index:2;min-height:216px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 18px}
+.ccp-title{font-family:Georgia,serif;color:#fff;font-weight:900;font-size:clamp(1.8rem,4vw,3.2rem);line-height:1.05;text-shadow:0 3px 16px rgba(0,0,0,.55)}
+.ccp-address{margin-top:12px;background:#ea580c;color:#fff;border-radius:999px;padding:9px 18px;font-weight:900;font-size:.82rem;letter-spacing:.04em;box-shadow:0 6px 18px rgba(234,88,12,.28)}
+.ccp-hours{margin-top:9px;color:#dbeafe;font-weight:800;font-size:.78rem}
+.ccp-toolbar{position:sticky;top:0;z-index:80;width:100%;background:#0f172a;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 4px 18px rgba(15,23,42,.18)}
+.ccp-back{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px 14px;color:#f97316;font-weight:900;font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:transform .15s,background .15s;white-space:nowrap}
+.ccp-back:active{transform:scale(.95)}
+.ccp-toolbar-title{font-weight:900;font-size:.95rem;text-transform:uppercase;letter-spacing:.08em;text-align:center;flex:1}
+.ccp-status{background:rgba(245,158,11,.18);color:#fbbf24;border:1px solid rgba(245,158,11,.3);padding:6px 10px;border-radius:999px;font-weight:900;font-size:.68rem;text-transform:uppercase;white-space:nowrap}
+.ccp-control{width:100%;max-width:1050px;margin:0 auto;padding:18px;display:flex;gap:12px;align-items:center;background:#fff;border-bottom:1px solid #e2e8f0}
+.ccp-search-wrap{position:relative;flex:1;min-width:220px}
+.ccp-search{width:100%;border:2px solid #cbd5e1;border-radius:14px;padding:13px 48px 13px 46px;font-weight:800;color:#0f172a;outline:none;background:#fff}
+.ccp-search:focus{border-color:#0f172a;box-shadow:0 0 0 3px rgba(15,23,42,.08)}
+.ccp-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.15rem}
+.ccp-search-voice{position:absolute;right:7px;top:50%;transform:translateY(-50%);border:0;background:#f1f5f9;border-radius:10px;width:36px;height:36px;font-size:1.1rem;cursor:pointer}
+.ccp-helper{max-width:1050px;margin:0 auto;padding:10px 18px 0;color:#64748b;font-size:.74rem;font-weight:800;text-align:center}
+.ccp-category-grid{width:100%;max-width:1050px;margin:0 auto;padding:20px 18px 36px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ccp-cat{position:relative;min-height:170px;border:0;border-radius:22px;overflow:hidden;cursor:pointer;background:#0f172a;box-shadow:0 7px 22px rgba(15,23,42,.12);transition:transform .15s,box-shadow .15s}
+.ccp-cat:active{transform:scale(.96)}
+.ccp-cat-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.ccp-cat:hover .ccp-cat-img{transform:scale(1.05)}
+.ccp-cat-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,23,42,.94),rgba(15,23,42,.08) 70%)}
+.ccp-cat-content{position:absolute;inset:auto 0 0;padding:16px;text-align:left;color:#fff;display:flex;align-items:center;gap:12px}
+.ccp-cat-icon{font-size:2.8rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.ccp-cat-name{font-weight:900;font-size:1.05rem;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.55)}
+.ccp-cat-count{font-size:.7rem;font-weight:800;color:#dbeafe;margin-top:2px}
+.ccp-list{width:100%;max-width:1050px;margin:0 auto;padding:18px 18px 120px}
+.ccp-list-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}
+.ccp-list-title{font-size:1.25rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.04em}
+.ccp-list-sub{font-size:.75rem;color:#64748b;font-weight:800}
+.ccp-items-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.ccp-item{background:#fff;border:1px solid #e2e8f0;border-radius:22px;overflow:hidden;box-shadow:0 5px 18px rgba(15,23,42,.08);display:flex;flex-direction:column}
+.ccp-item-img-wrap{position:relative;aspect-ratio:4/3;background:#e2e8f0;overflow:hidden}
+.ccp-item-img{width:100%;height:100%;object-fit:cover;display:block}
+.ccp-item-badge{position:absolute;left:10px;top:10px;background:rgba(15,23,42,.86);color:#fff;border-radius:999px;padding:6px 9px;font-size:.7rem;font-weight:900}
+.ccp-item-body{padding:14px;display:flex;flex-direction:column;flex:1}
+.ccp-item-name{font-size:1rem;font-weight:900;color:#0f172a;line-height:1.15}
+.ccp-item-desc{font-size:.78rem;color:#64748b;margin-top:6px;line-height:1.35}
+.ccp-item-bottom{margin-top:auto;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ccp-price{font-size:1.05rem;font-weight:900;color:#0f172a}
+.ccp-add{background:#ea580c;color:#fff;border:0;border-radius:13px;padding:10px 13px;font-weight:900;cursor:pointer;transition:transform .15s}
+.ccp-add:active{transform:scale(.94)}
+.ccp-qty{display:flex;align-items:center;gap:8px;background:#f1f5f9;border-radius:13px;padding:4px}
+.ccp-qty button{width:34px;height:34px;border:0;border-radius:10px;background:#0f172a;color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer}
+.ccp-qty span{min-width:24px;text-align:center;font-weight:900;color:#0f172a}
+.ccp-empty{padding:60px 20px;text-align:center;color:#64748b;font-weight:800}
+.ccp-empty-icon{font-size:4rem;margin-bottom:10px}
+.ccp-client-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:70}
+.ccp-client-tab{border:1px solid #e2e8f0;background:#fff;border-radius:16px;padding:11px 7px;font-weight:900;color:#0f172a;cursor:pointer;text-align:center;font-size:.72rem;transition:transform .15s,background .15s}
+.ccp-client-tab:active{transform:scale(.95)}
+.ccp-client-tab .ico{display:block;font-size:1.8rem;line-height:1.1;margin-bottom:4px}
+.ccp-client-tab.active{background:#0f172a;color:#fff;border-color:#0f172a}
+.ccp-client-back{display:none}
+.ccp-client-home{padding:20px 16px 90px;background:#f5f7fa;min-height:calc(100vh - 70px)}
+.ccp-client-card{background:#fff;border:1px solid #e2e8f0;border-radius:22px;padding:20px;display:flex;align-items:center;gap:16px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+@media(max-width:640px){.ccp-toolbar{padding:11px 10px}.ccp-toolbar-title{font-size:.76rem}.ccp-status{font-size:.6rem}.ccp-back{padding:9px 10px;font-size:.65rem}.ccp-category-grid,.ccp-items-grid{grid-template-columns:1fr}.ccp-cat{min-height:150px}.ccp-control{padding:12px 10px}.ccp-client-tabs{gap:6px;padding:9px 7px}.ccp-client-tab{font-size:.61rem;padding:8px 3px}.ccp-client-tab .ico{font-size:1.45rem}.ccp-banner{min-height:190px}.ccp-banner-content{min-height:186px}.ccp-title{font-size:1.75rem}.ccp-address{font-size:.7rem}}
+@media(min-width:768px){.ccp-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.ccp-items-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+<script>
+(function(){
+  'use strict';
+  const OWNER_ID='cc-premium-cardapio-owner', CLIENT_ID='cc-premium-cardapio-cliente';
+  let ownerState={screen:'categories',filter:'all',query:''};
+  let clientState={screen:'categories',filter:'all',query:''};
+
+  function isClient(){try{return typeof ccModoClienteAtivo==='function' && ccModoClienteAtivo();}catch(e){return false;}}
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+  function bannerImage(){
+    try{if(window.config && config.designBanner) return config.designBanner;}catch(e){}
+    const img=document.querySelector('#view-cardapio header img');
+    return img && img.src ? img.src : '';
+  }
+  function catImage(cat){
+    const it=(cat && cat.itens||[]).find(x=>x && x.ativo!==false && x.img);
+    return it && it.img ? it.img : '';
+  }
+  function catCount(cat){return (cat&&cat.itens||[]).filter(x=>x&&x.ativo!==false).length;}
+  function allActiveItems(){return (window.categorias||[]).flatMap(c=>(c.itens||[]).filter(i=>i&&i.ativo!==false).map(i=>({item:i,cat:c})));}
+  function speak(text){try{if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='pt-BR';u.rate=.9;speechSynthesis.speak(u);}}catch(e){}}
+  function voiceSearch(input){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){if(typeof toast==='function')toast('Busca por voz não disponível neste aparelho');return;}
+    const r=new SR(); r.lang='pt-BR'; r.interimResults=false; r.maxAlternatives=1;
+    r.onstart=()=>{input.placeholder='🎙️ Fale o prato ou bebida...';};
+    r.onresult=e=>{input.value=e.results[0][0].transcript; premiumSearch(input.value,input.closest('[data-mode]').dataset.mode);};
+    r.onerror=()=>{input.placeholder='🔎 Buscar prato ou bebida...';};
+    r.onend=()=>{input.placeholder='🔎 Buscar prato ou bebida...';}; r.start();
+  }
+  function hideOwnerCover(){
+    const cap=document.getElementById('cc-capa-institucional'); if(cap) cap.style.display='none';
+    const nav=document.getElementById('nav-main-wrapper'); if(nav) nav.style.display='none';
+    document.querySelectorAll('[id^="view-"]').forEach(el=>el.classList.add('hidden'));
+    const feed=document.getElementById('cc-clientes-feedbacks-card'); if(feed) feed.classList.add('hidden');
+  }
+  function showOwnerCover(){
+    const cap=document.getElementById('cc-capa-institucional'); if(cap) cap.style.display='';
+    const nav=document.getElementById('nav-main-wrapper'); if(nav) nav.style.display='';
+    document.querySelectorAll('[id^="view-"]').forEach(el=>el.classList.add('hidden'));
+    document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  }
+  function closeShell(id){const el=document.getElementById(id);if(el)el.remove();}
+  function itemCard(item,cat){
+    const q=(window.S&&S.cart&&S.cart[item.id])||0;
+    const img=item.img||catImage(cat)||'';
+    return `<article class="ccp-item">
+      <div class="ccp-item-img-wrap">
+        ${img?`<img class="ccp-item-img" src="${esc(img)}" alt="${esc(item.nome)}" loading="lazy" onerror="this.style.display='none'">`:`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem">${esc(cat.icone||'🍽️')}</div>`}
+        <span class="ccp-item-badge">${esc(cat.icone||'🍽️')} ${esc(cat.nome||'')}</span>
+      </div>
+      <div class="ccp-item-body">
+        <div class="ccp-item-name">${esc(item.nome)}</div>
+        <div class="ccp-item-desc">${esc(item.desc||'Toque para conhecer este item.')}</div>
+        <div class="ccp-item-bottom">
+          <span class="ccp-price">${typeof fmtBRL==='function'?fmtBRL(Number(item.preco||0)):'R$ '+Number(item.preco||0).toFixed(2)}</span>
+          ${q?`<div class="ccp-qty"><button aria-label="Diminuir" onclick="event.stopPropagation();ccPremiumQty('${esc(item.id)}',-1)">−</button><span>${q}</span><button aria-label="Aumentar" onclick="event.stopPropagation();ccPremiumQty('${esc(item.id)}',1)">+</button></div>`:`<button class="ccp-add" onclick="ccPremiumAdd('${esc(item.id)}')">➕ PEDIR</button>`}
+        </div>
+      </div>
+    </article>`;
+  }
+  function renderItemsInto(el,filter,query){
+    const data=allActiveItems().filter(x=>filter==='all'||x.cat.id===filter).filter(x=>!query || (x.item.nome+' '+(x.item.desc||'')).toLowerCase().includes(query.toLowerCase()));
+    if(!data.length){el.innerHTML='<div class="ccp-empty"><div class="ccp-empty-icon">🔎</div><div>Não encontrei este prato ou bebida.</div><div style="font-size:.75rem;margin-top:6px">Tente outro nome ou use as imagens das categorias.</div></div>';return;}
+    const grouped={}; data.forEach(x=>(grouped[x.cat.id]||(grouped[x.cat.id]={cat:x.cat,items:[]})).items.push(x.item));
+    el.innerHTML=Object.values(grouped).map(g=>`<section style="margin-bottom:28px"><div class="ccp-list-head"><div><div class="ccp-list-title">${esc(g.cat.icone||'🍽️')} ${esc(g.cat.nome)}</div><div class="ccp-list-sub">${g.items.length} opção(ões) · toque na foto ou em PEDIR</div></div><button class="ccp-back" style="color:#0f172a;background:#f8fafc" onclick="ccPremiumBack()">⬅️ Voltar</button></div><div class="ccp-items-grid">${g.items.map(i=>itemCard(i,g.cat)).join('')}</div></section>`).join('');
+  }
+  function renderCategories(el,mode){
+    const cats=window.categorias||[];
+    const cards=[{id:'all',nome:'Todos',icone:'🍽️',img:catImage(cats[0])}].concat(cats.map(c=>({id:c.id,nome:c.nome,icone:c.icone||'🍽️',img:catImage(c)})));
+    el.innerHTML=cards.map(c=>`<button class="ccp-cat" onclick="ccPremiumSelect('${esc(c.id)}','${mode}')" aria-label="${esc(c.nome)}">
+      ${c.img?`<img class="ccp-cat-img" src="${esc(c.img)}" alt="${esc(c.nome)}" loading="lazy" onerror="this.style.display='none'">`:''}<div class="ccp-cat-shade"></div><div class="ccp-cat-content"><span class="ccp-cat-icon">${esc(c.icone)}</span><div><div class="ccp-cat-name">${esc(c.nome)}</div><div class="ccp-cat-count">${c.id==='all'?'Ver todo o cardápio':catCount(c)+' itens'}</div></div></div></button>`).join('');
+  }
+  function shellHTML(mode){
+    const owner=mode==='owner';
+    return `<div class="ccp-banner"><div class="ccp-banner-img" style="background-image:url('${esc(bannerImage())}')"></div><div class="ccp-banner-shade"></div><div class="ccp-banner-content"><div class="ccp-title">🏖️ ${esc((window.config&&config.nome)||'BARRACA SOL DA BAHIA')}</div><div class="ccp-address">${esc((window.config&&config.local)||'PRAIA DO FAROL DE ITAPUÃ · SALVADOR BA')}</div><div class="ccp-hours">${esc((window.config&&config.horario)||'Seg–Dom · 09h–20h')}</div></div></div>
+      <div class="ccp-toolbar"><button class="ccp-back" onclick="ccPremiumBack('${mode}')">⬅️ Voltar</button><span class="ccp-toolbar-title">🗂️ ${owner?'Gestão de Cardápio':'Cardápio Digital'}</span><span class="ccp-status">${owner?'Dono':'Mesa'}</span></div>
+      <div class="ccp-control" data-mode="${mode}"><div class="ccp-search-wrap"><span class="ccp-search-icon">🔎</span><input class="ccp-search" id="ccp-search-${mode}" type="text" autocomplete="off" placeholder="🔎 Buscar prato, bebida ou combo..." oninput="ccPremiumSearch(this.value,'${mode}')"><button class="ccp-search-voice" title="Buscar por voz" onclick="ccPremiumVoice('${mode}')">🎙️</button></div></div>
+      <div id="ccp-content-${mode}"></div>`;
+  }
+  function mountOwner(){
+    closeShell(OWNER_ID); hideOwnerCover();
+    const shell=document.createElement('div'); shell.id=OWNER_ID; shell.innerHTML=shellHTML('owner'); document.body.appendChild(shell);
+    ownerState={screen:'categories',filter:'all',query:''}; renderShell('owner'); window.scrollTo(0,0);
+  }
+  function mountClient(){
+    const host=document.getElementById('conteudo-secao-mesa'); if(!host)return;
+    closeShell(CLIENT_ID);
+    Array.from(host.children).forEach(ch=>{ch.style.display='none';});
+    const shell=document.createElement('div'); shell.id=CLIENT_ID; shell.innerHTML=shellHTML('client'); host.appendChild(shell);
+    clientState={screen:'categories',filter:'all',query:''}; renderShell('client');
+  }
+  function renderShell(mode){
+    const shell=document.getElementById(mode==='owner'?OWNER_ID:CLIENT_ID); if(!shell)return;
+    const state=mode==='owner'?ownerState:clientState; const content=shell.querySelector('#ccp-content-'+mode); if(!content)return;
+    if(state.screen==='categories'){
+      content.innerHTML='<div class="ccp-helper">👆 Escolha pelas imagens ou escreva diretamente o que procura. Não é necessário escolher categoria para buscar.</div><div id="ccp-cat-grid-'+mode+'" class="ccp-category-grid"></div>';
+      renderCategories(content.querySelector('#ccp-cat-grid-'+mode),mode); return;
+    }
+    content.innerHTML='<div class="ccp-list"></div>';
+    renderItemsInto(content.querySelector('.ccp-list'),state.filter,state.query);
+    const inp=shell.querySelector('#ccp-search-'+mode); if(inp) inp.value=state.query;
+  }
+  window.ccPremiumSelect=function(id,mode){
+    const state=mode==='owner'?ownerState:clientState; state.screen='listing';state.filter=id;state.query='';renderShell(mode);window.scrollTo(0,0);
+  };
+  window.ccPremiumSearch=function(q,mode){
+    const state=mode==='owner'?ownerState:clientState;state.query=(q||'').trim();state.filter='all';state.screen=state.query?'listing':'categories';renderShell(mode);window.scrollTo(0,0);
+  };
+  window.ccPremiumVoice=function(mode){const i=document.getElementById('ccp-search-'+mode);if(i)voiceSearch(i);};
+  window.ccPremiumAdd=function(id){if(typeof inc==='function')inc(id);setTimeout(()=>{const mode=isClient()?'client':'owner';renderShell(mode);},30);};
+  window.ccPremiumQty=function(id,d){if(d>0&&typeof inc==='function')inc(id);else if(d<0&&typeof dec==='function')dec(id);setTimeout(()=>{const mode=isClient()?'client':'owner';renderShell(mode);},30);};
+  window.ccPremiumBack=function(mode){
+    if(isClient()){
+      const state=clientState;
+      if(state.screen==='listing'){state.screen='categories';state.filter='all';state.query='';renderShell('client');window.scrollTo(0,0);return;}
+      if(typeof alternarOpcaoMesa==='function') alternarOpcaoMesa('home');
+      return;
+    }
+    const state=ownerState;
+    if(state.screen==='listing'){state.screen='categories';state.filter='all';state.query='';renderShell('owner');window.scrollTo(0,0);return;}
+    window.voltarParaPainelMestre();
+  };
+  window.voltarParaPainelMestre=function(){
+    closeShell(OWNER_ID);
+    showOwnerCover();
+    try{if(typeof S!=='undefined')S.viewAtual='';}catch(e){}
+    window.scrollTo(0,0);
+  };
+
+  // Mantém a função de troca das telas, mas o Cardápio passa a ser uma tela
+  // totalmente isolada. Nenhum módulo anterior fica por baixo dela.
+  const baseShowView=window.showView;
+  window.showView=function(name,btn){
+    if(isClient()){ if(name==='cardapio'&&typeof alternarOpcaoMesa==='function')alternarOpcaoMesa('cardapio'); return; }
+    if(name==='cardapio'){mountOwner();return;}
+    closeShell(OWNER_ID); showOwnerCover();
+    if(typeof baseShowView==='function')baseShowView(name,btn);
+  };
+
+  // Substitui o roteador do cliente depois de todas as versões anteriores.
+  const baseAlternar=window.alternarOpcaoMesa;
+  window.alternarOpcaoMesa=function(tab){
+    if(!isClient()){if(typeof baseAlternar==='function')return baseAlternar(tab);return;}
+    const shell=document.getElementById(CLIENT_ID);
+    const tabs=['cardapio','pedidos','conta','avaliar','fechamento','fiado'];
+    if(tab==='home'){
+      clientModuleBackButton(false);
+      closeShell(CLIENT_ID); const host=document.getElementById('conteudo-secao-mesa');if(host)Array.from(host.children).forEach(ch=>{ch.style.display='';});
+      if(typeof baseAlternar==='function')baseAlternar('home'); return;
+    }
+    if(tab==='cardapio'){clientModuleBackButton(false);mountClient();return;}
+    clientModuleBackButton(true);
+    if(!shell&&typeof baseAlternar==='function')baseAlternar(tab);
+    if(tab==='avaliar')tab='avaliacao';
+    if(typeof baseAlternar==='function')baseAlternar(tab);
+    // Recolhe qualquer painel de menu e coloca a seta visível no topo do módulo.
+    if(!document.getElementById(CLIENT_ID)){
+      const host=document.getElementById('conteudo-secao-mesa');if(host)Array.from(host.children).forEach(ch=>{if(!ch.classList.contains('cc-cli-painel'))ch.style.display='none';});
+    }
+  };
+
+  // Reescreve a navegação de categoria existente apenas para impedir o
+  // comportamento antigo de carrossel; a nova camada usa cartões visuais.
+  window.setCat=function(id){
+    if(window.S)S.cat=id;
+    const mode=isClient()?'client':'owner';
+    const state=mode==='client'?clientState:ownerState;
+    state.screen='listing';state.filter=id;state.query='';renderShell(mode);
+  };
+
+  function clientModuleBackButton(show){
+    let b=document.getElementById('cc-client-back-premium');
+    if(!b){b=document.createElement('button');b.id='cc-client-back-premium';b.innerHTML='⬅️ Voltar';b.style.cssText='position:fixed;left:12px;top:12px;z-index:9999;background:#0f172a;color:#f97316;border:1px solid #334155;border-radius:14px;padding:10px 14px;font-weight:900;font-size:.78rem;box-shadow:0 5px 18px rgba(0,0,0,.25);cursor:pointer';b.onclick=()=>{if(typeof alternarOpcaoMesa==='function')alternarOpcaoMesa('home');};document.body.appendChild(b);}
+    b.style.display=show?'block':'none';
+  }
+    // Quatro abas visuais do cliente: Cardápio / Pedidos / Conta / Avaliar.
+  function patchClientTabs(){
+    const host=document.getElementById('view-mesa-cliente'); if(!host)return;
+    const home=host.querySelector('#cc-painel-home'); if(!home)return;
+    const buttons=home.querySelectorAll('.cc-home-card');
+    if(buttons.length>=4){
+      buttons[0].innerHTML='<span class="cc-home-ico">🍽️</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Cardápio / Carta / Menu</span><span class="cc-home-chevron">›</span>';
+      buttons[0].setAttribute('onclick',"alternarOpcaoMesa('cardapio')");
+      buttons[1].innerHTML='<span class="cc-home-ico">⏳</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Meu Pedido / Andamento</span><span class="cc-home-chevron">›</span>';
+      buttons[1].setAttribute('onclick',"alternarOpcaoMesa('pedidos')");
+      buttons[2].innerHTML='<span class="cc-home-ico">🧾</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Minha Conta / Fechamento</span><span class="cc-home-chevron">›</span>';
+      buttons[2].setAttribute('onclick',"alternarOpcaoMesa('conta')");
+      buttons[3].innerHTML='<span class="cc-home-ico">⭐</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Avaliar Experiência</span><span class="cc-home-chevron">›</span>';
+      buttons[3].setAttribute('onclick',"alternarOpcaoMesa('avaliar')");
+    }
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(patchClientTabs,1000));
+  setTimeout(patchClientTabs,1600);
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     AUTO BEACH — CAMADA FINAL DE EXPERIÊNCIA VISUAL / PRODUÇÃO
+     Corrige a raiz: window.categorias, capa inicial, navegação em grade,
+     cardápio em tela cheia, categorias visuais e retorno físico.
+═══════════════════════════════════════════════════════════════════ -->
+<style id="ab-final-production-style">
+  html,body{margin:0!important;padding:0!important;width:100%;min-height:100%;background:#f1f5f9;color:#0f172a}
+  body.ab-module-open{overflow-x:hidden}
+  body.ab-home-open #cc-topbar-wrapper,
+  body.ab-home-open #cc-capa-institucional,
+  body.ab-home-open #nav-main-wrapper{display:none!important}
+  body.ab-module-open #cc-topbar-wrapper,
+  body.ab-module-open #cc-capa-institucional,
+  body.ab-module-open #nav-main-wrapper{display:none!important}
+  #nav-arrow-left,#nav-arrow-right{display:none!important}
+  #ab-owner-home{width:100%;min-height:100vh;background:#f8fafc;position:relative;z-index:1000}
+  .ab-home-hero{position:relative;min-height:330px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:5px solid #ea580c}
+  .ab-home-hero-bg{position:absolute;inset:0;background-position:center;background-size:cover;opacity:.58;transform:scale(1.02)}
+  .ab-home-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.42),rgba(15,23,42,.9))}
+  .ab-home-hero-content{position:relative;z-index:2;text-align:center;padding:42px 20px;color:#fff;max-width:1050px}
+  .ab-home-title{font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:clamp(2.1rem,5vw,4.6rem);line-height:1.02;letter-spacing:.015em;text-shadow:0 5px 22px rgba(0,0,0,.55);margin:0}
+  .ab-home-address{display:inline-flex;margin-top:18px;background:#ea580c;color:#fff;border-radius:999px;padding:11px 20px;font-size:clamp(.75rem,1.4vw,1rem);font-weight:900;text-transform:uppercase;letter-spacing:.06em;box-shadow:0 8px 24px rgba(234,88,12,.3)}
+  .ab-home-hours{margin-top:11px;color:#dbeafe;font-size:.85rem;font-weight:800;letter-spacing:.08em}
+  .ab-home-kicker{margin:18px auto 0;max-width:760px;color:#e2e8f0;font-size:.85rem;font-weight:700}
+  .ab-home-nav{width:min(100%,1050px);margin:0 auto;padding:34px 22px 48px;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:18px!important;box-sizing:border-box}
+  .ab-home-tab{min-height:150px;border:1px solid #dbe3ec!important;border-radius:22px!important;background:#fff!important;color:#0f172a!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;box-shadow:0 7px 22px rgba(15,23,42,.08)!important;font-weight:900!important;text-transform:uppercase!important;letter-spacing:.045em!important;cursor:pointer!important;transition:transform .15s,box-shadow .15s,border-color .15s!important;padding:18px!important}
+  .ab-home-tab:hover{transform:translateY(-3px);border-color:#fdba74!important;box-shadow:0 13px 30px rgba(15,23,42,.13)!important}
+  .ab-home-tab:active{transform:scale(.95)!important}
+  .ab-home-tab .ab-tab-icon{font-size:3rem;line-height:1;filter:drop-shadow(0 3px 4px rgba(15,23,42,.15))}
+  .ab-home-tab .ab-tab-label{font-size:.86rem;font-weight:900;color:#0f172a}
+  .ab-home-tab.ab-primary{border:2px solid #ea580c!important;background:linear-gradient(180deg,#fffaf5,#fff)!important}
+  .ab-home-footer{background:#0f172a;color:#cbd5e1;text-align:center;padding:18px;font-size:.72rem;font-weight:800}
+  #ab-cardapio-shell,#ab-client-cardapio-shell{min-height:100vh;background:#f1f5f9;position:relative;z-index:1100}
+  .ab-menu-banner{position:relative;min-height:285px;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:5px solid #ea580c}
+  .ab-menu-banner-bg{position:absolute;inset:0;background-position:center;background-size:cover;opacity:.62}
+  .ab-menu-banner-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.25),rgba(15,23,42,.9))}
+  .ab-menu-banner-content{position:relative;z-index:2;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 18px}
+  .ab-menu-title{font-family:Georgia,'Times New Roman',serif;color:#fff;font-size:clamp(2rem,4.8vw,4rem);font-weight:900;line-height:1;text-shadow:0 4px 20px rgba(0,0,0,.6);margin:0}
+  .ab-menu-address{margin-top:16px;background:#ea580c;color:#fff;border-radius:999px;padding:10px 19px;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.055em}
+  .ab-menu-hours{margin-top:9px;color:#dbeafe;font-size:.8rem;font-weight:800}
+  .ab-menu-toolbar{width:100%;background:#0f172a;color:#fff;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:13px 18px;box-shadow:0 5px 18px rgba(15,23,42,.2);box-sizing:border-box}
+  .ab-back{background:#1e293b;color:#f97316;border:1px solid #475569;border-radius:14px;padding:11px 15px;font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:transform .15s;white-space:nowrap}
+  .ab-back:active{transform:scale(.95)}
+  .ab-toolbar-title{text-align:center;font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em}
+  .ab-status{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.35);color:#fbbf24;border-radius:999px;padding:7px 11px;font-size:.68rem;font-weight:900;text-transform:uppercase;white-space:nowrap}
+  .ab-searchbar{width:100%;max-width:1050px;margin:0 auto;padding:17px 18px;background:#fff;box-sizing:border-box;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px}
+  .ab-search-wrap{position:relative;flex:1}
+  .ab-search{width:100%;box-sizing:border-box;border:2px solid #cbd5e1;border-radius:16px;background:#fff;color:#0f172a;padding:14px 50px 14px 47px;font-size:.94rem;font-weight:800;outline:none}
+  .ab-search:focus{border-color:#0f172a;box-shadow:0 0 0 4px rgba(15,23,42,.07)}
+  .ab-search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:1.2rem}
+  .ab-search-voice{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:37px;height:37px;border:0;border-radius:11px;background:#f1f5f9;font-size:1.05rem;cursor:pointer}
+  .ab-menu-help{text-align:center;color:#64748b;font-size:.75rem;font-weight:800;padding:12px 18px 0}
+  .ab-category-grid{width:100%;max-width:1050px;margin:0 auto;padding:18px 18px 50px;box-sizing:border-box;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .ab-category-card{position:relative;min-height:185px;border:0;border-radius:23px;overflow:hidden;background:#0f172a;box-shadow:0 8px 24px rgba(15,23,42,.12);cursor:pointer;transition:transform .15s,box-shadow .15s}
+  .ab-category-card:active{transform:scale(.96)}
+  .ab-category-card:hover{box-shadow:0 14px 30px rgba(15,23,42,.18)}
+  .ab-category-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .ab-category-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.05),rgba(15,23,42,.92))}
+  .ab-category-body{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:15px;color:#fff;text-align:left}
+  .ab-category-icon{font-size:2.8rem;line-height:1;filter:drop-shadow(0 3px 5px rgba(0,0,0,.45))}
+  .ab-category-name{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.65)}
+  .ab-category-count{font-size:.7rem;color:#dbeafe;font-weight:800;margin-top:3px}
+  .ab-all-collage{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
+  .ab-all-collage div{background-position:center;background-size:cover}
+  .ab-list{width:100%;max-width:1200px;margin:0 auto;padding:18px 22px 120px;box-sizing:border-box}
+  .ab-list-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 17px}
+  .ab-list-title{font-size:1.35rem;font-weight:900;text-transform:uppercase;letter-spacing:.045em;color:#0f172a}
+  .ab-list-sub{font-size:.74rem;color:#64748b;font-weight:800;margin-top:3px}
+  .ab-items-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:19px}
+  .ab-item{background:#fff;border:1px solid #e2e8f0;border-radius:23px;overflow:hidden;box-shadow:0 7px 22px rgba(15,23,42,.08);display:flex;flex-direction:column}
+  .ab-item-photo{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);overflow:hidden}
+  .ab-item-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .ab-item-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem}
+  .ab-item-tag{position:absolute;left:10px;top:10px;border-radius:999px;background:rgba(15,23,42,.86);color:#fff;padding:6px 10px;font-size:.67rem;font-weight:900}
+  .ab-item-body{padding:15px;display:flex;flex-direction:column;flex:1}
+  .ab-item-name{font-size:1.04rem;font-weight:900;line-height:1.15;color:#0f172a}
+  .ab-item-desc{font-size:.78rem;color:#64748b;line-height:1.38;margin-top:6px}
+  .ab-item-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px}
+  .ab-item-price{font-size:1.08rem;font-weight:900;color:#0f172a}
+  .ab-order{border:0;border-radius:14px;background:#ea580c;color:#fff;padding:11px 14px;font-size:.78rem;font-weight:900;cursor:pointer;transition:transform .15s}
+  .ab-order:active{transform:scale(.94)}
+  .ab-qty{display:flex;align-items:center;gap:7px;background:#f1f5f9;border-radius:14px;padding:4px}
+  .ab-qty button{width:34px;height:34px;border:0;border-radius:10px;background:#0f172a;color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer}
+  .ab-qty span{min-width:24px;text-align:center;font-weight:900}
+  .ab-empty{text-align:center;padding:70px 20px;color:#64748b;font-weight:800}
+  .ab-empty-icon{font-size:4rem;margin-bottom:10px}
+  #ab-client-home{min-height:100vh;background:#f8fafc;position:relative;z-index:1000}
+  .ab-client-cards{max-width:800px;margin:0 auto;padding:24px 18px 70px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .ab-client-card{min-height:170px;border:1px solid #dbe3ec;border-radius:24px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-weight:900;text-transform:uppercase;color:#0f172a;transition:transform .15s}
+  .ab-client-card:active{transform:scale(.95)}
+  .ab-client-icon{font-size:3.4rem;filter:drop-shadow(0 3px 4px rgba(15,23,42,.15))}
+  .ab-client-label{font-size:.85rem;letter-spacing:.045em}
+  #ab-client-back{position:fixed;top:12px;left:12px;z-index:99999;display:none}
+  @media(max-width:900px){.ab-home-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}.ab-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ab-items-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:640px){.ab-home-hero{min-height:250px}.ab-home-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:20px 12px 35px}.ab-home-tab{min-height:128px;border-radius:18px!important}.ab-home-tab .ab-tab-icon{font-size:2.5rem}.ab-home-tab .ab-tab-label{font-size:.73rem}.ab-menu-banner{min-height:225px}.ab-menu-banner-content{min-height:220px}.ab-menu-title{font-size:2rem}.ab-menu-toolbar{grid-template-columns:auto 1fr auto;padding:10px 9px;gap:7px}.ab-back{padding:9px 10px;font-size:.65rem}.ab-toolbar-title{font-size:.7rem}.ab-status{font-size:.58rem;padding:6px 8px}.ab-searchbar{padding:12px 10px}.ab-search{font-size:.82rem;padding:13px 45px 13px 43px}.ab-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px 10px 35px}.ab-category-card{min-height:145px;border-radius:18px}.ab-category-icon{font-size:2.2rem}.ab-category-name{font-size:.78rem}.ab-category-count{font-size:.62rem}.ab-list{padding:14px 10px 100px}.ab-items-grid{grid-template-columns:1fr;gap:14px}.ab-client-cards{grid-template-columns:1fr 1fr;gap:12px;padding:16px 10px 50px}.ab-client-card{min-height:145px}.ab-client-icon{font-size:2.7rem}.ab-client-label{font-size:.7rem}}
+</style>
+<script id="ab-final-production-script">
+(function(){
+  'use strict';
+  try{ window.categorias = categorias; }catch(e){}
+  const OWNER_HOME='ab-owner-home', CLIENT_HOME='ab-client-home', OWNER_SHELL='ab-cardapio-shell', CLIENT_SHELL='ab-client-cardapio-shell';
+  let legacyShowView = null;
+  let ownerHomeReady=false;
+  let clientHomeReady=false;
+  const iconMap={cardapio:'🍽️',mesas:'🪑',atendente:'🧑‍💼',cozinha:'👨‍🍳',delivery:'🛵',estoque2:'📦',caixa:'💰',relatorio:'📊',dashboard:'📈',admin:'⚙️',cliente:'👥'};
+  const labelMap={cardapio:'Cardápio',mesas:'Mesas',atendente:'Atendente',cozinha:'Cozinha',delivery:'Delivery',estoque2:'Estoque',caixa:'Caixa',relatorio:'Relatórios',dashboard:'Dashboard',admin:'Admin',cliente:'Clientes'};
+  const views=['cardapio','mesas','atendente','cozinha','delivery','estoque2','caixa','relatorio','dashboard','admin','cliente'];
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+  function getCats(){try{return Array.isArray(window.categorias)?window.categorias:Array.isArray(categorias)?categorias:[];}catch(e){return [];}}
+  function getCfg(){try{return window.config||config||{};}catch(e){return {};}}
+  function originalPhoto(){
+    const selectors=['#view-cardapio header img','#view-cardapio img'];
+    for(const sel of selectors){const img=document.querySelector(sel);if(img&&img.src&&img.src!=='about:blank')return img.src;}
+    return '';
+  }
+  function bannerSrc(){
+    const cfg=getCfg();
+    // O banner cadastrado no Admin é usado quando existe; se estiver vazio,
+    // usa a foto real já embutida no próprio cardápio, nunca uma tela preta.
+    return cfg.designBanner || originalPhoto() || '';
+  }
+  function title(){const cfg=getCfg();return cfg.nome&&cfg.nome!=='Barraca de Praia'?cfg.nome:'BARRACA SOL DA BAHIA';}
+  function local(){const cfg=getCfg();return cfg.local||'Praia do Farol de Itapuã · Salvador BA';}
+  function hours(){const cfg=getCfg();return cfg.horario||'Seg–Dom · 09h–20h';}
+  function hideLegacy(){
+    document.querySelectorAll('#cc-topbar-wrapper,#cc-capa-institucional,#nav-main-wrapper').forEach(e=>e.style.display='none');
+    document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('hidden'));
+    const f=document.getElementById('cc-clientes-feedbacks-card');if(f)f.classList.add('hidden');
+    document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  }
+  function showLegacyView(name,btn){
+    if(typeof legacyShowView==='function'){
+      try{legacyShowView(name,btn);return true;}catch(e){console.error(e);}
+    }
+    const el=document.getElementById('view-'+name);if(el)el.classList.remove('hidden');
+    return !!el;
+  }
+  function homeHTML(){
+    const tabs=views.map((v,i)=>`<button class="ab-home-tab ${i===0?'ab-primary':''}" data-ab-view="${v}" onclick="ABOpenView('${v}',this)"><span class="ab-tab-icon">${iconMap[v]}</span><span class="ab-tab-label">${labelMap[v]}</span></button>`).join('');
+    return `<section class="ab-home-hero"><div class="ab-home-hero-bg" style="background-image:url('${esc(bannerSrc())}')"></div><div class="ab-home-hero-shade"></div><div class="ab-home-hero-content"><h1 class="ab-home-title">🏖️ ${esc(title())}</h1><div class="ab-home-address">${esc(local())}</div><div class="ab-home-hours">${esc(hours())}</div><div class="ab-home-kicker">Sistema inteligente de atendimento, cardápio digital e operação completa — visual, rápido e feito para a realidade da praia.</div></div></section><nav class="ab-home-nav">${tabs}</nav><div class="ab-home-footer">☀️ Sol da Bahia · Atendimento visual e acessível para todos</div>`;
+  }
+  function mountOwnerHome(){
+    let el=document.getElementById(OWNER_HOME);
+    if(!el){el=document.createElement('div');el.id=OWNER_HOME;document.body.appendChild(el);}
+    el.innerHTML=homeHTML();el.style.display='block';ownerHomeReady=true;
+    document.body.classList.add('ab-home-open');document.body.classList.remove('ab-module-open');hideLegacy();
+    window.scrollTo(0,0);
+  }
+  function destroyHome(){const h=document.getElementById(OWNER_HOME);if(h)h.style.display='none';const ch=document.getElementById(CLIENT_HOME);if(ch)ch.style.display='none';}
+  function categoryImage(cat){
+    const item=(cat&&cat.itens||[]).find(i=>i&&i.ativo!==false&&i.img);return item?item.img:'';
+  }
+  function categoryCount(cat){return (cat&&cat.itens||[]).filter(i=>i&&i.ativo!==false).length;}
+  function allItems(){return getCats().flatMap(cat=>(cat.itens||[]).filter(i=>i&&i.ativo!==false).map(item=>({cat,item})))}
+  function allCollage(cats){
+    const imgs=cats.flatMap(c=>(c.itens||[]).filter(i=>i&&i.ativo!==false&&i.img).slice(0,1).map(i=>i.img)).slice(0,4);
+    return imgs.length?`<div class="ab-all-collage">${[0,1,2,3].map(i=>`<div style="background-image:url('${esc(imgs[i%imgs.length])}')"></div>`).join('')}</div>`:'';
+  }
+  function catCard(cat,mode){
+    const img=categoryImage(cat);return `<button class="ab-category-card" onclick="ABSelectCategory('${esc(cat.id)}','${mode}')">${img?`<img class="ab-category-img" src="${esc(img)}" alt="" loading="lazy">`:''}<div class="ab-category-shade"></div><div class="ab-category-body"><span class="ab-category-icon">${esc(cat.icone||'🍽️')}</span><div><div class="ab-category-name">${esc(cat.nome)}</div><div class="ab-category-count">${categoryCount(cat)} opções · toque para abrir</div></div></div></button>`;
+  }
+  function itemCard(cat,item){
+    const q=(window.S&&S.cart&&S.cart[item.id])||0;const img=item.img||categoryImage(cat);return `<article class="ab-item"><div class="ab-item-photo">${img?`<img src="${esc(img)}" alt="${esc(item.nome)}" loading="lazy" onerror="this.style.display='none'">`:`<div class="ab-item-photo-fallback">${esc(cat.icone||'🍽️')}</div>`}<span class="ab-item-tag">${esc(cat.icone||'🍽️')} ${esc(cat.nome)}</span></div><div class="ab-item-body"><div class="ab-item-name">${esc(item.nome)}</div><div class="ab-item-desc">${esc(item.desc||'Toque para conhecer este prato.')}</div><div class="ab-item-bottom"><span class="ab-item-price">${typeof fmtBRL==='function'?fmtBRL(Number(item.preco||0)):'R$ '+Number(item.preco||0).toFixed(2)}</span>${q?`<div class="ab-qty"><button onclick="ABQty('${esc(item.id)}',-1)">−</button><span>${q}</span><button onclick="ABQty('${esc(item.id)}',1)">+</button></div>`:`<button class="ab-order" onclick="ABAdd('${esc(item.id)}')">➕ PEDIR</button>`}</div></div></article>`;
+  }
+  function renderListing(shell,filter,query){
+    const data=allItems().filter(x=>filter==='all'||x.cat.id===filter).filter(x=>!query||(x.item.nome+' '+(x.item.desc||'')).toLowerCase().includes(query.toLowerCase()));
+    const list=shell.querySelector('.ab-list');if(!list)return;
+    if(!data.length){list.innerHTML='<div class="ab-empty"><div class="ab-empty-icon">🔎</div><div>Nenhum prato ou bebida encontrado.</div><div style="font-size:.76rem;margin-top:7px">Tente escrever outro nome.</div></div>';return;}
+    const groups={};data.forEach(x=>(groups[x.cat.id]||(groups[x.cat.id]={cat:x.cat,items:[]})).items.push(x.item));
+    list.innerHTML=Object.values(groups).map(g=>`<section style="margin-bottom:30px"><div class="ab-list-head"><div><div class="ab-list-title">${esc(g.cat.icone||'🍽️')} ${esc(g.cat.nome)}</div><div class="ab-list-sub">${g.items.length} opção(ões)</div></div><button class="ab-back" style="color:#0f172a;background:#fff" onclick="ABBackFromListing('${shell.id}')">⬅️ Voltar</button></div><div class="ab-items-grid">${g.items.map(i=>itemCard(g.cat,i)).join('')}</div></section>`).join('');
+  }
+  function shellHTML(id,isClient){return `<section class="ab-menu-banner"><div class="ab-menu-banner-bg" style="background-image:url('${esc(bannerSrc())}')"></div><div class="ab-menu-banner-shade"></div><div class="ab-menu-banner-content"><h1 class="ab-menu-title">🏖️ ${esc(title())}</h1><div class="ab-menu-address">${esc(local())}</div><div class="ab-menu-hours">${esc(hours())}</div></div></section><div class="ab-menu-toolbar"><button class="ab-back" onclick="ABBack('${id}')">⬅️ Voltar</button><div class="ab-toolbar-title">🗂️ ${isClient?'Cardápio Digital':'Gestão de Cardápio'}</div><span class="ab-status">${isClient?'Mesa':'Dono'}</span></div><div class="ab-searchbar"><div class="ab-search-wrap"><span class="ab-search-icon">🔎</span><input id="${id}-search" class="ab-search" type="search" placeholder="Buscar prato, bebida ou combo..." autocomplete="off"><button class="ab-search-voice" onclick="ABVoice('${id}')">🎙️</button></div></div><div class="ab-menu-help">👆 Toque nas imagens para navegar. Ou escreva diretamente o nome do que procura.</div><div class="ab-content"></div>`;}
+  function mountMenu(isClient){
+    const id=isClient?CLIENT_SHELL:OWNER_SHELL;let shell=document.getElementById(id);if(shell)shell.remove();shell=document.createElement('div');shell.id=id;shell.innerHTML=shellHTML(id,isClient);document.body.appendChild(shell);shell._filter='categories';shell._cat='all';shell._query='';
+    const search=shell.querySelector('input');search.addEventListener('input',()=>{shell._query=search.value.trim();shell._filter=shell._query?'listing':'categories';renderMenu(shell);});
+    renderMenu(shell);hideLegacy();destroyHome();document.body.classList.remove('ab-home-open');document.body.classList.add('ab-module-open');window.scrollTo(0,0);
+  }
+  function renderMenu(shell){
+    const content=shell.querySelector('.ab-content');if(!content)return;const cats=getCats();
+    if(shell._filter==='categories'){
+      const all=`<button class="ab-category-card" onclick="ABSelectCategory('all','${shell.id}')">${allCollage(cats)}<div class="ab-category-shade"></div><div class="ab-category-body"><span class="ab-category-icon">🍽️</span><div><div class="ab-category-name">TODOS</div><div class="ab-category-count">${allItems().length} opções · ver cardápio completo</div></div></div></button>`;
+      content.innerHTML=`<div class="ab-category-grid">${all}${cats.map(c=>catCard(c,shell.id)).join('')}</div>`;return;
+    }
+    content.innerHTML='<div class="ab-list"></div>';renderListing(shell,shell._cat,shell._query);
+  }
+  window.ABSelectCategory=function(cat,id){const shell=document.getElementById(id);if(!shell)return;shell._cat=cat;shell._query='';shell._filter='listing';const inp=shell.querySelector('input');if(inp)inp.value='';renderMenu(shell);window.scrollTo(0,0)};
+  window.ABAdd=function(id){try{if(typeof inc==='function')inc(id);}catch(e){};const shell=document.getElementById(OWNER_SHELL)||document.getElementById(CLIENT_SHELL);if(shell)renderListing(shell,shell._cat,shell._query)};
+  window.ABQty=function(id,d){try{if(d>0&&typeof inc==='function')inc(id);if(d<0&&typeof dec==='function')dec(id);}catch(e){};const shell=document.getElementById(OWNER_SHELL)||document.getElementById(CLIENT_SHELL);if(shell)renderListing(shell,shell._cat,shell._query)};
+  window.ABBackFromListing=function(id){const shell=document.getElementById(id);if(!shell)return;shell._filter='categories';shell._cat='all';shell._query='';const inp=shell.querySelector('input');if(inp)inp.value='';renderMenu(shell);window.scrollTo(0,0)};
+  window.ABBack=function(id){const isClient=id===CLIENT_SHELL;if(isClient){const sh=document.getElementById(CLIENT_SHELL);if(sh)sh.remove();showClientHome();return;}const sh=document.getElementById(OWNER_SHELL);if(sh)sh.remove();mountOwnerHome();};
+  window.ABVoice=function(id){const inp=document.getElementById(id+'-search');const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!inp)return;if(!SR){inp.focus();return;}const r=new SR();r.lang='pt-BR';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{inp.value=e.results[0][0].transcript;inp.dispatchEvent(new Event('input'));};r.start()};
+  window.ABOpenView=function(name,btn){
+    if(name==='cardapio'){mountMenu(false);return;}
+    const home=document.getElementById(OWNER_HOME);if(home)home.style.display='none';
+    document.body.classList.remove('ab-home-open');document.body.classList.add('ab-module-open');hideLegacy();
+    const navBtn=document.querySelector('#nav-main [data-view="'+name+'"]')||btn;
+    showLegacyView(name,navBtn);
+    document.body.classList.add('ab-module-open');
+    let back=document.getElementById('ab-owner-module-back');if(!back){back=document.createElement('button');back.id='ab-owner-module-back';back.className='ab-back';back.style.cssText='position:fixed;top:12px;left:12px;z-index:99999';back.textContent='⬅️ Voltar para o Painel';back.onclick=()=>mountOwnerHome();document.body.appendChild(back);}back.style.display='block';
+  };
+  function showClientHome(){
+    let el=document.getElementById(CLIENT_HOME);if(!el){el=document.createElement('div');el.id=CLIENT_HOME;document.body.appendChild(el);}
+    el.innerHTML=`<section class="ab-home-hero"><div class="ab-home-hero-bg" style="background-image:url('${esc(bannerSrc())}')"></div><div class="ab-home-hero-shade"></div><div class="ab-home-hero-content"><h1 class="ab-home-title">🏖️ ${esc(title())}</h1><div class="ab-home-address">${esc(local())}</div><div class="ab-home-hours">${esc(hours())}</div><div class="ab-home-kicker">👆 Toque nas imagens. O sistema foi pensado para turistas, crianças, idosos e pessoas com dificuldade de leitura.</div></div></section><div class="ab-client-cards"><button class="ab-client-card" onclick="ABClientOpen('cardapio')"><span class="ab-client-icon">🍽️</span><span class="ab-client-label">Cardápio</span></button><button class="ab-client-card" onclick="ABClientOpen('pedidos')"><span class="ab-client-icon">⏳</span><span class="ab-client-label">Meu Pedido</span></button><button class="ab-client-card" onclick="ABClientOpen('conta')"><span class="ab-client-icon">🧾</span><span class="ab-client-label">Minha Conta</span></button><button class="ab-client-card" onclick="ABClientOpen('avaliar')"><span class="ab-client-icon">⭐</span><span class="ab-client-label">Avaliar</span></button></div>`;
+    el.style.display='block';document.body.classList.add('ab-home-open');document.body.classList.remove('ab-module-open');hideLegacy();const b=document.getElementById('ab-client-back');if(b)b.style.display='none';window.scrollTo(0,0);clientHomeReady=true;
+  }
+  window.ABClientOpen=function(tab){
+    const h=document.getElementById(CLIENT_HOME);if(h)h.style.display='none';
+    document.body.classList.remove('ab-home-open');document.body.classList.add('ab-module-open');hideLegacy();
+    if(tab==='cardapio'){mountMenu(true);return;}
+    let back=document.getElementById('ab-client-back');if(!back){back=document.createElement('button');back.id='ab-client-back';back.className='ab-back';back.innerHTML='⬅️ Voltar';back.onclick=()=>showClientHome();document.body.appendChild(back);}back.style.display='block';
+    try{if(typeof window.alternarOpcaoMesa==='function')window.alternarOpcaoMesa(tab==='avaliar'?'avaliacao':tab);}catch(e){console.error(e)}
+    const host=document.getElementById('view-mesa-cliente');if(host){host.classList.remove('hidden');host.style.display='block';}
+  };
+  window.voltarParaPainelMestre=function(){const s=document.getElementById(OWNER_SHELL);if(s)s.remove();const b=document.getElementById('ab-owner-module-back');if(b)b.style.display='none';mountOwnerHome();};
+  // Captura o roteador existente uma única vez e coloca esta camada como último árbitro.
+  legacyShowView=window.showView;
+  window.showView=function(name,btn){if(name==='cardapio'){if(typeof ccModoClienteAtivo==='function'&&ccModoClienteAtivo())mountMenu(true);else mountMenu(false);return;}if(typeof ccModoClienteAtivo==='function'&&ccModoClienteAtivo())return;ABOpenView(name,btn)};
+  function build(){
+    // Garante a grade exata de 11 itens também no DOM legado, caso outro código consulte #nav-main.
+    const nav=document.getElementById('nav-main');if(nav){nav.innerHTML=views.map(v=>`<button class="nav-tab" data-view="${v}" onclick="showView('${v}',this)">${iconMap[v]} ${labelMap[v]}</button>`).join('');nav.className='';nav.style.cssText='width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:24px;box-sizing:border-box;overflow:visible';}
+    const arrows=document.querySelectorAll('#nav-arrow-left,#nav-arrow-right');arrows.forEach(a=>a.remove());
+    const old=document.getElementById('ab-owner-module-back');if(old)old.style.display='none';
+    const client=typeof ccModoClienteAtivo==='function'&&ccModoClienteAtivo();
+    if(client)showClientHome();else mountOwnerHome();
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(build,120));
+  setTimeout(build,600);
+})();
+</script>
 </body>
 </html>
