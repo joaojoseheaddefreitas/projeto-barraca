@@ -475,54 +475,6 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 @media print{body>*:not(#print-comanda){display:none!important}#print-comanda{display:block!important;font-family:monospace;font-size:13px;max-width:300px;margin:0 auto}}
 #print-comanda{display:none}
 </style>
-<!-- DESIGN INCLUSIVO DE PRIMEIRO MUNDO - 11 ABAS DO DONO -->
-<style>
-  /* 1. Transforma os 11 cartões em botões corporativos de alta fidelidade e presença */
-  #painel-geral-dono button, 
-  #painel-geral-dono .card-aba,
-  [onClick*="setAba"], [onClick*="trocarTela"] {
-    background-color: #ffffff !important;
-    border: 2px solid #cbd5e1 !important; /* Borda robusta Slate-300 para o mormaço da praia */
-    border-radius: 1.25rem !important; /* rounded-2xl de luxo */
-    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.08) !important; /* Sombra projetada premium */
-    padding: 1.5rem 1rem !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0.75rem !important;
-    transition: all 0.15s ease-in-out !important;
-    cursor: pointer !important;
-  }
-
-  /* 2. Retorno tátil físico ao toque (O botão encolhe e reage ao dedão do operador) */
-  #painel-geral-dono button:active,
-  [onClick*="setAba"]:active {
-    transform: scale(0.93) !important; /* Micro-animação de clique real */
-    background-color: #f1f5f9 !important; /* Feedback de cor cinza suave instantâneo */
-    border-color: #94a3b8 !important;
-  }
-
-  /* 3. Negrito Absoluto e Alto Contraste (Para leitura perfeita debaixo do sol forte) */
-  #painel-geral-dono button span,
-  #painel-geral-dono button p,
-  #painel-geral-dono text {
-    color: #0f172a !important; /* Text-slate-900: Preto absoluto e nítido */
-    font-weight: 900 !important; /* Font-black/extrabold total */
-    font-size: 0.85rem !important; /* Tamanho calibrado text-sm */
-    text-transform: uppercase !important; /* Caixa alta corporativa internacional */
-    letter-spacing: 0.07em !important; /* tracking-wide expandido */
-  }
-
-  /* 4. Ícones e Emojis Grandes, Centralizados e Inclusivos */
-  #painel-geral-dono button i,
-  #painel-geral-dono button span:first-child {
-    font-size: 2rem !important; /* Ícone ampliado para acessibilidade visual rápida */
-    transform: scale(1.15) !important;
-    margin-bottom: 0.25rem !important;
-  }
-</style>
-
 
 </head>
 <body>
