@@ -6095,20 +6095,21 @@ const SirAccess = (function() {
     return ROLES[r] ? r : 'livre';
   }
 
-  // ── Aplicar permissões no nav ────────────────────────────────
+   // ── Aplicar permissões no nav (Corrigido para Preservar a Grade) ──
   function _aplicarNav(role) {
     const cfg = ROLES[role];
     if (!cfg) return;
 
-    // Mostrar/esconder botões do nav — pra QUALQUER cliente comum (mesa,
-    // Cardápio Digital ou Delivery), as abas não permitidas são REMOVIDAS
-    // do DOM de vez, não só escondidas por CSS. Trava física, não visual.
+    // Mostrar/esconder botões do nav — libera tudo para dono, gerente e livre
     document.querySelectorAll('#nav-main [data-view]').forEach(btn => {
       const view = btn.dataset.view;
-      const permitido = cfg.views.includes(view);
+      const ehLivreOuDono = (role === 'dono' || role === 'gerente' || role === 'livre');
+      const permitido = ehLivreOuDono || cfg.views.includes(view);
+      
       if (!permitido && role === 'cliente') { btn.remove(); return; }
       btn.style.display = permitido ? '' : 'none';
     });
+
     if (role === 'cliente') {
       document.body.classList.add('sir-cliente');
       const wrapperTopo = document.getElementById('cc-topbar-wrapper');
@@ -6131,11 +6132,11 @@ const SirAccess = (function() {
     // Views readonly — desabilitar ações de escrita
     if (cfg.readonly) {
       cfg.readonly.forEach(view => {
-        // Adiar para depois do render
         window.addEventListener('sir:view_loaded_' + view, () => _bloquearEscrita(view), { once: true });
       });
     }
   }
+
 
   // ── Bloquear escrita em views readonly ───────────────────────
   function _bloquearEscrita(view) {
