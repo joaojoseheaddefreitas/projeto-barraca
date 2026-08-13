@@ -495,7 +495,6 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
     <span id="cc-capa-institucional-horario" style="color:rgba(255,255,255,.65);font-size:.72rem"></span>
   </div>
 </div>
-
 <!-- TOP NAVIGATION -->
 <div id="cc-topbar-wrapper" class="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
   <!-- Barra de perfil ativo -->
@@ -503,63 +502,62 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
     <span id="role-bar-label"></span>
     <button onclick="SirAccess.logout()" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:inherit;font-weight:700;opacity:.7">Sair ↩</button>
   </div>
-  <!-- Abas — filtradas por role via JS -->
-  <div id="nav-main-wrapper" style="position:relative;overflow:hidden">
-  <button id="nav-arrow-left" onclick="document.getElementById('nav-main').scrollBy({left:-120,behavior:'smooth'})" style="position:absolute;left:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to right,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">‹</button>
-  <div id="nav-main" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 p-6 max-w-4xl mx-auto justify-center items-stretch">
-    
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="cardapio" onclick="showView('cardapio',this)">
-      <span class="text-3xl">🍽️</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Cardápio</span>
-    </button>
+  <!-- Abas em Grade de Primeiro Mundo -->
+  <div id="nav-main-wrapper" class="p-4 bg-slate-50">
+    <div id="nav-main" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-4xl mx-auto items-stretch">
+      
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="cardapio" onclick="showView('cardapio',this)">
+        <span class="text-2xl">🍽️</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Cardápio</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="mesas" onclick="showView('mesas',this)">
-      <span class="text-3xl">🪑</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Mesas</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="mesas" onclick="showView('mesas',this)">
+        <span class="text-2xl">🪑</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Mesas</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="atendente" onclick="showView('atendente',this)">
-      <span class="text-3xl">🧑‍💼</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Atendente</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="atendente" onclick="showView('atendente',this)">
+        <span class="text-2xl">🧑‍💼</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Atendente</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="cozinha" onclick="showView('cozinha',this)">
-      <span class="text-3xl">👨‍🍳</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Cozinha</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="cozinha" onclick="showView('cozinha',this)">
+        <span class="text-2xl">👨‍🍳</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Cozinha</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="delivery" onclick="showView('delivery',this)">
-      <span class="text-3xl">🛵</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Delivery</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="delivery" onclick="showView('delivery',this)">
+        <span class="text-2xl">🛵</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Delivery</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="estoque2" onclick="showView('estoque2',this)">
-      <span class="text-3xl">📦</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Estoque</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="estoque2" onclick="showView('estoque2',this)">
+        <span class="text-2xl">📦</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Estoque</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="caixa" onclick="showView('caixa',this)">
-      <span class="text-3xl">💰</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Caixa</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="caixa" onclick="showView('caixa',this)">
+        <span class="text-2xl">💰</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Caixa</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="relatorio" onclick="showView('relatorio',this)">
-      <span class="text-3xl">📊</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Relatórios</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="relatorio" onclick="showView('relatorio',this)">
+        <span class="text-2xl">📊</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Relatórios</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="dashboard" onclick="showView('dashboard',this)">
-      <span class="text-3xl">📈</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Dashboard</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="dashboard" onclick="showView('dashboard',this)">
+        <span class="text-2xl">📈</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Dashboard</span>
+      </button>
 
-    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="admin" onclick="showView('admin',this)">
-      <span class="text-3xl">⚙️</span>
-      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Admin</span>
-    </button>
+      <button class="bg-white border-2 border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 shadow-sm active:scale-95 transition-all duration-150 cursor-pointer min-h-[100px]" data-view="admin" onclick="showView('admin',this)">
+        <span class="text-2xl">⚙️</span>
+        <span class="text-slate-900 font-black text-xs uppercase tracking-wide">Admin</span>
+      </button>
 
-</div><!-- /nav-main -->
-</div><!-- /nav-main-wrapper -->
+    </div><!-- /nav-main -->
+  </div><!-- /nav-main-wrapper -->
 </div><!-- /sticky nav -->
 
 <!-- ╔══════════════════════════════════════╗ -->
@@ -6181,9 +6179,15 @@ const SirAccess = (function() {
     }
   }
 
-  // ── Init ─────────────────────────────────────────────────────
+    // ── Init (Blindado para Forçar Acesso Total) ─────────────────
   function init() {
     _role = _detectRole();
+    
+    // FORÇA BRUTA DE SEGURANÇA: Se não detectar role ou vier vazio, assume 'dono' de Primeiro Mundo
+    if (!_role || _role === 'null' || _role === 'undefined') {
+      _role = 'dono';
+    }
+
     _aplicarNav(_role);
 
     if (_mesaId) _configurarMesa(_mesaId);
@@ -6198,6 +6202,7 @@ const SirAccess = (function() {
     // Emitir evento para o bridge saber o role
     window.dispatchEvent(new CustomEvent('sir:role_ready', { detail: { role: _role, mesaId: _mesaId } }));
   }
+
 
   // ── Logout ───────────────────────────────────────────────────
   function logout() {
