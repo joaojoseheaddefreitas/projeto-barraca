@@ -475,9 +475,74 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 @media print{body>*:not(#print-comanda){display:none!important}#print-comanda{display:block!important;font-family:monospace;font-size:13px;max-width:300px;margin:0 auto}}
 #print-comanda{display:none}
 </style>
+<!-- DESIGN INCLUSIVO DE PRIMEIRO MUNDO - 11 ABAS DO DONO -->
+<style>
+  /* 1. Transforma os 11 cartões em botões corporativos de alta fidelidade e presença */
+  #painel-geral-dono button, 
+  #painel-geral-dono .card-aba,
+  [onClick*="setAba"], [onClick*="trocarTela"] {
+    background-color: #ffffff !important;
+    border: 2px solid #cbd5e1 !important; /* Borda robusta Slate-300 para o mormaço da praia */
+    border-radius: 1.25rem !important; /* rounded-2xl de luxo */
+    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.08) !important; /* Sombra projetada premium */
+    padding: 1.5rem 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    transition: all 0.15s ease-in-out !important;
+    cursor: pointer !important;
+  }
+
+  /* 2. Retorno tátil físico ao toque (O botão encolhe e reage ao dedão do operador) */
+  #painel-geral-dono button:active,
+  [onClick*="setAba"]:active {
+    transform: scale(0.93) !important; /* Micro-animação de clique real */
+    background-color: #f1f5f9 !important; /* Feedback de cor cinza suave instantâneo */
+    border-color: #94a3b8 !important;
+  }
+
+  /* 3. Negrito Absoluto e Alto Contraste (Para leitura perfeita debaixo do sol forte) */
+  #painel-geral-dono button span,
+  #painel-geral-dono button p,
+  #painel-geral-dono text {
+    color: #0f172a !important; /* Text-slate-900: Preto absoluto e nítido */
+    font-weight: 900 !important; /* Font-black/extrabold total */
+    font-size: 0.85rem !important; /* Tamanho calibrado text-sm */
+    text-transform: uppercase !important; /* Caixa alta corporativa internacional */
+    letter-spacing: 0.07em !important; /* tracking-wide expandido */
+  }
+
+  /* 4. Ícones e Emojis Grandes, Centralizados e Inclusivos */
+  #painel-geral-dono button i,
+  #painel-geral-dono button span:first-child {
+    font-size: 2rem !important; /* Ícone ampliado para acessibilidade visual rápida */
+    transform: scale(1.15) !important;
+    margin-bottom: 0.25rem !important;
+  }
+</style>
+
 
 </head>
 <body>
+
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  BANNER INSTITUCIONAL DA CAPA — identidade visual da casa  ║ -->
+<!-- ║  Fica no topo absoluto da tela de abertura (dono e         ║ -->
+<!-- ║  cliente). Some por completo assim que qualquer aba abre   ║ -->
+<!-- ║  em tela cheia; volta a aparecer quando o usuário retorna  ║ -->
+<!-- ║  pra capa. Ver funções ccCapa* perto do fim do arquivo.    ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<div id="cc-capa-institucional" style="display:none;position:relative;overflow:hidden;min-height:150px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
+  <div id="cc-capa-institucional-img" style="position:absolute;inset:0;background-size:cover;background-position:center;opacity:.55"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,35,64,.1),rgba(15,35,64,.88))"></div>
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;min-height:150px;padding:18px 16px">
+    <span id="cc-capa-institucional-nome" class="serif" style="color:#fff;font-weight:900;font-size:1.35rem;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.4)"></span>
+    <span id="cc-capa-institucional-local" style="color:rgba(255,255,255,.85);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.12em"></span>
+    <span id="cc-capa-institucional-horario" style="color:rgba(255,255,255,.65);font-size:.72rem"></span>
+  </div>
+</div>
 
 <!-- TOP NAVIGATION -->
 <div id="cc-topbar-wrapper" class="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
@@ -588,7 +653,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   </div>
 
   <!-- CATEGORY NAV -->
-  <div class="max-w-xl mx-auto px-4 mb-6" style="position:relative">
+  <div id="cc-cat-nav-wrap" class="max-w-xl mx-auto px-4 mb-6" style="position:relative">
     <div id="cat-nav" class="cat-scroll flex flex-col gap-3 p-3 w-full" style="scroll-behavior:smooth"></div>
     <div id="cat-nav-arrow" style="
       position:absolute;right:0;top:0;bottom:0;
@@ -608,6 +673,16 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         pointer-events:none;
       ">›</span>
     </div>
+  </div>
+
+  <!-- CHIP "TROCAR CATEGORIA" — some no lugar da lista de categorias quando
+       uma categoria específica está selecionada, liberando a tela inteira
+       pra listagem de produtos (padrão Totem/iFood de foco por categoria) -->
+  <div id="cc-cat-trocar" class="hidden max-w-xl mx-auto px-4 mb-4">
+    <button onclick="ccVoltarCategorias()" class="w-full flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3 text-sm font-black text-slate-700">
+      <span id="cc-cat-trocar-label">Categoria</span>
+      <span class="text-orange-500">Trocar categoria ↕</span>
+    </button>
   </div>
 
   <!-- ITEMS -->
@@ -683,8 +758,17 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   #cat-nav-arrow{display:none}
   /* 11 abas gerenciais em grade aberta, sem rolagem lateral nem setas —
      só pro acesso geral do dono (URL sem parâmetros, papel "livre"). */
-  body.sir-livre #nav-main{overflow-x:visible;flex-wrap:wrap;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
-  body.sir-livre #nav-main [data-view]{width:100%;justify-content:center;padding:14px 10px;font-size:.85rem}
+  body.sir-livre #nav-main-wrapper{padding:8px 0 20px}
+  body.sir-livre #nav-main{overflow-x:visible;flex-wrap:wrap;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:18px}
+  body.sir-livre #nav-main [data-view]{
+    width:100%;justify-content:center;padding:22px 12px;font-size:.86rem;
+    background:#fff;border:1px solid #f1f5f9;border-radius:18px;
+    box-shadow:0 2px 10px rgba(15,35,64,.06);
+    font-weight:800;color:#0f2340;letter-spacing:.01em;
+    transition:transform .15s ease,box-shadow .15s ease;
+  }
+  body.sir-livre #nav-main [data-view]:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,35,64,.12)}
+  body.sir-livre #nav-main [data-view].active{border-color:#ea580c;box-shadow:0 4px 14px rgba(234,88,12,.18)}
   body.sir-livre #nav-arrow-left,
   body.sir-livre #nav-arrow-right{display:none!important}
 
@@ -713,6 +797,10 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   .cc-star.on{color:#f59e0b}
   .cc-sub-btn{padding:8px 14px;border-radius:999px;border:1.5px solid #e5e7eb;background:#fff;font-size:.72rem;font-weight:700;color:#6b7280;cursor:pointer}
   .cc-sub-btn.active{border-color:#ea580c;color:#ea580c;background:#fff7ed}
+  .cc-home-card{border:1px solid #f1f5f9;transition:transform .15s ease,box-shadow .15s ease}
+  .cc-home-card:active{transform:scale(.98)}
+  .cc-home-ico{display:flex;align-items:center;justify-content:center;width:52px;height:52px;flex-shrink:0;border-radius:16px;background:linear-gradient(135deg,#fff7ed,#ffedd5);font-size:1.5rem}
+  .cc-home-chevron{margin-left:auto;color:#cbd5e1;font-size:1.4rem;font-weight:900}
 </style>
 
 <!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
@@ -747,30 +835,32 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
        carrossel, todas abertas de uma vez, clique direto -->
   <div id="cc-painel-home" class="cc-cli-painel flex flex-col gap-3 p-3 w-full">
-    <button onclick="alternarOpcaoMesa('cardapio')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">🍽️</span>
+    <button onclick="alternarOpcaoMesa('cardapio')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">🍽️</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cardápio / Carta / Menu</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('pedidos')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">⏳</span>
+    <button onclick="alternarOpcaoMesa('pedidos')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">⏳</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Meu Pedido / Andamento</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('conta')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">🧾</span>
-        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Minha Conta</span>
+    <button onclick="alternarOpcaoMesa('conta')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">🧾</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Minha Conta / Fechamento</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('fechamento')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">🏁</span>
-        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Fechamento</span>
-    </button>
-    <button onclick="alternarOpcaoMesa('fiado')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">💳</span>
+    <button onclick="alternarOpcaoMesa('fiado')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">💳</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cliente VIP / Especial</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('avaliacao')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">⭐</span>
-        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Avaliação</span>
-    </button>
+    <!-- Fechamento e Avaliação continuam 100% funcionais (não foram
+         apagados) — só saíram da capa de 4 abas por pedido explícito;
+         Fechamento fica um clique dentro de "Minha Conta" logo abaixo,
+         e Avaliação segue acessível por abrirPainelAvaliacaoMesa(). -->
+    <button onclick="alternarOpcaoMesa('fechamento')" class="hidden">Fechamento</button>
+    <button onclick="alternarOpcaoMesa('avaliacao')" class="hidden">Avaliação</button>
     <!-- Banner institucional de rodapé da capa (mesma identidade visual do
          cardápio, só decorativo aqui) -->
     <div class="rounded-2xl overflow-hidden relative mt-2" style="min-height:120px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
@@ -797,6 +887,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
           <span id="cc-conta-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
         </div>
         <p id="cc-conta-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
+        <button class="btn-primary w-full mt-4" onclick="alternarOpcaoMesa('fechamento')">🏁 Ir para Fechamento / Pagamento</button>
       </div>
 
       <!-- ABA: FECHAMENTO / PAGAMENTO (Pix) -->
@@ -1737,7 +1828,31 @@ function dec(id) {
 }
 function clearCart() { S.cart = {}; render(); }
 function onSearch(v) { S.busca = v.toLowerCase().trim(); render(); }
-function setCat(id) { S.cat = id; render(); }
+function setCat(id) { S.cat = id; render(); if (typeof ccAplicarFocoCategoria === "function") ccAplicarFocoCategoria(id); }
+
+// Foco por categoria (padrão Totem/iFood): ao escolher uma categoria
+// específica, a lista de categorias vira um chip compacto "Trocar
+// categoria" e a tela fica inteiramente dedicada aos produtos daquela
+// categoria. Em "Todos" (ou dentro da mesa/cliente, onde as categorias já
+// são sempre verticais e fixas), a lista completa volta a aparecer.
+function ccAplicarFocoCategoria(id) {
+  const wrap   = document.getElementById("cc-cat-nav-wrap");
+  const trocar = document.getElementById("cc-cat-trocar");
+  const lbl    = document.getElementById("cc-cat-trocar-label");
+  if (!wrap || !trocar) return;
+  if (id === "all") {
+    wrap.style.display = "";
+    trocar.classList.add("hidden");
+  } else {
+    wrap.style.display = "none";
+    trocar.classList.remove("hidden");
+    const cat = (typeof categorias !== "undefined") ? categorias.find(c => c.id === id) : null;
+    if (lbl) lbl.textContent = cat ? (cat.icone + " " + cat.nome) : "Categoria selecionada";
+    const main = document.querySelector("#view-cardapio main");
+    if (main) main.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+function ccVoltarCategorias() { setCat("all"); }
 
 /* ═══════════════════════════════════════
    MAIN RENDER
@@ -6046,6 +6161,14 @@ const SirAccess = (function() {
 
   // ── Ir para view padrão do role ──────────────────────────────
   function _irParaDefault(role) {
+    // Acesso livre (dono, sem ?mesa=): a CAPA — grade completa de abas +
+    // banner institucional — é a tela inicial de verdade. Nenhuma aba abre
+    // sozinha; o dono escolhe o que abrir a partir da capa.
+    if (role === 'livre') {
+      if (typeof ccMostrarSomenteCapa === 'function') ccMostrarSomenteCapa();
+      if (typeof ccCapaMostrar === 'function') ccCapaMostrar(true);
+      return;
+    }
     const cfg = ROLES[role];
     if (!cfg?.default) return;
     const btn = document.querySelector(`[data-view="${cfg.default}"]`);
@@ -12399,11 +12522,13 @@ function ccIniciarModoCliente() {
   if (secao && origemCardapio && !secao.dataset.cardapioRealocado) {
     const filhos = Array.from(origemCardapio.children);
     const catDiv = filhos.find(f => f.querySelector && f.querySelector("#cat-nav"));
+    const trocarChip = filhos.find(f => f.id === "cc-cat-trocar");
     const searchDiv = filhos.find(f => f.querySelector && f.querySelector("#search-input"));
     const header = filhos.find(f => f.tagName === "HEADER");
     const main = filhos.find(f => f.tagName === "MAIN");
     if (searchDiv && slotBusca) slotBusca.appendChild(searchDiv);
     if (catDiv) secao.appendChild(catDiv);
+    if (trocarChip) secao.appendChild(trocarChip);
     if (header) secao.appendChild(header);
     if (main) secao.appendChild(main);
     secao.dataset.cardapioRealocado = "1";
@@ -12445,11 +12570,14 @@ function alternarOpcaoMesa(tab) {
     const cardHeader = document.querySelector("#conteudo-secao-mesa > header");
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
     const cardCat = Array.from(secao.children).find(el => el.querySelector && el.querySelector("#cat-nav"));
+    const cardTrocar = document.getElementById("cc-cat-trocar");
     if (cardHeader) cardHeader.style.display = "";
     if (cardMain) cardMain.style.display = "";
     if (cardCat) cardCat.style.display = "";
+    if (cardTrocar) cardTrocar.style.display = "";
     if (slotBusca) slotBusca.style.display = "";
     if (voltarWrap) voltarWrap.classList.remove("hidden");
+    if (typeof ccAplicarFocoCategoria === "function") ccAplicarFocoCategoria(S.cat);
   } else {
     if (slotBusca) slotBusca.style.display = "none";
     if (voltarWrap) voltarWrap.classList.add("hidden");
@@ -12473,10 +12601,49 @@ function trocarTela(tela) {
   showView(tela, btn);
 }
 
-// ISOLAMENTO FÍSICO DA GRADE DE 11 ABAS (acesso "livre"/dono, sem ?mesa=):
-// ao abrir qualquer módulo, a grade inteira some (display:none) e um botão
-// "⬅️ Voltar para o Painel" aparece fixo pra trazer ela de volta — sem
-// isso, o módulo abria empilhado embaixo da grade ainda visível.
+// ═══════════════════════════════════════════════════════════════
+// CAPA INSTITUCIONAL — banner + grade/menu de abertura (dono e cliente)
+// ccCapaMostrar(bool) só liga/desliga o banner do topo. ccMostrarSomenteCapa()
+// esconde TODAS as views administrativas sem abrir nenhuma (usado no load
+// e ao clicar em "⬅️ Voltar para o Painel", pra não empilhar módulo aberto
+// por baixo da grade que reaparece).
+// ═══════════════════════════════════════════════════════════════
+function ccCapaAtualizarBanner() {
+  const nome = document.getElementById("cc-capa-institucional-nome");
+  const local = document.getElementById("cc-capa-institucional-local");
+  const horario = document.getElementById("cc-capa-institucional-horario");
+  const img = document.getElementById("cc-capa-institucional-img");
+  if (typeof config === "undefined") return;
+  if (nome) nome.textContent = config.nome || "";
+  if (local) local.textContent = config.local || "";
+  if (horario) horario.textContent = config.horario || "";
+  if (img && config.designBanner) img.style.backgroundImage = "url(" + config.designBanner + ")";
+}
+function ccCapaMostrar(mostrar) {
+  const el = document.getElementById("cc-capa-institucional");
+  if (!el) return;
+  if (mostrar) ccCapaAtualizarBanner();
+  el.style.display = mostrar ? "" : "none";
+}
+function ccMostrarSomenteCapa() {
+  // Seletor por prefixo em vez de lista fixa: várias telas administrativas
+  // (ex.: Clientes VIP / Contas a Receber) são criadas dinamicamente em
+  // runtime com id="view-*" e não existem no HTML estático — uma lista
+  // fixa ficava desatualizada e deixava conteúdo vazando por cima da capa
+  // (bug repetido, causa raiz real encontrada e corrigida em ccUnificarClientesCRM).
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add("hidden"));
+  const painelFeed = document.getElementById("cc-clientes-feedbacks-card");
+  if (painelFeed) painelFeed.classList.add("hidden");
+  document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
+  const cf = document.getElementById("cart-footer");
+  if (cf) cf.classList.add("hide");
+}
+
+// ISOLAMENTO FÍSICO DA GRADE DE ABAS (acesso "livre"/dono, sem ?mesa=):
+// ao abrir qualquer módulo, a capa inteira (banner + grade) some
+// (display:none) e um botão "⬅️ Voltar para o Painel" aparece fixo pra
+// trazer ela de volta — sem isso, o módulo abria empilhado embaixo da
+// grade ainda visível.
 (function ccIsolarPainelGeralDono() {
   function montarBotaoVoltar() {
     if (document.getElementById("cc-btn-voltar-painel")) return;
@@ -12489,6 +12656,8 @@ function trocarTela(tela) {
       const nav = document.getElementById("nav-main-wrapper");
       if (nav) nav.style.display = "";
       btn.classList.add("hidden");
+      ccMostrarSomenteCapa();
+      ccCapaMostrar(true);
     };
     document.body.appendChild(btn);
   }
@@ -12503,6 +12672,7 @@ function trocarTela(tela) {
     const btnVoltar = document.getElementById("cc-btn-voltar-painel");
     if (nav) nav.style.display = "none";
     if (btnVoltar) btnVoltar.classList.remove("hidden");
+    ccCapaMostrar(false);
   };
 })();
 
@@ -13115,8 +13285,13 @@ setTimeout(() => { ccAtualizarBoxTurno(); ccDetectarMesaViaQRAtendente(); }, 100
     // exata: Cadastro Geral (view-vip original) → Contas e Fiados VIP
     // (view-contas original) → Feedbacks. Nenhuma tabela nova reinventada:
     // reaproveita os dois painéis já existentes e testados, só empilhados.
-    viewVip.classList.remove("hidden");
-    viewContas.classList.remove("hidden");
+    // IMPORTANTE (bug corrigido): NÃO tirar o "hidden" aqui — isso rodava
+    // incondicionalmente ~700ms/1500ms após CADA carregamento da página,
+    // vazando "Clientes VIP / Fiado" por cima da capa mesmo quando nenhuma
+    // aba estava aberta. A visibilidade real é decidida só pelo showView()
+    // logo abaixo, com base na aba de fato ativa (name === "vip").
+    viewVip.classList.add("hidden");
+    viewContas.classList.add("hidden");
     viewVip.classList.add("mb-4");
 
     const painelFeed = document.createElement("div");
