@@ -506,20 +506,60 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   <!-- Abas — filtradas por role via JS -->
   <div id="nav-main-wrapper" style="position:relative;overflow:hidden">
   <button id="nav-arrow-left" onclick="document.getElementById('nav-main').scrollBy({left:-120,behavior:'smooth'})" style="position:absolute;left:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to right,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">‹</button>
-  <div id="nav-main" class="flex items-center gap-1 overflow-x-auto" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 40px">
-    <button class="nav-tab active" data-view="cardapio"  onclick="showView('cardapio',this)">🍽️ Cardápio</button>
-    <button class="nav-tab"        data-view="mesas"     onclick="showView('mesas',this)">🪑 Mesas</button>
-    <button class="nav-tab"        data-view="atendente" onclick="showView('atendente',this)">🧑‍💼 Atendente</button>
-    <button class="nav-tab"        data-view="cozinha"   onclick="showView('cozinha',this)">👨‍🍳 Cozinha</button>
-    <button class="nav-tab"        data-view="delivery"  onclick="showView('delivery',this)">🛵 Delivery</button>
-    <button class="nav-tab"        data-view="estoque2"  onclick="showView('estoque2',this)">📦 Estoque</button>
-    <button class="nav-tab"        data-view="caixa"     onclick="showView('caixa',this)">💰 Caixa</button>
-    <button class="nav-tab"        data-view="relatorio" onclick="showView('relatorio',this)">📊 Relatórios</button>
-    <button class="nav-tab"        data-view="dashboard" onclick="showView('dashboard',this)">📈 Dashboard</button>
-    <button class="nav-tab"        data-view="admin"     onclick="showView('admin',this)">⚙️ Admin</button>
-  </div>
-  <button id="nav-arrow-right" onclick="document.getElementById('nav-main').scrollBy({left:120,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to left,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">›</button>
-  </div><!-- /nav-main-wrapper -->
+  <div id="nav-main" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 p-6 max-w-4xl mx-auto justify-center items-stretch">
+    
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="cardapio" onclick="showView('cardapio',this)">
+      <span class="text-3xl">🍽️</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Cardápio</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="mesas" onclick="showView('mesas',this)">
+      <span class="text-3xl">🪑</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Mesas</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="atendente" onclick="showView('atendente',this)">
+      <span class="text-3xl">🧑‍💼</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Atendente</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="cozinha" onclick="showView('cozinha',this)">
+      <span class="text-3xl">👨‍🍳</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Cozinha</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="delivery" onclick="showView('delivery',this)">
+      <span class="text-3xl">🛵</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Delivery</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="estoque2" onclick="showView('estoque2',this)">
+      <span class="text-3xl">📦</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Estoque</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="caixa" onclick="showView('caixa',this)">
+      <span class="text-3xl">💰</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Caixa</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="relatorio" onclick="showView('relatorio',this)">
+      <span class="text-3xl">📊</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Relatórios</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="dashboard" onclick="showView('dashboard',this)">
+      <span class="text-3xl">📈</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Dashboard</span>
+    </button>
+
+    <button class="bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md active:scale-95 transition-all duration-150 cursor-pointer min-h-[120px]" data-view="admin" onclick="showView('admin',this)">
+      <span class="text-3xl">⚙️</span>
+      <span class="text-slate-900 font-black text-sm uppercase tracking-wide">Admin</span>
+    </button>
+
+</div><!-- /nav-main -->
+</div><!-- /nav-main-wrapper -->
 </div><!-- /sticky nav -->
 
 <!-- ╔══════════════════════════════════════╗ -->
