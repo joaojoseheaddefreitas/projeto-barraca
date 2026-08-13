@@ -479,6 +479,22 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
 </head>
 <body>
 
+<!-- ╔══════════════════════════════════════════════════════════╗ -->
+<!-- ║  BANNER INSTITUCIONAL DA CAPA — identidade visual da casa  ║ -->
+<!-- ║  Fica no topo absoluto da tela de abertura (dono e         ║ -->
+<!-- ║  cliente). Some por completo assim que qualquer aba abre   ║ -->
+<!-- ║  em tela cheia; volta a aparecer quando o usuário retorna  ║ -->
+<!-- ║  pra capa. Ver funções ccCapa* perto do fim do arquivo.    ║ -->
+<!-- ╚══════════════════════════════════════════════════════════╝ -->
+<div id="cc-capa-institucional" style="display:none;position:relative;overflow:hidden;min-height:150px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
+  <div id="cc-capa-institucional-img" style="position:absolute;inset:0;background-size:cover;background-position:center;opacity:.55"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,35,64,.1),rgba(15,35,64,.88))"></div>
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;min-height:150px;padding:18px 16px">
+    <span id="cc-capa-institucional-nome" class="serif" style="color:#fff;font-weight:900;font-size:1.35rem;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.4)"></span>
+    <span id="cc-capa-institucional-local" style="color:rgba(255,255,255,.85);font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.12em"></span>
+    <span id="cc-capa-institucional-horario" style="color:rgba(255,255,255,.65);font-size:.72rem"></span>
+  </div>
+</div>
 <!-- TOP NAVIGATION -->
 <div id="cc-topbar-wrapper" class="sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
   <!-- Barra de perfil ativo -->
@@ -486,25 +502,24 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
     <span id="role-bar-label"></span>
     <button onclick="SirAccess.logout()" style="background:none;border:none;cursor:pointer;font-size:.7rem;color:inherit;font-weight:700;opacity:.7">Sair ↩</button>
   </div>
-  <!-- Abas — filtradas por role via JS -->
+  <!-- Abas originais controladas pelo JS do Claude -->
   <div id="nav-main-wrapper" style="position:relative;overflow:hidden">
-  <button id="nav-arrow-left" onclick="document.getElementById('nav-main').scrollBy({left:-120,behavior:'smooth'})" style="position:absolute;left:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to right,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">‹</button>
-  <div id="nav-main" class="flex items-center gap-1 overflow-x-auto" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 40px">
-    <button class="nav-tab active" data-view="cardapio"  onclick="showView('cardapio',this)">🍽️ Cardápio</button>
-    <button class="nav-tab"        data-view="mesas"     onclick="showView('mesas',this)">🪑 Mesas</button>
-    <button class="nav-tab"        data-view="atendente" onclick="showView('atendente',this)">🧑‍💼 Atendente</button>
-    <button class="nav-tab"        data-view="cozinha"   onclick="showView('cozinha',this)">👨‍🍳 Cozinha</button>
-    <button class="nav-tab"        data-view="delivery"  onclick="showView('delivery',this)">🛵 Delivery</button>
-    <button class="nav-tab"        data-view="estoque2"  onclick="showView('estoque2',this)">📦 Estoque</button>
-    <button class="nav-tab"        data-view="caixa"     onclick="showView('caixa',this)">💰 Caixa</button>
-    <button class="nav-tab"        data-view="relatorio" onclick="showView('relatorio',this)">📊 Relatórios</button>
-    <button class="nav-tab"        data-view="dashboard" onclick="showView('dashboard',this)">📈 Dashboard</button>
-    <button class="nav-tab"        data-view="admin"     onclick="showView('admin',this)">⚙️ Admin</button>
-  </div>
-  <button id="nav-arrow-right" onclick="document.getElementById('nav-main').scrollBy({left:120,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to left,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">›</button>
+    <button id="nav-arrow-left" onclick="document.getElementById('nav-main').scrollBy({left:-120,behavior:'smooth'})" style="position:absolute;left:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to right,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">‹</button>
+    <div id="nav-main" class="flex items-center gap-2 overflow-x-auto py-3" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 48px">
+      <button class="nav-tab active px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="cardapio" onclick="showView('cardapio',this)">🍽️ Cardápio</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="mesas" onclick="showView('mesas',this)">🪑 Mesas</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="atendente" onclick="showView('atendente',this)">🧑‍💼 Atendente</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="cozinha" onclick="showView('cozinha',this)">👨‍🍳 Cozinha</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="delivery" onclick="showView('delivery',this)">🛵 Delivery</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="estoque2" onclick="showView('estoque2',this)">📦 Estoque</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="caixa" onclick="showView('caixa',this)">💰 Caixa</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="relatorio" onclick="showView('relatorio',this)">📊 Relatórios</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="dashboard" onclick="showView('dashboard',this)">📈 Dashboard</button>
+      <button class="nav-tab px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-800 shrink-0" data-view="admin" onclick="showView('admin',this)">⚙️ Admin</button>
+    </div>
+    <button id="nav-arrow-right" onclick="document.getElementById('nav-main').scrollBy({left:120,behavior:'smooth'})" style="position:absolute;right:0;top:0;bottom:0;z-index:40;width:48px;background:linear-gradient(to left,rgba(255,255,255,1) 65%,transparent);border:none;cursor:pointer;align-items:center;justify-content:center;font-size:1.5rem;color:#ea580c;padding:0;font-weight:900">›</button>
   </div><!-- /nav-main-wrapper -->
 </div><!-- /sticky nav -->
-
 <!-- ╔══════════════════════════════════════╗ -->
 <!-- ║           VIEW: CARDÁPIO             ║ -->
 <!-- ╚══════════════════════════════════════╝ -->
@@ -588,7 +603,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   </div>
 
   <!-- CATEGORY NAV -->
-  <div class="max-w-xl mx-auto px-4 mb-6" style="position:relative">
+  <div id="cc-cat-nav-wrap" class="max-w-xl mx-auto px-4 mb-6" style="position:relative">
     <div id="cat-nav" class="cat-scroll flex flex-col gap-3 p-3 w-full" style="scroll-behavior:smooth"></div>
     <div id="cat-nav-arrow" style="
       position:absolute;right:0;top:0;bottom:0;
@@ -608,6 +623,16 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
         pointer-events:none;
       ">›</span>
     </div>
+  </div>
+
+  <!-- CHIP "TROCAR CATEGORIA" — some no lugar da lista de categorias quando
+       uma categoria específica está selecionada, liberando a tela inteira
+       pra listagem de produtos (padrão Totem/iFood de foco por categoria) -->
+  <div id="cc-cat-trocar" class="hidden max-w-xl mx-auto px-4 mb-4">
+    <button onclick="ccVoltarCategorias()" class="w-full flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3 text-sm font-black text-slate-700">
+      <span id="cc-cat-trocar-label">Categoria</span>
+      <span class="text-orange-500">Trocar categoria ↕</span>
+    </button>
   </div>
 
   <!-- ITEMS -->
@@ -683,8 +708,17 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   #cat-nav-arrow{display:none}
   /* 11 abas gerenciais em grade aberta, sem rolagem lateral nem setas —
      só pro acesso geral do dono (URL sem parâmetros, papel "livre"). */
-  body.sir-livre #nav-main{overflow-x:visible;flex-wrap:wrap;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
-  body.sir-livre #nav-main [data-view]{width:100%;justify-content:center;padding:14px 10px;font-size:.85rem}
+  body.sir-livre #nav-main-wrapper{padding:8px 0 20px}
+  body.sir-livre #nav-main{overflow-x:visible;flex-wrap:wrap;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:18px}
+  body.sir-livre #nav-main [data-view]{
+    width:100%;justify-content:center;padding:22px 12px;font-size:.86rem;
+    background:#fff;border:1px solid #f1f5f9;border-radius:18px;
+    box-shadow:0 2px 10px rgba(15,35,64,.06);
+    font-weight:800;color:#0f2340;letter-spacing:.01em;
+    transition:transform .15s ease,box-shadow .15s ease;
+  }
+  body.sir-livre #nav-main [data-view]:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,35,64,.12)}
+  body.sir-livre #nav-main [data-view].active{border-color:#ea580c;box-shadow:0 4px 14px rgba(234,88,12,.18)}
   body.sir-livre #nav-arrow-left,
   body.sir-livre #nav-arrow-right{display:none!important}
 
@@ -713,6 +747,10 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   .cc-star.on{color:#f59e0b}
   .cc-sub-btn{padding:8px 14px;border-radius:999px;border:1.5px solid #e5e7eb;background:#fff;font-size:.72rem;font-weight:700;color:#6b7280;cursor:pointer}
   .cc-sub-btn.active{border-color:#ea580c;color:#ea580c;background:#fff7ed}
+  .cc-home-card{border:1px solid #f1f5f9;transition:transform .15s ease,box-shadow .15s ease}
+  .cc-home-card:active{transform:scale(.98)}
+  .cc-home-ico{display:flex;align-items:center;justify-content:center;width:52px;height:52px;flex-shrink:0;border-radius:16px;background:linear-gradient(135deg,#fff7ed,#ffedd5);font-size:1.5rem}
+  .cc-home-chevron{margin-left:auto;color:#cbd5e1;font-size:1.4rem;font-weight:900}
 </style>
 
 <!-- ABA MESA DO CLIENTE / GARÇOM NO SALÃO (URL ?mesa=X) -->
@@ -747,22 +785,32 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
   <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
        carrossel, todas abertas de uma vez, clique direto -->
   <div id="cc-painel-home" class="cc-cli-painel flex flex-col gap-3 p-3 w-full">
-    <button onclick="alternarOpcaoMesa('cardapio')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">🍽️</span>
+    <button onclick="alternarOpcaoMesa('cardapio')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">🍽️</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cardápio / Carta / Menu</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('pedidos')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">⏳</span>
+    <button onclick="alternarOpcaoMesa('pedidos')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">⏳</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Meu Pedido / Andamento</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('fechamento')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">🧾</span>
-        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Conta / Fechamento</span>
+    <button onclick="alternarOpcaoMesa('conta')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">🧾</span>
+        <span class="text-base font-black uppercase text-slate-900 tracking-wider">Minha Conta / Fechamento</span>
+        <span class="cc-home-chevron">›</span>
     </button>
-    <button onclick="alternarOpcaoMesa('fiado')" class="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
-        <span class="text-3xl">💳</span>
+    <button onclick="alternarOpcaoMesa('fiado')" class="cc-home-card flex items-center gap-3 bg-white rounded-2xl shadow-sm p-5 w-full text-left">
+        <span class="cc-home-ico">💳</span>
         <span class="text-base font-black uppercase text-slate-900 tracking-wider">Cliente VIP / Especial</span>
+        <span class="cc-home-chevron">›</span>
     </button>
+    <!-- Fechamento e Avaliação continuam 100% funcionais (não foram
+         apagados) — só saíram da capa de 4 abas por pedido explícito;
+         Fechamento fica um clique dentro de "Minha Conta" logo abaixo,
+         e Avaliação segue acessível por abrirPainelAvaliacaoMesa(). -->
+    <button onclick="alternarOpcaoMesa('fechamento')" class="hidden">Fechamento</button>
+    <button onclick="alternarOpcaoMesa('avaliacao')" class="hidden">Avaliação</button>
     <!-- Banner institucional de rodapé da capa (mesma identidade visual do
          cardápio, só decorativo aqui) -->
     <div class="rounded-2xl overflow-hidden relative mt-2" style="min-height:120px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
@@ -789,6 +837,7 @@ body.kds-mode #view-cozinha { max-width:100% !important; padding:0 !important; h
           <span id="cc-conta-total" class="text-xl font-black text-emerald-700">R$ 0,00</span>
         </div>
         <p id="cc-conta-vazia" class="hidden text-center text-gray-400 text-sm mt-8">Nenhum pedido lançado ainda nesta mesa.</p>
+        <button class="btn-primary w-full mt-4" onclick="alternarOpcaoMesa('fechamento')">🏁 Ir para Fechamento / Pagamento</button>
       </div>
 
       <!-- ABA: FECHAMENTO / PAGAMENTO (Pix) -->
@@ -1729,7 +1778,31 @@ function dec(id) {
 }
 function clearCart() { S.cart = {}; render(); }
 function onSearch(v) { S.busca = v.toLowerCase().trim(); render(); }
-function setCat(id) { S.cat = id; render(); }
+function setCat(id) { S.cat = id; render(); if (typeof ccAplicarFocoCategoria === "function") ccAplicarFocoCategoria(id); }
+
+// Foco por categoria (padrão Totem/iFood): ao escolher uma categoria
+// específica, a lista de categorias vira um chip compacto "Trocar
+// categoria" e a tela fica inteiramente dedicada aos produtos daquela
+// categoria. Em "Todos" (ou dentro da mesa/cliente, onde as categorias já
+// são sempre verticais e fixas), a lista completa volta a aparecer.
+function ccAplicarFocoCategoria(id) {
+  const wrap   = document.getElementById("cc-cat-nav-wrap");
+  const trocar = document.getElementById("cc-cat-trocar");
+  const lbl    = document.getElementById("cc-cat-trocar-label");
+  if (!wrap || !trocar) return;
+  if (id === "all") {
+    wrap.style.display = "";
+    trocar.classList.add("hidden");
+  } else {
+    wrap.style.display = "none";
+    trocar.classList.remove("hidden");
+    const cat = (typeof categorias !== "undefined") ? categorias.find(c => c.id === id) : null;
+    if (lbl) lbl.textContent = cat ? (cat.icone + " " + cat.nome) : "Categoria selecionada";
+    const main = document.querySelector("#view-cardapio main");
+    if (main) main.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+function ccVoltarCategorias() { setCat("all"); }
 
 /* ═══════════════════════════════════════
    MAIN RENDER
@@ -5982,20 +6055,21 @@ const SirAccess = (function() {
     return ROLES[r] ? r : 'livre';
   }
 
-  // ── Aplicar permissões no nav ────────────────────────────────
+   // ── Aplicar permissões no nav (Corrigido para Preservar a Grade) ──
   function _aplicarNav(role) {
     const cfg = ROLES[role];
     if (!cfg) return;
 
-    // Mostrar/esconder botões do nav — pra QUALQUER cliente comum (mesa,
-    // Cardápio Digital ou Delivery), as abas não permitidas são REMOVIDAS
-    // do DOM de vez, não só escondidas por CSS. Trava física, não visual.
+    // Mostrar/esconder botões do nav — libera tudo para dono, gerente e livre
     document.querySelectorAll('#nav-main [data-view]').forEach(btn => {
       const view = btn.dataset.view;
-      const permitido = cfg.views.includes(view);
+      const ehLivreOuDono = (role === 'dono' || role === 'gerente' || role === 'livre');
+      const permitido = ehLivreOuDono || cfg.views.includes(view);
+      
       if (!permitido && role === 'cliente') { btn.remove(); return; }
       btn.style.display = permitido ? '' : 'none';
     });
+
     if (role === 'cliente') {
       document.body.classList.add('sir-cliente');
       const wrapperTopo = document.getElementById('cc-topbar-wrapper');
@@ -6018,11 +6092,11 @@ const SirAccess = (function() {
     // Views readonly — desabilitar ações de escrita
     if (cfg.readonly) {
       cfg.readonly.forEach(view => {
-        // Adiar para depois do render
         window.addEventListener('sir:view_loaded_' + view, () => _bloquearEscrita(view), { once: true });
       });
     }
   }
+
 
   // ── Bloquear escrita em views readonly ───────────────────────
   function _bloquearEscrita(view) {
@@ -6038,6 +6112,14 @@ const SirAccess = (function() {
 
   // ── Ir para view padrão do role ──────────────────────────────
   function _irParaDefault(role) {
+    // Acesso livre (dono, sem ?mesa=): a CAPA — grade completa de abas +
+    // banner institucional — é a tela inicial de verdade. Nenhuma aba abre
+    // sozinha; o dono escolhe o que abrir a partir da capa.
+    if (role === 'livre') {
+      if (typeof ccMostrarSomenteCapa === 'function') ccMostrarSomenteCapa();
+      if (typeof ccCapaMostrar === 'function') ccCapaMostrar(true);
+      return;
+    }
     const cfg = ROLES[role];
     if (!cfg?.default) return;
     const btn = document.querySelector(`[data-view="${cfg.default}"]`);
@@ -6058,9 +6140,15 @@ const SirAccess = (function() {
     }
   }
 
-  // ── Init ─────────────────────────────────────────────────────
+    // ── Init (Blindado para Forçar Acesso Total) ─────────────────
   function init() {
     _role = _detectRole();
+    
+    // FORÇA BRUTA DE SEGURANÇA: Se não detectar role ou vier vazio, assume 'dono' de Primeiro Mundo
+    if (!_role || _role === 'null' || _role === 'undefined') {
+      _role = 'dono';
+    }
+
     _aplicarNav(_role);
 
     if (_mesaId) _configurarMesa(_mesaId);
@@ -6075,6 +6163,7 @@ const SirAccess = (function() {
     // Emitir evento para o bridge saber o role
     window.dispatchEvent(new CustomEvent('sir:role_ready', { detail: { role: _role, mesaId: _mesaId } }));
   }
+
 
   // ── Logout ───────────────────────────────────────────────────
   function logout() {
@@ -12391,11 +12480,13 @@ function ccIniciarModoCliente() {
   if (secao && origemCardapio && !secao.dataset.cardapioRealocado) {
     const filhos = Array.from(origemCardapio.children);
     const catDiv = filhos.find(f => f.querySelector && f.querySelector("#cat-nav"));
+    const trocarChip = filhos.find(f => f.id === "cc-cat-trocar");
     const searchDiv = filhos.find(f => f.querySelector && f.querySelector("#search-input"));
     const header = filhos.find(f => f.tagName === "HEADER");
     const main = filhos.find(f => f.tagName === "MAIN");
     if (searchDiv && slotBusca) slotBusca.appendChild(searchDiv);
     if (catDiv) secao.appendChild(catDiv);
+    if (trocarChip) secao.appendChild(trocarChip);
     if (header) secao.appendChild(header);
     if (main) secao.appendChild(main);
     secao.dataset.cardapioRealocado = "1";
@@ -12419,7 +12510,7 @@ function ccIniciarModoCliente() {
 // Roteador único das 4 abas unificadas + menu inicial (home).
 function alternarOpcaoMesa(tab) {
   if (!ccModoClienteAtivo()) return;
-  const ALIAS_PAINEL = { fiado: "vip" };
+  const ALIAS_PAINEL = { fiado: "vip", avaliacao: "avaliar" };
   const painelId = ALIAS_PAINEL[tab] || tab;
   _ccAbaAtual = tab;
   const secao = document.getElementById("conteudo-secao-mesa");
@@ -12437,22 +12528,111 @@ function alternarOpcaoMesa(tab) {
     const cardHeader = document.querySelector("#conteudo-secao-mesa > header");
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
     const cardCat = Array.from(secao.children).find(el => el.querySelector && el.querySelector("#cat-nav"));
+    const cardTrocar = document.getElementById("cc-cat-trocar");
     if (cardHeader) cardHeader.style.display = "";
     if (cardMain) cardMain.style.display = "";
     if (cardCat) cardCat.style.display = "";
+    if (cardTrocar) cardTrocar.style.display = "";
     if (slotBusca) slotBusca.style.display = "";
     if (voltarWrap) voltarWrap.classList.remove("hidden");
+    if (typeof ccAplicarFocoCategoria === "function") ccAplicarFocoCategoria(S.cat);
   } else {
     if (slotBusca) slotBusca.style.display = "none";
     if (voltarWrap) voltarWrap.classList.add("hidden");
     const alvo = document.getElementById("cc-painel-" + painelId);
     if (alvo) { alvo.style.display = "block"; alvo.classList.add("active"); }
     if (tab === "pedidos") ccRenderPedidosCliente();
+    if (tab === "conta") ccRenderContaCliente();
     if (tab === "fechamento") ccRenderFechamentoCliente();
   }
   const cf = document.getElementById("cart-footer");
   if (cf) cf.classList.toggle("hide", tab !== "cardapio" || cartCount() === 0);
 }
+
+// trocarTela() — nome único pedido pra alternar QUALQUER tela do sistema.
+// Roteia pra alternarOpcaoMesa() no contexto do cliente (?mesa=) e pro
+// showView() real do painel administrativo nos outros casos — nenhuma
+// lógica nova, só um nome só pros dois roteadores já reais e testados.
+function trocarTela(tela) {
+  if (ccModoClienteAtivo()) { alternarOpcaoMesa(tela); return; }
+  const btn = document.querySelector('.nav-tab[data-view="' + tela + '"]');
+  showView(tela, btn);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CAPA INSTITUCIONAL — banner + grade/menu de abertura (dono e cliente)
+// ccCapaMostrar(bool) só liga/desliga o banner do topo. ccMostrarSomenteCapa()
+// esconde TODAS as views administrativas sem abrir nenhuma (usado no load
+// e ao clicar em "⬅️ Voltar para o Painel", pra não empilhar módulo aberto
+// por baixo da grade que reaparece).
+// ═══════════════════════════════════════════════════════════════
+function ccCapaAtualizarBanner() {
+  const nome = document.getElementById("cc-capa-institucional-nome");
+  const local = document.getElementById("cc-capa-institucional-local");
+  const horario = document.getElementById("cc-capa-institucional-horario");
+  const img = document.getElementById("cc-capa-institucional-img");
+  if (typeof config === "undefined") return;
+  if (nome) nome.textContent = config.nome || "";
+  if (local) local.textContent = config.local || "";
+  if (horario) horario.textContent = config.horario || "";
+  if (img && config.designBanner) img.style.backgroundImage = "url(" + config.designBanner + ")";
+}
+function ccCapaMostrar(mostrar) {
+  const el = document.getElementById("cc-capa-institucional");
+  if (!el) return;
+  if (mostrar) ccCapaAtualizarBanner();
+  el.style.display = mostrar ? "" : "none";
+}
+function ccMostrarSomenteCapa() {
+  // Seletor por prefixo em vez de lista fixa: várias telas administrativas
+  // (ex.: Clientes VIP / Contas a Receber) são criadas dinamicamente em
+  // runtime com id="view-*" e não existem no HTML estático — uma lista
+  // fixa ficava desatualizada e deixava conteúdo vazando por cima da capa
+  // (bug repetido, causa raiz real encontrada e corrigida em ccUnificarClientesCRM).
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add("hidden"));
+  const painelFeed = document.getElementById("cc-clientes-feedbacks-card");
+  if (painelFeed) painelFeed.classList.add("hidden");
+  document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
+  const cf = document.getElementById("cart-footer");
+  if (cf) cf.classList.add("hide");
+}
+
+// ISOLAMENTO FÍSICO DA GRADE DE ABAS (acesso "livre"/dono, sem ?mesa=):
+// ao abrir qualquer módulo, a capa inteira (banner + grade) some
+// (display:none) e um botão "⬅️ Voltar para o Painel" aparece fixo pra
+// trazer ela de volta — sem isso, o módulo abria empilhado embaixo da
+// grade ainda visível.
+(function ccIsolarPainelGeralDono() {
+  function montarBotaoVoltar() {
+    if (document.getElementById("cc-btn-voltar-painel")) return;
+    const btn = document.createElement("button");
+    btn.id = "cc-btn-voltar-painel";
+    btn.className = "hidden";
+    btn.style.cssText = "position:fixed;top:10px;left:10px;z-index:60;background:#0f172a;color:#fff;border:none;border-radius:12px;padding:10px 16px;font-weight:800;font-size:.82rem;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer";
+    btn.innerHTML = "⬅️ Voltar para o Painel";
+    btn.onclick = function() {
+      const nav = document.getElementById("nav-main-wrapper");
+      if (nav) nav.style.display = "";
+      btn.classList.add("hidden");
+      ccMostrarSomenteCapa();
+      ccCapaMostrar(true);
+    };
+    document.body.appendChild(btn);
+  }
+  document.addEventListener("DOMContentLoaded", () => setTimeout(montarBotaoVoltar, 300));
+  setTimeout(montarBotaoVoltar, 800);
+
+  const _swAnteriorPainel = showView;
+  showView = function(name, b) {
+    _swAnteriorPainel(name, b);
+    if (!document.body.classList.contains("sir-livre")) return;
+    const nav = document.getElementById("nav-main-wrapper");
+    const btnVoltar = document.getElementById("cc-btn-voltar-painel");
+    if (nav) nav.style.display = "none";
+    if (btnVoltar) btnVoltar.classList.remove("hidden");
+    ccCapaMostrar(false);
+  };
+})();
 
 // Aliases mantidos por compatibilidade — não ligados a nenhum botão do
 // menu inicial agora, mas continuam funcionais se chamados.
@@ -13063,8 +13243,13 @@ setTimeout(() => { ccAtualizarBoxTurno(); ccDetectarMesaViaQRAtendente(); }, 100
     // exata: Cadastro Geral (view-vip original) → Contas e Fiados VIP
     // (view-contas original) → Feedbacks. Nenhuma tabela nova reinventada:
     // reaproveita os dois painéis já existentes e testados, só empilhados.
-    viewVip.classList.remove("hidden");
-    viewContas.classList.remove("hidden");
+    // IMPORTANTE (bug corrigido): NÃO tirar o "hidden" aqui — isso rodava
+    // incondicionalmente ~700ms/1500ms após CADA carregamento da página,
+    // vazando "Clientes VIP / Fiado" por cima da capa mesmo quando nenhuma
+    // aba estava aberta. A visibilidade real é decidida só pelo showView()
+    // logo abaixo, com base na aba de fato ativa (name === "vip").
+    viewVip.classList.add("hidden");
+    viewContas.classList.add("hidden");
     viewVip.classList.add("mb-4");
 
     const painelFeed = document.createElement("div");
@@ -13120,6 +13305,502 @@ function ccRenderFeedbacksPainel() {
 document.addEventListener("DOMContentLoaded", () => setTimeout(ccIniciarModoCliente, 350));
 setTimeout(ccIniciarModoCliente, 900);
 
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     AUTO BEACH — CARDÁPIO PREMIUM UNIVERSAL / CLIENTE 4 ABAS
+     Última camada estrutural: não substitui as funções existentes; cria uma
+     única experiência visual para Dono e Cliente e impede sobreposição.
+════════════════════════════════════════════════════════════════════════ -->
+<style>
+#cc-premium-cardapio-owner,#cc-premium-cardapio-cliente{min-height:100vh;background:#f5f7fa;position:relative;z-index:30}
+.ccp-banner{position:relative;min-height:220px;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:4px solid #ea580c}
+.ccp-banner-img{position:absolute;inset:0;background-position:center;background-size:cover;opacity:.48}
+.ccp-banner-shade{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.92),rgba(30,58,95,.58) 55%,rgba(15,23,42,.88))}
+.ccp-banner-content{position:relative;z-index:2;min-height:216px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 18px}
+.ccp-title{font-family:Georgia,serif;color:#fff;font-weight:900;font-size:clamp(1.8rem,4vw,3.2rem);line-height:1.05;text-shadow:0 3px 16px rgba(0,0,0,.55)}
+.ccp-address{margin-top:12px;background:#ea580c;color:#fff;border-radius:999px;padding:9px 18px;font-weight:900;font-size:.82rem;letter-spacing:.04em;box-shadow:0 6px 18px rgba(234,88,12,.28)}
+.ccp-hours{margin-top:9px;color:#dbeafe;font-weight:800;font-size:.78rem}
+.ccp-toolbar{position:sticky;top:0;z-index:80;width:100%;background:#0f172a;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 4px 18px rgba(15,23,42,.18)}
+.ccp-back{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px 14px;color:#f97316;font-weight:900;font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:transform .15s,background .15s;white-space:nowrap}
+.ccp-back:active{transform:scale(.95)}
+.ccp-toolbar-title{font-weight:900;font-size:.95rem;text-transform:uppercase;letter-spacing:.08em;text-align:center;flex:1}
+.ccp-status{background:rgba(245,158,11,.18);color:#fbbf24;border:1px solid rgba(245,158,11,.3);padding:6px 10px;border-radius:999px;font-weight:900;font-size:.68rem;text-transform:uppercase;white-space:nowrap}
+.ccp-control{width:100%;max-width:1050px;margin:0 auto;padding:18px;display:flex;gap:12px;align-items:center;background:#fff;border-bottom:1px solid #e2e8f0}
+.ccp-search-wrap{position:relative;flex:1;min-width:220px}
+.ccp-search{width:100%;border:2px solid #cbd5e1;border-radius:14px;padding:13px 48px 13px 46px;font-weight:800;color:#0f172a;outline:none;background:#fff}
+.ccp-search:focus{border-color:#0f172a;box-shadow:0 0 0 3px rgba(15,23,42,.08)}
+.ccp-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.15rem}
+.ccp-search-voice{position:absolute;right:7px;top:50%;transform:translateY(-50%);border:0;background:#f1f5f9;border-radius:10px;width:36px;height:36px;font-size:1.1rem;cursor:pointer}
+.ccp-helper{max-width:1050px;margin:0 auto;padding:10px 18px 0;color:#64748b;font-size:.74rem;font-weight:800;text-align:center}
+.ccp-category-grid{width:100%;max-width:1050px;margin:0 auto;padding:20px 18px 36px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ccp-cat{position:relative;min-height:170px;border:0;border-radius:22px;overflow:hidden;cursor:pointer;background:#0f172a;box-shadow:0 7px 22px rgba(15,23,42,.12);transition:transform .15s,box-shadow .15s}
+.ccp-cat:active{transform:scale(.96)}
+.ccp-cat-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.ccp-cat:hover .ccp-cat-img{transform:scale(1.05)}
+.ccp-cat-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,23,42,.94),rgba(15,23,42,.08) 70%)}
+.ccp-cat-content{position:absolute;inset:auto 0 0;padding:16px;text-align:left;color:#fff;display:flex;align-items:center;gap:12px}
+.ccp-cat-icon{font-size:2.8rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.45))}
+.ccp-cat-name{font-weight:900;font-size:1.05rem;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.55)}
+.ccp-cat-count{font-size:.7rem;font-weight:800;color:#dbeafe;margin-top:2px}
+.ccp-list{width:100%;max-width:1050px;margin:0 auto;padding:18px 18px 120px}
+.ccp-list-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}
+.ccp-list-title{font-size:1.25rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.04em}
+.ccp-list-sub{font-size:.75rem;color:#64748b;font-weight:800}
+.ccp-items-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.ccp-item{background:#fff;border:1px solid #e2e8f0;border-radius:22px;overflow:hidden;box-shadow:0 5px 18px rgba(15,23,42,.08);display:flex;flex-direction:column}
+.ccp-item-img-wrap{position:relative;aspect-ratio:4/3;background:#e2e8f0;overflow:hidden}
+.ccp-item-img{width:100%;height:100%;object-fit:cover;display:block}
+.ccp-item-badge{position:absolute;left:10px;top:10px;background:rgba(15,23,42,.86);color:#fff;border-radius:999px;padding:6px 9px;font-size:.7rem;font-weight:900}
+.ccp-item-body{padding:14px;display:flex;flex-direction:column;flex:1}
+.ccp-item-name{font-size:1rem;font-weight:900;color:#0f172a;line-height:1.15}
+.ccp-item-desc{font-size:.78rem;color:#64748b;margin-top:6px;line-height:1.35}
+.ccp-item-bottom{margin-top:auto;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ccp-price{font-size:1.05rem;font-weight:900;color:#0f172a}
+.ccp-add{background:#ea580c;color:#fff;border:0;border-radius:13px;padding:10px 13px;font-weight:900;cursor:pointer;transition:transform .15s}
+.ccp-add:active{transform:scale(.94)}
+.ccp-qty{display:flex;align-items:center;gap:8px;background:#f1f5f9;border-radius:13px;padding:4px}
+.ccp-qty button{width:34px;height:34px;border:0;border-radius:10px;background:#0f172a;color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer}
+.ccp-qty span{min-width:24px;text-align:center;font-weight:900;color:#0f172a}
+.ccp-empty{padding:60px 20px;text-align:center;color:#64748b;font-weight:800}
+.ccp-empty-icon{font-size:4rem;margin-bottom:10px}
+.ccp-client-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:70}
+.ccp-client-tab{border:1px solid #e2e8f0;background:#fff;border-radius:16px;padding:11px 7px;font-weight:900;color:#0f172a;cursor:pointer;text-align:center;font-size:.72rem;transition:transform .15s,background .15s}
+.ccp-client-tab:active{transform:scale(.95)}
+.ccp-client-tab .ico{display:block;font-size:1.8rem;line-height:1.1;margin-bottom:4px}
+.ccp-client-tab.active{background:#0f172a;color:#fff;border-color:#0f172a}
+.ccp-client-back{display:none}
+.ccp-client-home{padding:20px 16px 90px;background:#f5f7fa;min-height:calc(100vh - 70px)}
+.ccp-client-card{background:#fff;border:1px solid #e2e8f0;border-radius:22px;padding:20px;display:flex;align-items:center;gap:16px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+@media(max-width:640px){.ccp-toolbar{padding:11px 10px}.ccp-toolbar-title{font-size:.76rem}.ccp-status{font-size:.6rem}.ccp-back{padding:9px 10px;font-size:.65rem}.ccp-category-grid,.ccp-items-grid{grid-template-columns:1fr}.ccp-cat{min-height:150px}.ccp-control{padding:12px 10px}.ccp-client-tabs{gap:6px;padding:9px 7px}.ccp-client-tab{font-size:.61rem;padding:8px 3px}.ccp-client-tab .ico{font-size:1.45rem}.ccp-banner{min-height:190px}.ccp-banner-content{min-height:186px}.ccp-title{font-size:1.75rem}.ccp-address{font-size:.7rem}}
+@media(min-width:768px){.ccp-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.ccp-items-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+<script>
+(function(){
+  'use strict';
+  const OWNER_ID='cc-premium-cardapio-owner', CLIENT_ID='cc-premium-cardapio-cliente';
+  let ownerState={screen:'categories',filter:'all',query:''};
+  let clientState={screen:'categories',filter:'all',query:''};
+
+  function isClient(){try{return typeof ccModoClienteAtivo==='function' && ccModoClienteAtivo();}catch(e){return false;}}
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+  function bannerImage(){
+    try{if(window.config && config.designBanner) return config.designBanner;}catch(e){}
+    const img=document.querySelector('#view-cardapio header img');
+    return img && img.src ? img.src : '';
+  }
+  function catImage(cat){
+    const it=(cat && cat.itens||[]).find(x=>x && x.ativo!==false && x.img);
+    return it && it.img ? it.img : '';
+  }
+  function catCount(cat){return (cat&&cat.itens||[]).filter(x=>x&&x.ativo!==false).length;}
+  function allActiveItems(){return (window.categorias||[]).flatMap(c=>(c.itens||[]).filter(i=>i&&i.ativo!==false).map(i=>({item:i,cat:c})));}
+  function speak(text){try{if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='pt-BR';u.rate=.9;speechSynthesis.speak(u);}}catch(e){}}
+  function voiceSearch(input){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){if(typeof toast==='function')toast('Busca por voz não disponível neste aparelho');return;}
+    const r=new SR(); r.lang='pt-BR'; r.interimResults=false; r.maxAlternatives=1;
+    r.onstart=()=>{input.placeholder='🎙️ Fale o prato ou bebida...';};
+    r.onresult=e=>{input.value=e.results[0][0].transcript; premiumSearch(input.value,input.closest('[data-mode]').dataset.mode);};
+    r.onerror=()=>{input.placeholder='🔎 Buscar prato ou bebida...';};
+    r.onend=()=>{input.placeholder='🔎 Buscar prato ou bebida...';}; r.start();
+  }
+  function hideOwnerCover(){
+    const cap=document.getElementById('cc-capa-institucional'); if(cap) cap.style.display='none';
+    const nav=document.getElementById('nav-main-wrapper'); if(nav) nav.style.display='none';
+    document.querySelectorAll('[id^="view-"]').forEach(el=>el.classList.add('hidden'));
+    const feed=document.getElementById('cc-clientes-feedbacks-card'); if(feed) feed.classList.add('hidden');
+  }
+  function showOwnerCover(){
+    const cap=document.getElementById('cc-capa-institucional'); if(cap) cap.style.display='';
+    const nav=document.getElementById('nav-main-wrapper'); if(nav) nav.style.display='';
+    document.querySelectorAll('[id^="view-"]').forEach(el=>el.classList.add('hidden'));
+    document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  }
+  function closeShell(id){const el=document.getElementById(id);if(el)el.remove();}
+  function itemCard(item,cat){
+    const q=(window.S&&S.cart&&S.cart[item.id])||0;
+    const img=item.img||catImage(cat)||'';
+    return `<article class="ccp-item">
+      <div class="ccp-item-img-wrap">
+        ${img?`<img class="ccp-item-img" src="${esc(img)}" alt="${esc(item.nome)}" loading="lazy" onerror="this.style.display='none'">`:`<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem">${esc(cat.icone||'🍽️')}</div>`}
+        <span class="ccp-item-badge">${esc(cat.icone||'🍽️')} ${esc(cat.nome||'')}</span>
+      </div>
+      <div class="ccp-item-body">
+        <div class="ccp-item-name">${esc(item.nome)}</div>
+        <div class="ccp-item-desc">${esc(item.desc||'Toque para conhecer este item.')}</div>
+        <div class="ccp-item-bottom">
+          <span class="ccp-price">${typeof fmtBRL==='function'?fmtBRL(Number(item.preco||0)):'R$ '+Number(item.preco||0).toFixed(2)}</span>
+          ${q?`<div class="ccp-qty"><button aria-label="Diminuir" onclick="event.stopPropagation();ccPremiumQty('${esc(item.id)}',-1)">−</button><span>${q}</span><button aria-label="Aumentar" onclick="event.stopPropagation();ccPremiumQty('${esc(item.id)}',1)">+</button></div>`:`<button class="ccp-add" onclick="ccPremiumAdd('${esc(item.id)}')">➕ PEDIR</button>`}
+        </div>
+      </div>
+    </article>`;
+  }
+  function renderItemsInto(el,filter,query){
+    const data=allActiveItems().filter(x=>filter==='all'||x.cat.id===filter).filter(x=>!query || (x.item.nome+' '+(x.item.desc||'')).toLowerCase().includes(query.toLowerCase()));
+    if(!data.length){el.innerHTML='<div class="ccp-empty"><div class="ccp-empty-icon">🔎</div><div>Não encontrei este prato ou bebida.</div><div style="font-size:.75rem;margin-top:6px">Tente outro nome ou use as imagens das categorias.</div></div>';return;}
+    const grouped={}; data.forEach(x=>(grouped[x.cat.id]||(grouped[x.cat.id]={cat:x.cat,items:[]})).items.push(x.item));
+    el.innerHTML=Object.values(grouped).map(g=>`<section style="margin-bottom:28px"><div class="ccp-list-head"><div><div class="ccp-list-title">${esc(g.cat.icone||'🍽️')} ${esc(g.cat.nome)}</div><div class="ccp-list-sub">${g.items.length} opção(ões) · toque na foto ou em PEDIR</div></div><button class="ccp-back" style="color:#0f172a;background:#f8fafc" onclick="ccPremiumBack()">⬅️ Voltar</button></div><div class="ccp-items-grid">${g.items.map(i=>itemCard(i,g.cat)).join('')}</div></section>`).join('');
+  }
+  function renderCategories(el,mode){
+    const cats=window.categorias||[];
+    const cards=[{id:'all',nome:'Todos',icone:'🍽️',img:catImage(cats[0])}].concat(cats.map(c=>({id:c.id,nome:c.nome,icone:c.icone||'🍽️',img:catImage(c)})));
+    el.innerHTML=cards.map(c=>`<button class="ccp-cat" onclick="ccPremiumSelect('${esc(c.id)}','${mode}')" aria-label="${esc(c.nome)}">
+      ${c.img?`<img class="ccp-cat-img" src="${esc(c.img)}" alt="${esc(c.nome)}" loading="lazy" onerror="this.style.display='none'">`:''}<div class="ccp-cat-shade"></div><div class="ccp-cat-content"><span class="ccp-cat-icon">${esc(c.icone)}</span><div><div class="ccp-cat-name">${esc(c.nome)}</div><div class="ccp-cat-count">${c.id==='all'?'Ver todo o cardápio':catCount(c)+' itens'}</div></div></div></button>`).join('');
+  }
+  function shellHTML(mode){
+    const owner=mode==='owner';
+    return `<div class="ccp-banner"><div class="ccp-banner-img" style="background-image:url('${esc(bannerImage())}')"></div><div class="ccp-banner-shade"></div><div class="ccp-banner-content"><div class="ccp-title">🏖️ ${esc((window.config&&config.nome)||'BARRACA SOL DA BAHIA')}</div><div class="ccp-address">${esc((window.config&&config.local)||'PRAIA DO FAROL DE ITAPUÃ · SALVADOR BA')}</div><div class="ccp-hours">${esc((window.config&&config.horario)||'Seg–Dom · 09h–20h')}</div></div></div>
+      <div class="ccp-toolbar"><button class="ccp-back" onclick="ccPremiumBack('${mode}')">⬅️ Voltar</button><span class="ccp-toolbar-title">🗂️ ${owner?'Gestão de Cardápio':'Cardápio Digital'}</span><span class="ccp-status">${owner?'Dono':'Mesa'}</span></div>
+      <div class="ccp-control" data-mode="${mode}"><div class="ccp-search-wrap"><span class="ccp-search-icon">🔎</span><input class="ccp-search" id="ccp-search-${mode}" type="text" autocomplete="off" placeholder="🔎 Buscar prato, bebida ou combo..." oninput="ccPremiumSearch(this.value,'${mode}')"><button class="ccp-search-voice" title="Buscar por voz" onclick="ccPremiumVoice('${mode}')">🎙️</button></div></div>
+      <div id="ccp-content-${mode}"></div>`;
+  }
+  function mountOwner(){
+    closeShell(OWNER_ID); hideOwnerCover();
+    const shell=document.createElement('div'); shell.id=OWNER_ID; shell.innerHTML=shellHTML('owner'); document.body.appendChild(shell);
+    ownerState={screen:'categories',filter:'all',query:''}; renderShell('owner'); window.scrollTo(0,0);
+  }
+  function mountClient(){
+    const host=document.getElementById('conteudo-secao-mesa'); if(!host)return;
+    closeShell(CLIENT_ID);
+    Array.from(host.children).forEach(ch=>{ch.style.display='none';});
+    const shell=document.createElement('div'); shell.id=CLIENT_ID; shell.innerHTML=shellHTML('client'); host.appendChild(shell);
+    clientState={screen:'categories',filter:'all',query:''}; renderShell('client');
+  }
+  function renderShell(mode){
+    const shell=document.getElementById(mode==='owner'?OWNER_ID:CLIENT_ID); if(!shell)return;
+    const state=mode==='owner'?ownerState:clientState; const content=shell.querySelector('#ccp-content-'+mode); if(!content)return;
+    if(state.screen==='categories'){
+      content.innerHTML='<div class="ccp-helper">👆 Escolha pelas imagens ou escreva diretamente o que procura. Não é necessário escolher categoria para buscar.</div><div id="ccp-cat-grid-'+mode+'" class="ccp-category-grid"></div>';
+      renderCategories(content.querySelector('#ccp-cat-grid-'+mode),mode); return;
+    }
+    content.innerHTML='<div class="ccp-list"></div>';
+    renderItemsInto(content.querySelector('.ccp-list'),state.filter,state.query);
+    const inp=shell.querySelector('#ccp-search-'+mode); if(inp) inp.value=state.query;
+  }
+  window.ccPremiumSelect=function(id,mode){
+    const state=mode==='owner'?ownerState:clientState; state.screen='listing';state.filter=id;state.query='';renderShell(mode);window.scrollTo(0,0);
+  };
+  window.ccPremiumSearch=function(q,mode){
+    const state=mode==='owner'?ownerState:clientState;state.query=(q||'').trim();state.filter='all';state.screen=state.query?'listing':'categories';renderShell(mode);window.scrollTo(0,0);
+  };
+  window.ccPremiumVoice=function(mode){const i=document.getElementById('ccp-search-'+mode);if(i)voiceSearch(i);};
+  window.ccPremiumAdd=function(id){if(typeof inc==='function')inc(id);setTimeout(()=>{const mode=isClient()?'client':'owner';renderShell(mode);},30);};
+  window.ccPremiumQty=function(id,d){if(d>0&&typeof inc==='function')inc(id);else if(d<0&&typeof dec==='function')dec(id);setTimeout(()=>{const mode=isClient()?'client':'owner';renderShell(mode);},30);};
+  window.ccPremiumBack=function(mode){
+    if(isClient()){
+      const state=clientState;
+      if(state.screen==='listing'){state.screen='categories';state.filter='all';state.query='';renderShell('client');window.scrollTo(0,0);return;}
+      if(typeof alternarOpcaoMesa==='function') alternarOpcaoMesa('home');
+      return;
+    }
+    const state=ownerState;
+    if(state.screen==='listing'){state.screen='categories';state.filter='all';state.query='';renderShell('owner');window.scrollTo(0,0);return;}
+    window.voltarParaPainelMestre();
+  };
+  window.voltarParaPainelMestre=function(){
+    closeShell(OWNER_ID);
+    showOwnerCover();
+    try{if(typeof S!=='undefined')S.viewAtual='';}catch(e){}
+    window.scrollTo(0,0);
+  };
+
+  // Mantém a função de troca das telas, mas o Cardápio passa a ser uma tela
+  // totalmente isolada. Nenhum módulo anterior fica por baixo dela.
+  const baseShowView=window.showView;
+  window.showView=function(name,btn){
+    if(isClient()){ if(name==='cardapio'&&typeof alternarOpcaoMesa==='function')alternarOpcaoMesa('cardapio'); return; }
+    if(name==='cardapio'){mountOwner();return;}
+    closeShell(OWNER_ID); showOwnerCover();
+    if(typeof baseShowView==='function')baseShowView(name,btn);
+  };
+
+  // Substitui o roteador do cliente depois de todas as versões anteriores.
+  const baseAlternar=window.alternarOpcaoMesa;
+  window.alternarOpcaoMesa=function(tab){
+    if(!isClient()){if(typeof baseAlternar==='function')return baseAlternar(tab);return;}
+    const shell=document.getElementById(CLIENT_ID);
+    const tabs=['cardapio','pedidos','conta','avaliar','fechamento','fiado'];
+    if(tab==='home'){
+      clientModuleBackButton(false);
+      closeShell(CLIENT_ID); const host=document.getElementById('conteudo-secao-mesa');if(host)Array.from(host.children).forEach(ch=>{ch.style.display='';});
+      if(typeof baseAlternar==='function')baseAlternar('home'); return;
+    }
+    if(tab==='cardapio'){clientModuleBackButton(false);mountClient();return;}
+    clientModuleBackButton(true);
+    if(!shell&&typeof baseAlternar==='function')baseAlternar(tab);
+    if(tab==='avaliar')tab='avaliacao';
+    if(typeof baseAlternar==='function')baseAlternar(tab);
+    // Recolhe qualquer painel de menu e coloca a seta visível no topo do módulo.
+    if(!document.getElementById(CLIENT_ID)){
+      const host=document.getElementById('conteudo-secao-mesa');if(host)Array.from(host.children).forEach(ch=>{if(!ch.classList.contains('cc-cli-painel'))ch.style.display='none';});
+    }
+  };
+
+  // Reescreve a navegação de categoria existente apenas para impedir o
+  // comportamento antigo de carrossel; a nova camada usa cartões visuais.
+  window.setCat=function(id){
+    if(window.S)S.cat=id;
+    const mode=isClient()?'client':'owner';
+    const state=mode==='client'?clientState:ownerState;
+    state.screen='listing';state.filter=id;state.query='';renderShell(mode);
+  };
+
+  function clientModuleBackButton(show){
+    let b=document.getElementById('cc-client-back-premium');
+    if(!b){b=document.createElement('button');b.id='cc-client-back-premium';b.innerHTML='⬅️ Voltar';b.style.cssText='position:fixed;left:12px;top:12px;z-index:9999;background:#0f172a;color:#f97316;border:1px solid #334155;border-radius:14px;padding:10px 14px;font-weight:900;font-size:.78rem;box-shadow:0 5px 18px rgba(0,0,0,.25);cursor:pointer';b.onclick=()=>{if(typeof alternarOpcaoMesa==='function')alternarOpcaoMesa('home');};document.body.appendChild(b);}
+    b.style.display=show?'block':'none';
+  }
+    // Quatro abas visuais do cliente: Cardápio / Pedidos / Conta / Avaliar.
+  function patchClientTabs(){
+    const host=document.getElementById('view-mesa-cliente'); if(!host)return;
+    const home=host.querySelector('#cc-painel-home'); if(!home)return;
+    const buttons=home.querySelectorAll('.cc-home-card');
+    if(buttons.length>=4){
+      buttons[0].innerHTML='<span class="cc-home-ico">🍽️</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Cardápio / Carta / Menu</span><span class="cc-home-chevron">›</span>';
+      buttons[0].setAttribute('onclick',"alternarOpcaoMesa('cardapio')");
+      buttons[1].innerHTML='<span class="cc-home-ico">⏳</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Meu Pedido / Andamento</span><span class="cc-home-chevron">›</span>';
+      buttons[1].setAttribute('onclick',"alternarOpcaoMesa('pedidos')");
+      buttons[2].innerHTML='<span class="cc-home-ico">🧾</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Minha Conta / Fechamento</span><span class="cc-home-chevron">›</span>';
+      buttons[2].setAttribute('onclick',"alternarOpcaoMesa('conta')");
+      buttons[3].innerHTML='<span class="cc-home-ico">⭐</span><span class="text-base font-black uppercase text-slate-900 tracking-wider">Avaliar Experiência</span><span class="cc-home-chevron">›</span>';
+      buttons[3].setAttribute('onclick',"alternarOpcaoMesa('avaliar')");
+    }
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(patchClientTabs,1000));
+  setTimeout(patchClientTabs,1600);
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     AUTO BEACH — CAMADA FINAL DE EXPERIÊNCIA VISUAL / PRODUÇÃO
+     Corrige a raiz: window.categorias, capa inicial, navegação em grade,
+     cardápio em tela cheia, categorias visuais e retorno físico.
+═══════════════════════════════════════════════════════════════════ -->
+<style id="ab-final-production-style">
+  html,body{margin:0!important;padding:0!important;width:100%;min-height:100%;background:#f1f5f9;color:#0f172a}
+  body.ab-module-open{overflow-x:hidden}
+  body.ab-home-open #cc-topbar-wrapper,
+  body.ab-home-open #cc-capa-institucional,
+  body.ab-home-open #nav-main-wrapper{display:none!important}
+  body.ab-module-open #cc-topbar-wrapper,
+  body.ab-module-open #cc-capa-institucional,
+  body.ab-module-open #nav-main-wrapper{display:none!important}
+  #nav-arrow-left,#nav-arrow-right{display:none!important}
+  #ab-owner-home{width:100%;min-height:100vh;background:#f8fafc;position:relative;z-index:1000}
+  .ab-home-hero{position:relative;min-height:330px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:5px solid #ea580c}
+  .ab-home-hero-bg{position:absolute;inset:0;background-position:center;background-size:cover;opacity:.58;transform:scale(1.02)}
+  .ab-home-hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.42),rgba(15,23,42,.9))}
+  .ab-home-hero-content{position:relative;z-index:2;text-align:center;padding:42px 20px;color:#fff;max-width:1050px}
+  .ab-home-title{font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:clamp(2.1rem,5vw,4.6rem);line-height:1.02;letter-spacing:.015em;text-shadow:0 5px 22px rgba(0,0,0,.55);margin:0}
+  .ab-home-address{display:inline-flex;margin-top:18px;background:#ea580c;color:#fff;border-radius:999px;padding:11px 20px;font-size:clamp(.75rem,1.4vw,1rem);font-weight:900;text-transform:uppercase;letter-spacing:.06em;box-shadow:0 8px 24px rgba(234,88,12,.3)}
+  .ab-home-hours{margin-top:11px;color:#dbeafe;font-size:.85rem;font-weight:800;letter-spacing:.08em}
+  .ab-home-kicker{margin:18px auto 0;max-width:760px;color:#e2e8f0;font-size:.85rem;font-weight:700}
+  .ab-home-nav{width:min(100%,1050px);margin:0 auto;padding:34px 22px 48px;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:18px!important;box-sizing:border-box}
+  .ab-home-tab{min-height:150px;border:1px solid #dbe3ec!important;border-radius:22px!important;background:#fff!important;color:#0f172a!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;box-shadow:0 7px 22px rgba(15,23,42,.08)!important;font-weight:900!important;text-transform:uppercase!important;letter-spacing:.045em!important;cursor:pointer!important;transition:transform .15s,box-shadow .15s,border-color .15s!important;padding:18px!important}
+  .ab-home-tab:hover{transform:translateY(-3px);border-color:#fdba74!important;box-shadow:0 13px 30px rgba(15,23,42,.13)!important}
+  .ab-home-tab:active{transform:scale(.95)!important}
+  .ab-home-tab .ab-tab-icon{font-size:3rem;line-height:1;filter:drop-shadow(0 3px 4px rgba(15,23,42,.15))}
+  .ab-home-tab .ab-tab-label{font-size:.86rem;font-weight:900;color:#0f172a}
+  .ab-home-tab.ab-primary{border:2px solid #ea580c!important;background:linear-gradient(180deg,#fffaf5,#fff)!important}
+  .ab-home-footer{background:#0f172a;color:#cbd5e1;text-align:center;padding:18px;font-size:.72rem;font-weight:800}
+  #ab-cardapio-shell,#ab-client-cardapio-shell{min-height:100vh;background:#f1f5f9;position:relative;z-index:1100}
+  .ab-menu-banner{position:relative;min-height:285px;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-bottom:5px solid #ea580c}
+  .ab-menu-banner-bg{position:absolute;inset:0;background-position:center;background-size:cover;opacity:.62}
+  .ab-menu-banner-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.25),rgba(15,23,42,.9))}
+  .ab-menu-banner-content{position:relative;z-index:2;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 18px}
+  .ab-menu-title{font-family:Georgia,'Times New Roman',serif;color:#fff;font-size:clamp(2rem,4.8vw,4rem);font-weight:900;line-height:1;text-shadow:0 4px 20px rgba(0,0,0,.6);margin:0}
+  .ab-menu-address{margin-top:16px;background:#ea580c;color:#fff;border-radius:999px;padding:10px 19px;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.055em}
+  .ab-menu-hours{margin-top:9px;color:#dbeafe;font-size:.8rem;font-weight:800}
+  .ab-menu-toolbar{width:100%;background:#0f172a;color:#fff;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:13px 18px;box-shadow:0 5px 18px rgba(15,23,42,.2);box-sizing:border-box}
+  .ab-back{background:#1e293b;color:#f97316;border:1px solid #475569;border-radius:14px;padding:11px 15px;font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;transition:transform .15s;white-space:nowrap}
+  .ab-back:active{transform:scale(.95)}
+  .ab-toolbar-title{text-align:center;font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em}
+  .ab-status{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.35);color:#fbbf24;border-radius:999px;padding:7px 11px;font-size:.68rem;font-weight:900;text-transform:uppercase;white-space:nowrap}
+  .ab-searchbar{width:100%;max-width:1050px;margin:0 auto;padding:17px 18px;background:#fff;box-sizing:border-box;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px}
+  .ab-search-wrap{position:relative;flex:1}
+  .ab-search{width:100%;box-sizing:border-box;border:2px solid #cbd5e1;border-radius:16px;background:#fff;color:#0f172a;padding:14px 50px 14px 47px;font-size:.94rem;font-weight:800;outline:none}
+  .ab-search:focus{border-color:#0f172a;box-shadow:0 0 0 4px rgba(15,23,42,.07)}
+  .ab-search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:1.2rem}
+  .ab-search-voice{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:37px;height:37px;border:0;border-radius:11px;background:#f1f5f9;font-size:1.05rem;cursor:pointer}
+  .ab-menu-help{text-align:center;color:#64748b;font-size:.75rem;font-weight:800;padding:12px 18px 0}
+  .ab-category-grid{width:100%;max-width:1050px;margin:0 auto;padding:18px 18px 50px;box-sizing:border-box;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .ab-category-card{position:relative;min-height:185px;border:0;border-radius:23px;overflow:hidden;background:#0f172a;box-shadow:0 8px 24px rgba(15,23,42,.12);cursor:pointer;transition:transform .15s,box-shadow .15s}
+  .ab-category-card:active{transform:scale(.96)}
+  .ab-category-card:hover{box-shadow:0 14px 30px rgba(15,23,42,.18)}
+  .ab-category-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .ab-category-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.05),rgba(15,23,42,.92))}
+  .ab-category-body{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:15px;color:#fff;text-align:left}
+  .ab-category-icon{font-size:2.8rem;line-height:1;filter:drop-shadow(0 3px 5px rgba(0,0,0,.45))}
+  .ab-category-name{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.65)}
+  .ab-category-count{font-size:.7rem;color:#dbeafe;font-weight:800;margin-top:3px}
+  .ab-all-collage{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
+  .ab-all-collage div{background-position:center;background-size:cover}
+  .ab-list{width:100%;max-width:1200px;margin:0 auto;padding:18px 22px 120px;box-sizing:border-box}
+  .ab-list-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 17px}
+  .ab-list-title{font-size:1.35rem;font-weight:900;text-transform:uppercase;letter-spacing:.045em;color:#0f172a}
+  .ab-list-sub{font-size:.74rem;color:#64748b;font-weight:800;margin-top:3px}
+  .ab-items-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:19px}
+  .ab-item{background:#fff;border:1px solid #e2e8f0;border-radius:23px;overflow:hidden;box-shadow:0 7px 22px rgba(15,23,42,.08);display:flex;flex-direction:column}
+  .ab-item-photo{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);overflow:hidden}
+  .ab-item-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .ab-item-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:5rem}
+  .ab-item-tag{position:absolute;left:10px;top:10px;border-radius:999px;background:rgba(15,23,42,.86);color:#fff;padding:6px 10px;font-size:.67rem;font-weight:900}
+  .ab-item-body{padding:15px;display:flex;flex-direction:column;flex:1}
+  .ab-item-name{font-size:1.04rem;font-weight:900;line-height:1.15;color:#0f172a}
+  .ab-item-desc{font-size:.78rem;color:#64748b;line-height:1.38;margin-top:6px}
+  .ab-item-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px}
+  .ab-item-price{font-size:1.08rem;font-weight:900;color:#0f172a}
+  .ab-order{border:0;border-radius:14px;background:#ea580c;color:#fff;padding:11px 14px;font-size:.78rem;font-weight:900;cursor:pointer;transition:transform .15s}
+  .ab-order:active{transform:scale(.94)}
+  .ab-qty{display:flex;align-items:center;gap:7px;background:#f1f5f9;border-radius:14px;padding:4px}
+  .ab-qty button{width:34px;height:34px;border:0;border-radius:10px;background:#0f172a;color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer}
+  .ab-qty span{min-width:24px;text-align:center;font-weight:900}
+  .ab-empty{text-align:center;padding:70px 20px;color:#64748b;font-weight:800}
+  .ab-empty-icon{font-size:4rem;margin-bottom:10px}
+  #ab-client-home{min-height:100vh;background:#f8fafc;position:relative;z-index:1000}
+  .ab-client-cards{max-width:800px;margin:0 auto;padding:24px 18px 70px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .ab-client-card{min-height:170px;border:1px solid #dbe3ec;border-radius:24px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;cursor:pointer;font-weight:900;text-transform:uppercase;color:#0f172a;transition:transform .15s}
+  .ab-client-card:active{transform:scale(.95)}
+  .ab-client-icon{font-size:3.4rem;filter:drop-shadow(0 3px 4px rgba(15,23,42,.15))}
+  .ab-client-label{font-size:.85rem;letter-spacing:.045em}
+  #ab-client-back{position:fixed;top:12px;left:12px;z-index:99999;display:none}
+  @media(max-width:900px){.ab-home-nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}.ab-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ab-items-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:640px){.ab-home-hero{min-height:250px}.ab-home-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:20px 12px 35px}.ab-home-tab{min-height:128px;border-radius:18px!important}.ab-home-tab .ab-tab-icon{font-size:2.5rem}.ab-home-tab .ab-tab-label{font-size:.73rem}.ab-menu-banner{min-height:225px}.ab-menu-banner-content{min-height:220px}.ab-menu-title{font-size:2rem}.ab-menu-toolbar{grid-template-columns:auto 1fr auto;padding:10px 9px;gap:7px}.ab-back{padding:9px 10px;font-size:.65rem}.ab-toolbar-title{font-size:.7rem}.ab-status{font-size:.58rem;padding:6px 8px}.ab-searchbar{padding:12px 10px}.ab-search{font-size:.82rem;padding:13px 45px 13px 43px}.ab-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px 10px 35px}.ab-category-card{min-height:145px;border-radius:18px}.ab-category-icon{font-size:2.2rem}.ab-category-name{font-size:.78rem}.ab-category-count{font-size:.62rem}.ab-list{padding:14px 10px 100px}.ab-items-grid{grid-template-columns:1fr;gap:14px}.ab-client-cards{grid-template-columns:1fr 1fr;gap:12px;padding:16px 10px 50px}.ab-client-card{min-height:145px}.ab-client-icon{font-size:2.7rem}.ab-client-label{font-size:.7rem}}
+</style>
+<script id="ab-final-production-script">
+(function(){
+  'use strict';
+  try{ window.categorias = categorias; }catch(e){}
+  const OWNER_HOME='ab-owner-home', CLIENT_HOME='ab-client-home', OWNER_SHELL='ab-cardapio-shell', CLIENT_SHELL='ab-client-cardapio-shell';
+  let legacyShowView = null;
+  let ownerHomeReady=false;
+  let clientHomeReady=false;
+  const iconMap={cardapio:'🍽️',mesas:'🪑',atendente:'🧑‍💼',cozinha:'👨‍🍳',delivery:'🛵',estoque2:'📦',caixa:'💰',relatorio:'📊',dashboard:'📈',admin:'⚙️',cliente:'👥'};
+  const labelMap={cardapio:'Cardápio',mesas:'Mesas',atendente:'Atendente',cozinha:'Cozinha',delivery:'Delivery',estoque2:'Estoque',caixa:'Caixa',relatorio:'Relatórios',dashboard:'Dashboard',admin:'Admin',cliente:'Clientes'};
+  const views=['cardapio','mesas','atendente','cozinha','delivery','estoque2','caixa','relatorio','dashboard','admin','cliente'];
+  function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+  function getCats(){try{return Array.isArray(window.categorias)?window.categorias:Array.isArray(categorias)?categorias:[];}catch(e){return [];}}
+  function getCfg(){try{return window.config||config||{};}catch(e){return {};}}
+  function originalPhoto(){
+    const selectors=['#view-cardapio header img','#view-cardapio img'];
+    for(const sel of selectors){const img=document.querySelector(sel);if(img&&img.src&&img.src!=='about:blank')return img.src;}
+    return '';
+  }
+  function bannerSrc(){
+    const cfg=getCfg();
+    // O banner cadastrado no Admin é usado quando existe; se estiver vazio,
+    // usa a foto real já embutida no próprio cardápio, nunca uma tela preta.
+    return cfg.designBanner || originalPhoto() || '';
+  }
+  function title(){const cfg=getCfg();return cfg.nome&&cfg.nome!=='Barraca de Praia'?cfg.nome:'BARRACA SOL DA BAHIA';}
+  function local(){const cfg=getCfg();return cfg.local||'Praia do Farol de Itapuã · Salvador BA';}
+  function hours(){const cfg=getCfg();return cfg.horario||'Seg–Dom · 09h–20h';}
+  function hideLegacy(){
+    document.querySelectorAll('#cc-topbar-wrapper,#cc-capa-institucional,#nav-main-wrapper').forEach(e=>e.style.display='none');
+    document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('hidden'));
+    const f=document.getElementById('cc-clientes-feedbacks-card');if(f)f.classList.add('hidden');
+    document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  }
+  function showLegacyView(name,btn){
+    if(typeof legacyShowView==='function'){
+      try{legacyShowView(name,btn);return true;}catch(e){console.error(e);}
+    }
+    const el=document.getElementById('view-'+name);if(el)el.classList.remove('hidden');
+    return !!el;
+  }
+  function homeHTML(){
+    const tabs=views.map((v,i)=>`<button class="ab-home-tab ${i===0?'ab-primary':''}" data-ab-view="${v}" onclick="ABOpenView('${v}',this)"><span class="ab-tab-icon">${iconMap[v]}</span><span class="ab-tab-label">${labelMap[v]}</span></button>`).join('');
+    return `<section class="ab-home-hero"><div class="ab-home-hero-bg" style="background-image:url('${esc(bannerSrc())}')"></div><div class="ab-home-hero-shade"></div><div class="ab-home-hero-content"><h1 class="ab-home-title">🏖️ ${esc(title())}</h1><div class="ab-home-address">${esc(local())}</div><div class="ab-home-hours">${esc(hours())}</div><div class="ab-home-kicker">Sistema inteligente de atendimento, cardápio digital e operação completa — visual, rápido e feito para a realidade da praia.</div></div></section><nav class="ab-home-nav">${tabs}</nav><div class="ab-home-footer">☀️ Sol da Bahia · Atendimento visual e acessível para todos</div>`;
+  }
+  function mountOwnerHome(){
+    let el=document.getElementById(OWNER_HOME);
+    if(!el){el=document.createElement('div');el.id=OWNER_HOME;document.body.appendChild(el);}
+    el.innerHTML=homeHTML();el.style.display='block';ownerHomeReady=true;
+    document.body.classList.add('ab-home-open');document.body.classList.remove('ab-module-open');hideLegacy();
+    window.scrollTo(0,0);
+  }
+  function destroyHome(){const h=document.getElementById(OWNER_HOME);if(h)h.style.display='none';const ch=document.getElementById(CLIENT_HOME);if(ch)ch.style.display='none';}
+  function categoryImage(cat){
+    const item=(cat&&cat.itens||[]).find(i=>i&&i.ativo!==false&&i.img);return item?item.img:'';
+  }
+  function categoryCount(cat){return (cat&&cat.itens||[]).filter(i=>i&&i.ativo!==false).length;}
+  function allItems(){return getCats().flatMap(cat=>(cat.itens||[]).filter(i=>i&&i.ativo!==false).map(item=>({cat,item})))}
+  function allCollage(cats){
+    const imgs=cats.flatMap(c=>(c.itens||[]).filter(i=>i&&i.ativo!==false&&i.img).slice(0,1).map(i=>i.img)).slice(0,4);
+    return imgs.length?`<div class="ab-all-collage">${[0,1,2,3].map(i=>`<div style="background-image:url('${esc(imgs[i%imgs.length])}')"></div>`).join('')}</div>`:'';
+  }
+  function catCard(cat,mode){
+    const img=categoryImage(cat);return `<button class="ab-category-card" onclick="ABSelectCategory('${esc(cat.id)}','${mode}')">${img?`<img class="ab-category-img" src="${esc(img)}" alt="" loading="lazy">`:''}<div class="ab-category-shade"></div><div class="ab-category-body"><span class="ab-category-icon">${esc(cat.icone||'🍽️')}</span><div><div class="ab-category-name">${esc(cat.nome)}</div><div class="ab-category-count">${categoryCount(cat)} opções · toque para abrir</div></div></div></button>`;
+  }
+  function itemCard(cat,item){
+    const q=(window.S&&S.cart&&S.cart[item.id])||0;const img=item.img||categoryImage(cat);return `<article class="ab-item"><div class="ab-item-photo">${img?`<img src="${esc(img)}" alt="${esc(item.nome)}" loading="lazy" onerror="this.style.display='none'">`:`<div class="ab-item-photo-fallback">${esc(cat.icone||'🍽️')}</div>`}<span class="ab-item-tag">${esc(cat.icone||'🍽️')} ${esc(cat.nome)}</span></div><div class="ab-item-body"><div class="ab-item-name">${esc(item.nome)}</div><div class="ab-item-desc">${esc(item.desc||'Toque para conhecer este prato.')}</div><div class="ab-item-bottom"><span class="ab-item-price">${typeof fmtBRL==='function'?fmtBRL(Number(item.preco||0)):'R$ '+Number(item.preco||0).toFixed(2)}</span>${q?`<div class="ab-qty"><button onclick="ABQty('${esc(item.id)}',-1)">−</button><span>${q}</span><button onclick="ABQty('${esc(item.id)}',1)">+</button></div>`:`<button class="ab-order" onclick="ABAdd('${esc(item.id)}')">➕ PEDIR</button>`}</div></div></article>`;
+  }
+  function renderListing(shell,filter,query){
+    const data=allItems().filter(x=>filter==='all'||x.cat.id===filter).filter(x=>!query||(x.item.nome+' '+(x.item.desc||'')).toLowerCase().includes(query.toLowerCase()));
+    const list=shell.querySelector('.ab-list');if(!list)return;
+    if(!data.length){list.innerHTML='<div class="ab-empty"><div class="ab-empty-icon">🔎</div><div>Nenhum prato ou bebida encontrado.</div><div style="font-size:.76rem;margin-top:7px">Tente escrever outro nome.</div></div>';return;}
+    const groups={};data.forEach(x=>(groups[x.cat.id]||(groups[x.cat.id]={cat:x.cat,items:[]})).items.push(x.item));
+    list.innerHTML=Object.values(groups).map(g=>`<section style="margin-bottom:30px"><div class="ab-list-head"><div><div class="ab-list-title">${esc(g.cat.icone||'🍽️')} ${esc(g.cat.nome)}</div><div class="ab-list-sub">${g.items.length} opção(ões)</div></div><button class="ab-back" style="color:#0f172a;background:#fff" onclick="ABBackFromListing('${shell.id}')">⬅️ Voltar</button></div><div class="ab-items-grid">${g.items.map(i=>itemCard(g.cat,i)).join('')}</div></section>`).join('');
+  }
+  function shellHTML(id,isClient){return `<section class="ab-menu-banner"><div class="ab-menu-banner-bg" style="background-image:url('${esc(bannerSrc())}')"></div><div class="ab-menu-banner-shade"></div><div class="ab-menu-banner-content"><h1 class="ab-menu-title">🏖️ ${esc(title())}</h1><div class="ab-menu-address">${esc(local())}</div><div class="ab-menu-hours">${esc(hours())}</div></div></section><div class="ab-menu-toolbar"><button class="ab-back" onclick="ABBack('${id}')">⬅️ Voltar</button><div class="ab-toolbar-title">🗂️ ${isClient?'Cardápio Digital':'Gestão de Cardápio'}</div><span class="ab-status">${isClient?'Mesa':'Dono'}</span></div><div class="ab-searchbar"><div class="ab-search-wrap"><span class="ab-search-icon">🔎</span><input id="${id}-search" class="ab-search" type="search" placeholder="Buscar prato, bebida ou combo..." autocomplete="off"><button class="ab-search-voice" onclick="ABVoice('${id}')">🎙️</button></div></div><div class="ab-menu-help">👆 Toque nas imagens para navegar. Ou escreva diretamente o nome do que procura.</div><div class="ab-content"></div>`;}
+  function mountMenu(isClient){
+    const id=isClient?CLIENT_SHELL:OWNER_SHELL;let shell=document.getElementById(id);if(shell)shell.remove();shell=document.createElement('div');shell.id=id;shell.innerHTML=shellHTML(id,isClient);document.body.appendChild(shell);shell._filter='categories';shell._cat='all';shell._query='';
+    const search=shell.querySelector('input');search.addEventListener('input',()=>{shell._query=search.value.trim();shell._filter=shell._query?'listing':'categories';renderMenu(shell);});
+    renderMenu(shell);hideLegacy();destroyHome();document.body.classList.remove('ab-home-open');document.body.classList.add('ab-module-open');window.scrollTo(0,0);
+  }
+  function renderMenu(shell){
+    const content=shell.querySelector('.ab-content');if(!content)return;const cats=getCats();
+    if(shell._filter==='categories'){
+      const all=`<button class="ab-category-card" onclick="ABSelectCategory('all','${shell.id}')">${allCollage(cats)}<div class="ab-category-shade"></div><div class="ab-category-body"><span class="ab-category-icon">🍽️</span><div><div class="ab-category-name">TODOS</div><div class="ab-category-count">${allItems().length} opções · ver cardápio completo</div></div></div></button>`;
+      content.innerHTML=`<div class="ab-category-grid">${all}${cats.map(c=>catCard(c,shell.id)).join('')}</div>`;return;
+    }
+    content.innerHTML='<div class="ab-list"></div>';renderListing(shell,shell._cat,shell._query);
+  }
+  window.ABSelectCategory=function(cat,id){const shell=document.getElementById(id);if(!shell)return;shell._cat=cat;shell._query='';shell._filter='listing';const inp=shell.querySelector('input');if(inp)inp.value='';renderMenu(shell);window.scrollTo(0,0)};
+  window.ABAdd=function(id){try{if(typeof inc==='function')inc(id);}catch(e){};const shell=document.getElementById(OWNER_SHELL)||document.getElementById(CLIENT_SHELL);if(shell)renderListing(shell,shell._cat,shell._query)};
+  window.ABQty=function(id,d){try{if(d>0&&typeof inc==='function')inc(id);if(d<0&&typeof dec==='function')dec(id);}catch(e){};const shell=document.getElementById(OWNER_SHELL)||document.getElementById(CLIENT_SHELL);if(shell)renderListing(shell,shell._cat,shell._query)};
+  window.ABBackFromListing=function(id){const shell=document.getElementById(id);if(!shell)return;shell._filter='categories';shell._cat='all';shell._query='';const inp=shell.querySelector('input');if(inp)inp.value='';renderMenu(shell);window.scrollTo(0,0)};
+  window.ABBack=function(id){const isClient=id===CLIENT_SHELL;if(isClient){const sh=document.getElementById(CLIENT_SHELL);if(sh)sh.remove();showClientHome();return;}const sh=document.getElementById(OWNER_SHELL);if(sh)sh.remove();mountOwnerHome();};
+  window.ABVoice=function(id){const inp=document.getElementById(id+'-search');const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!inp)return;if(!SR){inp.focus();return;}const r=new SR();r.lang='pt-BR';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{inp.value=e.results[0][0].transcript;inp.dispatchEvent(new Event('input'));};r.start()};
+  window.ABOpenView=function(name,btn){
+    if(name==='cardapio'){mountMenu(false);return;}
+    const home=document.getElementById(OWNER_HOME);if(home)home.style.display='none';
+    document.body.classList.remove('ab-home-open');document.body.classList.add('ab-module-open');hideLegacy();
+    const navBtn=document.querySelector('#nav-main [data-view="'+name+'"]')||btn;
+    showLegacyView(name,navBtn);
+    document.body.classList.add('ab-module-open');
+    let back=document.getElementById('ab-owner-module-back');if(!back){back=document.createElement('button');back.id='ab-owner-module-back';back.className='ab-back';back.style.cssText='position:fixed;top:12px;left:12px;z-index:99999';back.textContent='⬅️ Voltar para o Painel';back.onclick=()=>mountOwnerHome();document.body.appendChild(back);}back.style.display='block';
+  };
+  function showClientHome(){
+    let el=document.getElementById(CLIENT_HOME);if(!el){el=document.createElement('div');el.id=CLIENT_HOME;document.body.appendChild(el);}
+    el.innerHTML=`<section class="ab-home-hero"><div class="ab-home-hero-bg" style="background-image:url('${esc(bannerSrc())}')"></div><div class="ab-home-hero-shade"></div><div class="ab-home-hero-content"><h1 class="ab-home-title">🏖️ ${esc(title())}</h1><div class="ab-home-address">${esc(local())}</div><div class="ab-home-hours">${esc(hours())}</div><div class="ab-home-kicker">👆 Toque nas imagens. O sistema foi pensado para turistas, crianças, idosos e pessoas com dificuldade de leitura.</div></div></section><div class="ab-client-cards"><button class="ab-client-card" onclick="ABClientOpen('cardapio')"><span class="ab-client-icon">🍽️</span><span class="ab-client-label">Cardápio</span></button><button class="ab-client-card" onclick="ABClientOpen('pedidos')"><span class="ab-client-icon">⏳</span><span class="ab-client-label">Meu Pedido</span></button><button class="ab-client-card" onclick="ABClientOpen('conta')"><span class="ab-client-icon">🧾</span><span class="ab-client-label">Minha Conta</span></button><button class="ab-client-card" onclick="ABClientOpen('avaliar')"><span class="ab-client-icon">⭐</span><span class="ab-client-label">Avaliar</span></button></div>`;
+    el.style.display='block';document.body.classList.add('ab-home-open');document.body.classList.remove('ab-module-open');hideLegacy();const b=document.getElementById('ab-client-back');if(b)b.style.display='none';window.scrollTo(0,0);clientHomeReady=true;
+  }
+  window.ABClientOpen=function(tab){
+    const h=document.getElementById(CLIENT_HOME);if(h)h.style.display='none';
+    document.body.classList.remove('ab-home-open');document.body.classList.add('ab-module-open');hideLegacy();
+    if(tab==='cardapio'){mountMenu(true);return;}
+    let back=document.getElementById('ab-client-back');if(!back){back=document.createElement('button');back.id='ab-client-back';back.className='ab-back';back.innerHTML='⬅️ Voltar';back.onclick=()=>showClientHome();document.body.appendChild(back);}back.style.display='block';
+    try{if(typeof window.alternarOpcaoMesa==='function')window.alternarOpcaoMesa(tab==='avaliar'?'avaliacao':tab);}catch(e){console.error(e)}
+    const host=document.getElementById('view-mesa-cliente');if(host){host.classList.remove('hidden');host.style.display='block';}
+  };
+  window.voltarParaPainelMestre=function(){const s=document.getElementById(OWNER_SHELL);if(s)s.remove();const b=document.getElementById('ab-owner-module-back');if(b)b.style.display='none';mountOwnerHome();};
+  // Captura o roteador existente uma única vez e coloca esta camada como último árbitro.
+  legacyShowView=window.showView;
+  window.showView=function(name,btn){if(name==='cardapio'){if(typeof ccModoClienteAtivo==='function'&&ccModoClienteAtivo())mountMenu(true);else mountMenu(false);return;}if(typeof ccModoClienteAtivo==='function'&&ccModoClienteAtivo())return;ABOpenView(name,btn)};
+  function build(){
+    // Garante a grade exata de 11 itens também no DOM legado, caso outro código consulte #nav-main.
+    const nav=document.getElementById('nav-main');if(nav){nav.innerHTML=views.map(v=>`<button class="nav-tab" data-view="${v}" onclick="showView('${v}',this)">${iconMap[v]} ${labelMap[v]}</button>`).join('');nav.className='';nav.style.cssText='width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:24px;box-sizing:border-box;overflow:visible';}
+    const arrows=document.querySelectorAll('#nav-arrow-left,#nav-arrow-right');arrows.forEach(a=>a.remove());
+    const old=document.getElementById('ab-owner-module-back');if(old)old.style.display='none';
+    const client=typeof ccModoClienteAtivo==='function'&&ccModoClienteAtivo();
+    if(client)showClientHome();else mountOwnerHome();
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(build,120));
+  setTimeout(build,600);
+})();
 </script>
 </body>
 </html>
