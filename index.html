@@ -1210,7 +1210,13 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
   /* Categorias em coluna vertical de blocos largos, dentro do conteúdo
      rolável — não fica mais fixo no topo, aparece logo depois da busca. */
   #conteudo-secao-mesa #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px}
-  #conteudo-secao-mesa #cat-nav .pill{width:100%;justify-content:flex-start;padding:16px 18px;font-size:1rem;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  #conteudo-secao-mesa #cat-nav .pill{width:100%;justify-content:flex-start;padding:12px 14px;font-size:.92rem;border-radius:16px;box-shadow:0 2px 8px rgba(15,35,64,.06);display:flex;align-items:center;gap:12px;text-transform:none;letter-spacing:0;font-weight:800}
+  #conteudo-secao-mesa #cat-nav .pill .pill-ico{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;border-radius:12px;font-size:1.25rem;background:#f3f4f6}
+  #conteudo-secao-mesa #cat-nav .pill.on .pill-ico{background:rgba(255,255,255,.22)}
+  #conteudo-secao-mesa #cat-nav .pill .pill-label{flex:1;text-align:left}
+  #conteudo-secao-mesa #cat-nav .pill .pill-chevron{color:#cbd5e1;font-size:1.2rem;font-weight:900;flex-shrink:0}
+  #conteudo-secao-mesa #cat-nav .pill.on .pill-chevron{color:rgba(255,255,255,.7)}
+  #conteudo-secao-mesa #cat-nav .pill.off{border-color:#f1f5f9}
   #conteudo-secao-mesa #cat-nav-arrow{display:none}
   #cc-slot-categorias-cardapio{display:none}
   /* Coluna vertical PERMANENTE de categorias — não é mais uma sobreposição
@@ -1325,11 +1331,12 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <button class="hidden" onclick="alternarOpcaoMesa('fiado')">Cliente VIP</button>
 <!-- Banner institucional de rodapé da capa (mesma identidade visual do
          cardápio, só decorativo aqui) -->
-<div class="rounded-2xl overflow-hidden relative mt-2" style="min-height:120px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
-<div class="absolute inset-0" id="cc-home-banner-img" style="background-size:cover;background-position:center;opacity:.55"></div>
-<div class="relative flex items-center gap-2 p-4">
-<span class="text-2xl">🌴</span>
-<span class="text-white font-black text-sm uppercase tracking-wider" id="cc-home-banner-nome"></span>
+<div class="rounded-2xl overflow-hidden relative mt-2" style="min-height:130px;background:linear-gradient(135deg,#0f2340,#1e3a5f)">
+<div class="absolute inset-0" id="cc-home-banner-img" style="background-size:cover;background-position:center;opacity:.5"></div>
+<div class="absolute inset-0" style="background:linear-gradient(180deg,rgba(15,35,64,.1),rgba(15,35,64,.85))"></div>
+<div class="relative flex flex-col items-center justify-center text-center gap-1" style="min-height:130px;padding:16px">
+<span class="text-white font-black text-base uppercase tracking-wider" id="cc-home-banner-nome" style="text-shadow:0 2px 6px rgba(0,0,0,.4)"></span>
+<span class="text-white/75 font-bold text-[.65rem] uppercase tracking-widest" id="cc-home-banner-local"></span>
 </div>
 </div>
 </div>
@@ -1796,7 +1803,6 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 </table>
 </div>
 </div>
-</div>
 <section class="max-w-5xl mx-auto px-4 py-6 pb-24" id="relatorio-visao-geral">
 <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;color:#334155;font-size:.78rem;font-weight:800">📊 Relatórios reúne faturamento, vendas e os indicadores que antes ficavam no Dashboard.</div>
 <h2 class="serif text-2xl mb-2" style="color:#0f2340">📊 Relatórios Gerenciais</h2><p style="font-size:.78rem;color:#64748b;margin:0 0 18px">Faturamento, pedidos, ticket médio, produtos e desempenho operacional em uma única visão.</p>
@@ -1844,6 +1850,7 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <p class="font-bold text-sm uppercase tracking-widest text-orange-400 mb-3">📊 Vendas — Últimos 7 Dias</p>
 <div class="bar-wrap" id="db-chart-bars"></div>
 </div>
+</section>
 </div>
 
 <!-- ════════ CART FOOTER ════════ -->
@@ -2366,14 +2373,15 @@ function renderNav() {
   const arrow = document.getElementById("cat-nav-arrow");
   nav.innerHTML = "";
 
-  const mk = (label, id) => {
+  const mk = (icon, nome, id) => {
     const b = document.createElement("button");
     b.className = "pill " + (S.cat === id ? "on" : "off");
-    b.textContent = label; b.onclick = () => setCat(id);
+    b.innerHTML = '<span class="pill-ico">' + icon + '</span><span class="pill-label">' + nome + '</span><span class="pill-chevron">›</span>';
+    b.onclick = () => setCat(id);
     nav.appendChild(b);
   };
-  mk("🍴 Todos", "all");
-  categorias.forEach(c => mk(c.icone + " " + c.nome, c.id));
+  mk("🍴", "Todos", "all");
+  categorias.forEach(c => mk(c.icone, c.nome, c.id));
 
   // Seta: mostrar/esconder conforme scroll
   function _syncArrow() {
@@ -6528,14 +6536,18 @@ const SirAccess = (function() {
 
   // ── Ir para view padrão do role ──────────────────────────────
   function _irParaDefault(role) {
-    // Acesso livre (dono, sem ?mesa=): a CAPA — grade completa de abas +
-    // banner institucional — é a tela inicial de verdade. Nenhuma aba abre
-    // sozinha; o dono escolhe o que abrir a partir da capa.
+    // A CAPA (banner + grade de abas) é responsabilidade EXCLUSIVA do
+    // sistema "AB Clean Home" (mount()/boot(), fim do arquivo) — esta
+    // função antiga NÃO deve mais desenhar a sua própria capa por cima.
+    // Isso é uma correção de causa raiz: os dois sistemas rodando ao
+    // mesmo tempo (o banner antigo "BARRACA DE PRAIA" reaparecendo por
+    // baixo da grade nova com fotos, e a tira de navegação antiga
+    // reaparecendo junto) foi exatamente o que produziu o vazamento de
+    // Relatórios/Mesas visto nos prints — dois donos da mesma tela.
+    // Aqui só garante que nenhuma view real abra sozinha; a AB cuida
+    // de tudo o resto (banner, grade, navegação).
     if (role === 'livre' || role === 'dono') {
       if (typeof ccMostrarSomenteCapa === 'function') ccMostrarSomenteCapa();
-      if (typeof ccCapaMostrar === 'function') ccCapaMostrar(true);
-      const nav = document.getElementById('nav-main-wrapper');
-      if (nav) nav.style.display = '';
       return;
     }
     const cfg = ROLES[role];
@@ -12874,6 +12886,8 @@ function ccIniciarModoCliente() {
   if (nomeTopo) nomeTopo.textContent = config.nome || "";
   const nomeBanner = document.getElementById("cc-home-banner-nome");
   if (nomeBanner) nomeBanner.textContent = config.nome || "";
+  const localBanner = document.getElementById("cc-home-banner-local");
+  if (localBanner) localBanner.textContent = config.local || "";
   const bannerImg = document.getElementById("cc-home-banner-img");
   if (bannerImg && config.designBanner) bannerImg.style.backgroundImage = "url(" + config.designBanner + ")";
   ccInjetarComandaTeste(S.mesa);
@@ -13670,7 +13684,7 @@ setTimeout(() => { ccAtualizarBoxTurno(); ccDetectarMesaViaQRAtendente(); }, 100
 
     const painelFeed = document.createElement("div");
     painelFeed.id = "cc-clientes-feedbacks-card";
-    painelFeed.className = "admin-card mt-4";
+    painelFeed.className = "admin-card mt-4 hidden";
     painelFeed.innerHTML = `
       <h3 style="font-weight:800;font-size:.9rem;color:#0f2340;margin-bottom:10px">💬 Feedbacks e Avaliações</h3>
       <div id="cc-feedbacks-lista"></div>
@@ -13752,6 +13766,25 @@ setTimeout(ccIniciarModoCliente, 900);
 @media(max-width:1100px){.abch-tabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;padding-left:16px;padding-right:16px}}
 @media(max-width:680px){.abch-hero{height:190px}.abch-title{font-size:1.7rem}.abch-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px 8px 20px}.abch-tab{border-radius:12px}.abch-label{font-size:.72rem;padding:7px 8px}.abch-address{font-size:.75rem;padding:6px 14px}}
 @media(max-width:380px){.abch-hero{height:165px}.abch-title{font-size:1.4rem}.abch-address{font-size:.68rem;padding:5px 11px}.abch-hours{font-size:.68rem}}
+/* Ajuste fino pedido pelo dono: só encolhe um pouco em telas médias/largas
+   (tablet/desktop) — a capa mobile já estava correta e não é tocada aqui.
+   !important + por último no arquivo pra vencer com segurança qualquer
+   regra antiga de largura equivalente, sem apagar nenhuma delas. */
+@media(min-width:681px){#ab-clean-home .abch-hero{height:220px!important}}
+@media(min-width:1101px){#ab-clean-home .abch-tabs{grid-template-columns:repeat(6,minmax(0,1fr))!important;max-width:1180px!important}}
+
+/* REDE DE SEGURANÇA — "hidden" sempre esconde, não importa o quê.
+   Até aqui, class="hidden" dependia 100% da utility class do Tailwind
+   CDN (carregada via <script>, sem garantia de prioridade). Qualquer
+   atraso, bloqueio, ou empate de especificidade em qualquer lugar
+   deste arquivo (que já tem múltiplas camadas de CSS/JS se sobrepondo)
+   podia deixar um elemento com class="hidden" mesmo assim visível.
+   Esta regra, sendo a última do documento inteiro com !important,
+   vence qualquer empate de especificidade e garante que "hidden" seja
+   sempre a palavra final, seja qual for a causa raiz específica de
+   cada vazamento — inclusive o de "Relatórios" aparecendo embaixo de
+   outras abas. */
+.hidden{display:none!important}
 </style>
 <script id="ab-clean-home-script">
 (function(){
@@ -13864,7 +13897,22 @@ function ccEhAcessoCliente() {
   } catch (e) {}
   return false;
 }
-function boot(){ if (ccEhAcessoCliente()) return; mount(); }
+function boot(){
+  if (ccEhAcessoCliente()) return;
+  mount();
+  // Garantia via JS do tamanho pedido pelo dono: o arquivo acumulou várias
+  // regras CSS !important antigas e concorrentes pra .abch-hero (250px,
+  // 205px, clamp(...), etc.) de patches anteriores — em vez de arriscar
+  // mexer/apagar alguma delas, força o valor final direto no elemento,
+  // que ganha de qualquer regra de CSS por definição.
+  setTimeout(() => {
+    const hero = document.querySelector("#ab-clean-home .abch-hero");
+    if (hero && window.innerWidth > 680) {
+      hero.style.setProperty("height", "220px", "important");
+      hero.style.setProperty("min-height", "220px", "important");
+    }
+  }, 50);
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script></body>
