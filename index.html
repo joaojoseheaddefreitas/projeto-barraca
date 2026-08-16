@@ -12984,7 +12984,7 @@ function ccIniciarModoCliente() {
   const enderecoTopo = document.getElementById("cc-topo-endereco");
   if (enderecoTopo) enderecoTopo.textContent = config.local || "";
   const bannerImgTopo = document.getElementById("cc-topo-banner-img");
-  if (bannerImgTopo && config.designBanner) bannerImgTopo.style.backgroundImage = "url('" + config.designBanner + "')";
+  if (bannerImgTopo) bannerImgTopo.style.backgroundImage = "url('" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + "')";
   const telTxt = document.getElementById("cc-topo-telefone");
   if (telTxt) telTxt.textContent = config.telefone
     ? (temMesa ? config.telefone : "Suporte Delivery: " + config.telefone)
@@ -12998,7 +12998,7 @@ function ccIniciarModoCliente() {
   const localBanner = document.getElementById("cc-home-banner-local");
   if (localBanner) localBanner.textContent = config.local || "";
   const bannerImg = document.getElementById("cc-home-banner-img");
-  if (bannerImg && config.designBanner) bannerImg.style.backgroundImage = "url(" + config.designBanner + ")";
+  if (bannerImg) bannerImg.style.backgroundImage = "url(" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + ")";
   ccInjetarComandaTeste(S.mesa);
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
@@ -13127,7 +13127,7 @@ function ccCapaAtualizarBanner() {
   if (nome) nome.textContent = config.nome || "";
   if (local) local.textContent = config.local || "";
   if (horario) horario.textContent = config.horario || "";
-  if (img && config.designBanner) img.style.backgroundImage = "url(" + config.designBanner + ")";
+  if (img) img.style.backgroundImage = "url(" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + ")";
 }
 function ccCapaMostrar(mostrar) {
   const el = document.getElementById("cc-capa-institucional");
@@ -13933,6 +13933,7 @@ const BANNER_DEFAULT="data:image/webp;base64,UklGRjjGAQBXRUJQVlA4ICzGAQCQ/ASdASq
 const originalShowView=window.showView;
 function cfg(){try{return window.config||{}}catch(e){return {}}}
 function banner(){return cfg().designBanner||BANNER_DEFAULT}
+window.ccBannerAtual = banner;
 function hideLegacy(){document.querySelectorAll('[id^="view-"]').forEach(e=>{e.classList.add('hidden');e.style.display='none'});['cc-topbar-wrapper','cc-capa-institucional','nav-main-wrapper'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});}
 function openView(name){
   /* V7 — navegação segura da capa: a versão V6 ocultava as views com
