@@ -1116,19 +1116,11 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <div class="absolute bottom-0 left-0 right-0" style="height:36px;background:#f0f2f5;clip-path:ellipse(55% 100% at 50% 100%)"></div>
 </header>
 <!-- SEARCH -->
-<div class="max-w-xl mx-auto px-4 -mt-3 mb-5 relative z-10">
+<div class="max-w-xl mx-auto px-4 mt-3 mb-5 relative z-10">
 <div class="relative">
-<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
 <input class="w-full bg-white rounded-xl pl-10 pr-4 py-3 text-sm text-gray-700 shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 placeholder:text-gray-400" id="search-input" oninput="onSearch(this.value)" placeholder="Buscar prato ou bebida…" type="text"/>
 </div>
-</div>
-<!-- DESTAQUES COMERCIAIS — carrossel de combos/promoções, sourced dos
-     itens reais marcados como "novo" no cardápio (mesmo sinal usado no
-     selo "Novidade"); some quando uma categoria específica é aberta,
-     pra dar foco total à compra -->
-<div class="max-w-xl mx-auto px-4 mb-5" id="cc-promo-carousel-wrap">
-<p class="text-[.68rem] font-black uppercase tracking-widest text-orange-600 mb-2 px-1">🔥 Destaques da Casa</p>
-<div class="flex gap-3 overflow-x-auto pb-1" id="cc-promo-carousel" style="scroll-snap-type:x mandatory"></div>
 </div>
 <!-- CATEGORY NAV -->
 <div class="max-w-xl mx-auto px-4 mb-6" id="cc-cat-nav-wrap" style="position:relative">
@@ -1219,17 +1211,10 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
      rolável — não fica mais fixo no topo, aparece logo depois da busca. */
   #conteudo-secao-mesa #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px}
   #conteudo-secao-mesa #cat-nav .pill{width:100%;justify-content:flex-start;padding:12px 14px;font-size:.92rem;border-radius:16px;box-shadow:0 2px 8px rgba(15,35,64,.06);display:flex;align-items:center;gap:12px;text-transform:none;letter-spacing:0;font-weight:800}
-  #conteudo-secao-mesa #cat-nav .cat-photo-card{width:100%;min-height:112px;border-radius:20px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:14px 18px;box-shadow:0 6px 16px rgba(15,35,64,.18);position:relative;overflow:hidden;border:2.5px solid transparent;transition:transform .15s ease,box-shadow .15s ease}
+  #conteudo-secao-mesa #cat-nav .cat-photo-card{width:100%;height:80px;min-height:80px;max-height:80px;border-radius:16px;background-size:cover;background-position:center;display:flex;align-items:center;padding:0 18px;box-shadow:0 4px 12px rgba(15,35,64,.16);position:relative;overflow:hidden;border:2.5px solid transparent;transition:transform .15s ease,box-shadow .15s ease}
   #conteudo-secao-mesa #cat-nav .cat-photo-card:active{transform:scale(.95)}
   #conteudo-secao-mesa #cat-nav .cat-photo-card.on{border-color:#f97316;box-shadow:0 8px 22px rgba(249,115,22,.4)}
-  #conteudo-secao-mesa #cat-nav .cat-photo-label{color:#fff;font-weight:900;font-size:1.05rem;text-transform:uppercase;letter-spacing:.03em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
-  #cc-promo-carousel{scrollbar-width:none}
-  #cc-promo-carousel::-webkit-scrollbar{display:none}
-  #cc-promo-carousel .promo-card{scroll-snap-align:start;flex-shrink:0;width:168px;height:120px;border-radius:16px;background-size:cover;background-position:center;position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(15,35,64,.18);display:flex;align-items:flex-end;padding:10px}
-  #cc-promo-carousel .promo-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,35,64,.05) 40%,rgba(15,35,64,.9))}
-  #cc-promo-carousel .promo-card .promo-txt{position:relative;color:#fff}
-  #cc-promo-carousel .promo-card .promo-nome{font-weight:900;font-size:.78rem;text-transform:uppercase;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.5)}
-  #cc-promo-carousel .promo-card .promo-preco{font-weight:800;font-size:.72rem;color:#fed7aa}
+  #conteudo-secao-mesa #cat-nav .cat-photo-label{color:#fff;font-weight:900;font-size:.92rem;text-transform:uppercase;letter-spacing:.02em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
   #conteudo-secao-mesa #cat-nav .pill .pill-ico{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;border-radius:12px;font-size:1.25rem;background:#f3f4f6}
   #conteudo-secao-mesa #cat-nav .pill.on .pill-ico{background:rgba(255,255,255,.22)}
   #conteudo-secao-mesa #cat-nav .pill .pill-label{flex:1;text-align:left}
@@ -1301,7 +1286,7 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
          identidade + endereço + telefone + horário, alto contraste.
          Pílula "Mesa X" flutua no canto (só quando há mesa); em modo
          Delivery ela some e o telefone ganha destaque no lugar. -->
-<div class="w-full text-left px-4 pt-4 pb-3 flex flex-col gap-1 relative overflow-hidden cursor-pointer" id="cc-topo-banner-btn" style="min-height:104px" onclick="alternarOpcaoMesa('cardapio')">
+<div class="w-full text-left px-4 pt-4 pb-3 flex flex-col gap-1 relative overflow-hidden cursor-pointer" id="cc-topo-banner-btn" style="min-height:140px;height:140px" onclick="alternarOpcaoMesa('cardapio')">
 <div class="absolute inset-0" id="cc-topo-banner-img" style="background-size:cover;background-position:center"></div>
 <div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(15,35,64,.88),rgba(30,58,95,.82))"></div>
 <div class="relative flex items-start justify-between gap-2">
@@ -1326,7 +1311,7 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <!-- Chamar Garçom fica fora da cascata fixa, como FAB independente
          (ver botão flutuante mais abaixo) — condicionado a existir mesa. -->
 <!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
-<div class="w-full px-4 pb-36 bg-slate-50 min-h-screen" id="conteudo-secao-mesa" style="padding-top: 190px !important;">
+<div class="w-full px-4 pb-36 bg-slate-50 min-h-screen" id="conteudo-secao-mesa" style="padding-top: 188px !important;">
 <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
        carrossel, todas abertas de uma vez, clique direto -->
 <div class="cc-cli-painel flex flex-col gap-3 p-3 w-full" id="cc-painel-home">
@@ -2367,16 +2352,13 @@ function ccAplicarFocoCategoria(id) {
   const wrap   = document.getElementById("cc-cat-nav-wrap");
   const trocar = document.getElementById("cc-cat-trocar");
   const lbl    = document.getElementById("cc-cat-trocar-label");
-  const promo  = document.getElementById("cc-promo-carousel-wrap");
   if (!wrap || !trocar) return;
   if (id === "all") {
     wrap.style.display = "";
     trocar.classList.add("hidden");
-    if (promo) promo.style.display = "";
   } else {
     wrap.style.display = "none";
     trocar.classList.remove("hidden");
-    if (promo) promo.style.display = "none";
     const cat = (typeof categorias !== "undefined") ? categorias.find(c => c.id === id) : null;
     if (lbl) lbl.textContent = cat ? (cat.icone + " " + cat.nome) : "Categoria selecionada";
     const main = document.querySelector("#view-cardapio main");
@@ -2384,25 +2366,6 @@ function ccAplicarFocoCategoria(id) {
   }
 }
 function ccVoltarCategorias() { setCat("all"); }
-
-// Carrossel comercial de destaques (itens marcados "novo" no cardápio) —
-// alto poder de venda, no topo do Cardápio, some ao filtrar categoria.
-function renderPromoCarousel() {
-  const el = document.getElementById("cc-promo-carousel");
-  if (!el) return;
-  const destaques = allItems().filter(i => i.novo && i.ativo !== false).slice(0, 8);
-  if (!destaques.length) {
-    const wrap = document.getElementById("cc-promo-carousel-wrap");
-    if (wrap) wrap.style.display = "none";
-    return;
-  }
-  el.innerHTML = destaques.map(it => {
-    const bg = it.img ? "url('" + it.img + "')" : "linear-gradient(135deg,#0f2340,#1e3a5f)";
-    const catDona = categorias.find(c => (c.itens || []).some(i => i.id === it.id));
-    return '<div class="promo-card" style="background-image:linear-gradient(180deg,rgba(15,35,64,.05) 40%,rgba(15,35,64,.9)),' + bg + '" onclick="setCat(\'' + (catDona ? catDona.id : 'all') + '\')">' +
-      '<div class="promo-txt"><div class="promo-nome">' + it.nome + '</div><div class="promo-preco">' + fmtBRL(it.preco) + '</div></div></div>';
-  }).join("");
-}
 
 /* ═══════════════════════════════════════
    MAIN RENDER
@@ -2441,7 +2404,7 @@ function renderNav() {
       const foto = fotoCategoria(id);
       b.className = "cat-photo-card " + (S.cat === id ? "on" : "off");
       b.style.backgroundImage = foto
-        ? "linear-gradient(180deg,rgba(15,35,64,.05) 45%,rgba(15,35,64,.88)),url('" + foto + "')"
+        ? "linear-gradient(90deg,rgba(15,35,64,.92) 35%,rgba(15,35,64,.35) 75%,rgba(15,35,64,.1)),url('" + foto + "')"
         : "linear-gradient(135deg,#0f2340,#1e3a5f)";
       b.innerHTML = '<span class="cat-photo-label">' + nome + '</span>';
     } else {
@@ -13014,13 +12977,11 @@ function ccIniciarModoCliente() {
   const slotBusca = document.getElementById("cc-slot-busca-cardapio");
   if (secao && origemCardapio && !secao.dataset.cardapioRealocado) {
     const filhos = Array.from(origemCardapio.children);
-    const promoDiv = filhos.find(f => f.id === "cc-promo-carousel-wrap");
     const catDiv = filhos.find(f => f.querySelector && f.querySelector("#cat-nav"));
     const trocarChip = filhos.find(f => f.id === "cc-cat-trocar");
     const searchDiv = filhos.find(f => f.querySelector && f.querySelector("#search-input"));
     const main = filhos.find(f => f.tagName === "MAIN");
     if (searchDiv && slotBusca) slotBusca.appendChild(searchDiv);
-    if (promoDiv) secao.appendChild(promoDiv);
     if (catDiv) secao.appendChild(catDiv);
     if (trocarChip) secao.appendChild(trocarChip);
     // O <header> decorativo (2 fotos + nome/endereço/mesa) NÃO é mais
@@ -13040,7 +13001,6 @@ function ccIniciarModoCliente() {
   // Re-renderiza agora que ccModoClienteAtivo() já é true, pra garantir
   // que as categorias saiam como cards com foto, não pills genéricos.
   if (typeof renderNav === "function") renderNav();
-  if (typeof renderPromoCarousel === "function") renderPromoCarousel();
   if (!_ccTimerInterval) _ccTimerInterval = setInterval(ccAtualizarTimers, 1000);
   if (!_ccPedidosPollInterval) {
     _ccPedidosPollInterval = setInterval(() => {
@@ -13076,12 +13036,10 @@ function alternarOpcaoMesa(tab) {
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
     const cardCat = Array.from(secao.children).find(el => el.querySelector && el.querySelector("#cat-nav"));
     const cardTrocar = document.getElementById("cc-cat-trocar");
-    const cardPromo = document.getElementById("cc-promo-carousel-wrap");
     if (cardHeader) cardHeader.style.display = "";
     if (cardMain) cardMain.style.display = "";
     if (cardCat) cardCat.style.display = "";
     if (cardTrocar) cardTrocar.style.display = "";
-    if (cardPromo) cardPromo.style.display = "";
     if (slotBusca) slotBusca.style.display = "";
     if (voltarWrap) voltarWrap.classList.remove("hidden");
     if (typeof ccAplicarFocoCategoria === "function") ccAplicarFocoCategoria(S.cat);
