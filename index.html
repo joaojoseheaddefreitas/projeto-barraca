@@ -1297,29 +1297,34 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
      busca do cardápio quando ele está aberto. As 4 abas e as categorias
      agora vivem no conteúdo que rola, sem carrossel escondendo nada. -->
 <div class="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl" id="cc-topo-fixo-cliente">
-<!-- Nível 1: Banner Institucional Corporativo — identidade + endereço +
-         telefone + mesa, alto contraste, clique volta ao menu -->
-<button class="w-full text-left px-4 pt-3 pb-2.5 flex flex-col gap-1" style="background:linear-gradient(135deg,#0f2340,#1e3a5f)" onclick="alternarOpcaoMesa('cardapio')">
-<div class="flex items-center justify-between gap-2">
-<span class="text-white font-black text-sm uppercase tracking-wider truncate" id="cc-nome-estabelecimento"></span>
-<span class="bg-orange-500 text-white font-black text-xs uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0" id="label-mesa-ativa">Mesa</span>
+<!-- Nível 1: Banner Institucional Premium — foto real de fundo (Admin),
+         identidade + endereço + telefone + horário, alto contraste.
+         Pílula "Mesa X" flutua no canto (só quando há mesa); em modo
+         Delivery ela some e o telefone ganha destaque no lugar. -->
+<div class="w-full text-left px-4 pt-4 pb-3 flex flex-col gap-1 relative overflow-hidden cursor-pointer" id="cc-topo-banner-btn" style="min-height:104px" onclick="alternarOpcaoMesa('cardapio')">
+<div class="absolute inset-0" id="cc-topo-banner-img" style="background-size:cover;background-position:center"></div>
+<div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(15,35,64,.88),rgba(30,58,95,.82))"></div>
+<div class="relative flex items-start justify-between gap-2">
+<div class="flex flex-col gap-0.5 min-w-0">
+<span class="text-white font-black text-lg uppercase tracking-wide truncate" style="text-shadow:0 2px 6px rgba(0,0,0,.5)" id="cc-nome-estabelecimento"></span>
+<span class="text-white/85 font-bold text-[.68rem]" id="cc-topo-endereco"></span>
+<span class="text-white/70 font-bold text-[.66rem]" id="cc-topo-horario"></span>
 </div>
-<div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[.66rem] text-white/75 font-bold">
-<span id="cc-topo-endereco"></span>
-<span id="cc-topo-telefone-wrap" class="hidden items-center gap-1"><span class="text-white/40">·</span><span id="cc-topo-telefone"></span></span>
-<span id="cc-topo-horario-wrap" class="hidden items-center gap-1"><span class="text-white/40">·</span><span id="cc-topo-horario"></span></span>
+<span class="bg-orange-500 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-full flex-shrink-0 shadow-lg" id="label-mesa-ativa">Mesa</span>
 </div>
+<button type="button" class="relative flex items-center gap-1.5 mt-1.5 bg-[#25D366] rounded-full px-3 py-1.5 self-start shadow-lg active:scale-95 transition-transform" id="cc-topo-telefone-wrap" onclick="event.stopPropagation(); ccAbrirWhatsapp();">
+<span class="text-white text-sm">💬</span>
+<span class="text-white font-black text-[.72rem] tracking-wide" id="cc-topo-telefone"></span>
 </button>
-<!-- Slot real da barra de busca do cardápio (#search-input), realocada
-         aqui via JS — não é um input novo. A Cardápio já é a tela de
-         entrada direta; não existe mais um "Voltar para o Início"
-         intermediário — o rodapé fixo cobre toda a navegação. -->
-<div class="bg-white border-b border-slate-100 p-2" id="cc-slot-busca-cardapio"></div>
-<!-- Nível 3: slot real do carrossel de categorias (#cat-nav) — não usado
-         mais fixo, categorias vão pro conteúdo; mantido oculto por
-         compatibilidade -->
-<div class="bg-white border-b shadow-sm p-2" id="cc-slot-categorias-cardapio"></div>
 </div>
+<!-- Título comercial do miolo + busca real (sem botão "Cardápio" repetido) -->
+<div class="bg-white border-b border-slate-100 px-4 pt-3 pb-1">
+<p class="text-slate-900 font-black text-sm uppercase tracking-wide" id="cc-titulo-menu">📋 Menu da Praia</p>
+</div>
+<div class="bg-white border-b border-slate-100 p-2" id="cc-slot-busca-cardapio"></div>
+</div>
+<!-- Chamar Garçom fica fora da cascata fixa, como FAB independente
+         (ver botão flutuante mais abaixo) — condicionado a existir mesa. -->
 <!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
 <div class="w-full px-4 pb-36 bg-slate-50 min-h-screen" id="conteudo-secao-mesa" style="padding-top: 190px !important;">
 <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
@@ -1425,11 +1430,11 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <!-- NAVEGAÇÃO PÚBLICA DO CLIENTE — acesso secundário; Cardápio é a entrada principal -->
 <nav id="cc-nav-publica" aria-label="Navegação do cliente">
   <button type="button" data-cc-nav="cardapio" onclick="alternarOpcaoMesa('cardapio')"><span>🍽️</span>Cardápio</button>
-  <button type="button" data-cc-nav="pedidos" onclick="alternarOpcaoMesa('pedidos')"><span>📝</span>Meu Pedido</button>
-  <button type="button" data-cc-nav="conta" onclick="alternarOpcaoMesa('conta')"><span>💰</span>Minha Conta</button>
-  <button type="button" data-cc-nav="avaliar" onclick="alternarOpcaoMesa('avaliar')"><span>⭐</span>Avaliação</button>
+  <button type="button" data-cc-nav="pedidos" onclick="alternarOpcaoMesa('pedidos')"><span>⏱️</span>Meu Pedido</button>
+  <button type="button" data-cc-nav="conta" onclick="alternarOpcaoMesa('conta')"><span>💲</span>Minha Conta</button>
+  <button type="button" data-cc-nav="avaliar" onclick="alternarOpcaoMesa('avaliar')"><span>👍</span>Avaliação</button>
 </nav>
-<button class="fixed z-50 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform" style="right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:56px;height:56px" onclick="ccChamarGarcomCartao()" title="Chamar Atendente">
+<button class="fixed z-50 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform" id="cc-fab-chamar-garcom" style="right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:56px;height:56px" onclick="ccChamarGarcomCartao()" title="Chamar Atendente">
 <span class="text-2xl">🛎️</span>
 </button>
 </div>
@@ -2446,8 +2451,19 @@ function renderNav() {
     b.onclick = () => setCat(id);
     nav.appendChild(b);
   };
-  mk("🍴", "Todos", "all");
-  categorias.forEach(c => mk(c.icone, c.nome, c.id));
+  if (clienteAtivo) {
+    // Cliente: exatamente 4 categorias fixas, com rótulo comercial —
+    // sem "Todos", sem "Acompanhamentos". Os ids reais (entradas/pratos/
+    // bebidas/sobremesas) não mudam, só o texto mostrado ao cliente.
+    const ROTULOS_CLIENTE = { entradas: "Entradas e Petiscos", pratos: "Pratos Principais", bebidas: "Bebidas e Coquetéis", sobremesas: "Sobremesas" };
+    Object.keys(ROTULOS_CLIENTE).forEach(id => {
+      const cat = categorias.find(c => c.id === id);
+      if (cat) mk(cat.icone, ROTULOS_CLIENTE[id], id);
+    });
+  } else {
+    mk("🍴", "Todos", "all");
+    categorias.forEach(c => mk(c.icone, c.nome, c.id));
+  }
 
   // Seta: mostrar/esconder conforme scroll
   function _syncArrow() {
@@ -12281,6 +12297,15 @@ function ccIniciarEscutaMesasRealtime() {
 const _ccMesasChamandoGarcom = new Set();
 const _ccMesasChamandoGarcomTotal = {};
 
+// Abre o WhatsApp comercial real (telefone cadastrado no Admin) — usado
+// pelo botão verde no banner do cliente (funciona em mesa e delivery).
+function ccAbrirWhatsapp() {
+  const digitos = String(config.telefone || "").replace(/\D/g, "");
+  if (!digitos) return;
+  const comDDI = (digitos.length <= 11) ? "55" + digitos : digitos;
+  window.open("https://wa.me/" + comDDI, "_blank");
+}
+
 async function ccChamarGarcomCartao() {
   const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
   const mesa = (typeof S !== "undefined" && S.mesa) || localStorage.getItem(CC_MESA_CLIENTE_KEY);
@@ -12948,30 +12973,32 @@ function ccIniciarModoCliente() {
   if (topbar) topbar.style.display = "none";
   const shell = document.getElementById("view-mesa-cliente");
   if (shell) shell.classList.remove("hidden");
+  const temMesa = !!S.mesa;
   const label = document.getElementById("label-mesa-ativa");
-  if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
+  if (label) {
+    if (temMesa) { label.textContent = "Mesa " + String(S.mesa).padStart(2, "0"); label.classList.remove("hidden"); }
+    else { label.classList.add("hidden"); }
+  }
   const nomeTopo = document.getElementById("cc-nome-estabelecimento");
   if (nomeTopo) nomeTopo.textContent = config.nome || "";
   const enderecoTopo = document.getElementById("cc-topo-endereco");
   if (enderecoTopo) enderecoTopo.textContent = config.local || "";
-  const telWrap = document.getElementById("cc-topo-telefone-wrap");
+  const bannerImgTopo = document.getElementById("cc-topo-banner-img");
+  if (bannerImgTopo) bannerImgTopo.style.backgroundImage = "url('" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + "')";
   const telTxt = document.getElementById("cc-topo-telefone");
-  if (telWrap && telTxt) {
-    if (config.telefone) { telTxt.textContent = config.telefone; telWrap.classList.remove("hidden"); telWrap.classList.add("flex"); }
-    else { telWrap.classList.add("hidden"); telWrap.classList.remove("flex"); }
-  }
-  const horarioWrap = document.getElementById("cc-topo-horario-wrap");
+  if (telTxt) telTxt.textContent = config.telefone
+    ? (temMesa ? config.telefone : "Suporte Delivery: " + config.telefone)
+    : "";
   const horarioTxt = document.getElementById("cc-topo-horario");
-  if (horarioWrap && horarioTxt) {
-    if (config.horario) { horarioTxt.textContent = config.horario; horarioWrap.classList.remove("hidden"); horarioWrap.classList.add("flex"); }
-    else { horarioWrap.classList.add("hidden"); horarioWrap.classList.remove("flex"); }
-  }
+  if (horarioTxt) horarioTxt.textContent = config.horario || "";
+  const fabGarcom = document.getElementById("cc-fab-chamar-garcom");
+  if (fabGarcom) fabGarcom.style.display = temMesa ? "" : "none";
   const nomeBanner = document.getElementById("cc-home-banner-nome");
   if (nomeBanner) nomeBanner.textContent = config.nome || "";
   const localBanner = document.getElementById("cc-home-banner-local");
   if (localBanner) localBanner.textContent = config.local || "";
   const bannerImg = document.getElementById("cc-home-banner-img");
-  if (bannerImg && config.designBanner) bannerImg.style.backgroundImage = "url(" + config.designBanner + ")";
+  if (bannerImg) bannerImg.style.backgroundImage = "url(" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + ")";
   ccInjetarComandaTeste(S.mesa);
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
@@ -13100,7 +13127,7 @@ function ccCapaAtualizarBanner() {
   if (nome) nome.textContent = config.nome || "";
   if (local) local.textContent = config.local || "";
   if (horario) horario.textContent = config.horario || "";
-  if (img && config.designBanner) img.style.backgroundImage = "url(" + config.designBanner + ")";
+  if (img) img.style.backgroundImage = "url(" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + ")";
 }
 function ccCapaMostrar(mostrar) {
   const el = document.getElementById("cc-capa-institucional");
@@ -13906,6 +13933,7 @@ const BANNER_DEFAULT="data:image/webp;base64,UklGRjjGAQBXRUJQVlA4ICzGAQCQ/ASdASq
 const originalShowView=window.showView;
 function cfg(){try{return window.config||{}}catch(e){return {}}}
 function banner(){return cfg().designBanner||BANNER_DEFAULT}
+window.ccBannerAtual = banner;
 function hideLegacy(){document.querySelectorAll('[id^="view-"]').forEach(e=>{e.classList.add('hidden');e.style.display='none'});['cc-topbar-wrapper','cc-capa-institucional','nav-main-wrapper'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});}
 function openView(name){
   /* V7 — navegação segura da capa: a versão V6 ocultava as views com
