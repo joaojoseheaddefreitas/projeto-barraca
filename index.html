@@ -1116,11 +1116,19 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <div class="absolute bottom-0 left-0 right-0" style="height:36px;background:#f0f2f5;clip-path:ellipse(55% 100% at 50% 100%)"></div>
 </header>
 <!-- SEARCH -->
-<div class="max-w-xl mx-auto px-4 mt-3 mb-5 relative z-10">
+<div class="max-w-xl mx-auto px-4 -mt-3 mb-5 relative z-10">
 <div class="relative">
-<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
 <input class="w-full bg-white rounded-xl pl-10 pr-4 py-3 text-sm text-gray-700 shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 placeholder:text-gray-400" id="search-input" oninput="onSearch(this.value)" placeholder="Buscar prato ou bebida…" type="text"/>
 </div>
+</div>
+<!-- DESTAQUES COMERCIAIS — carrossel de combos/promoções, sourced dos
+     itens reais marcados como "novo" no cardápio (mesmo sinal usado no
+     selo "Novidade"); some quando uma categoria específica é aberta,
+     pra dar foco total à compra -->
+<div class="max-w-xl mx-auto px-4 mb-5" id="cc-promo-carousel-wrap">
+<p class="text-[.68rem] font-black uppercase tracking-widest text-orange-600 mb-2 px-1">🔥 Destaques da Casa</p>
+<div class="flex gap-3 overflow-x-auto pb-1" id="cc-promo-carousel" style="scroll-snap-type:x mandatory"></div>
 </div>
 <!-- CATEGORY NAV -->
 <div class="max-w-xl mx-auto px-4 mb-6" id="cc-cat-nav-wrap" style="position:relative">
@@ -1211,10 +1219,17 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
      rolável — não fica mais fixo no topo, aparece logo depois da busca. */
   #conteudo-secao-mesa #cat-nav{flex-direction:column;overflow-x:visible;overflow-y:visible;align-items:stretch;gap:10px}
   #conteudo-secao-mesa #cat-nav .pill{width:100%;justify-content:flex-start;padding:12px 14px;font-size:.92rem;border-radius:16px;box-shadow:0 2px 8px rgba(15,35,64,.06);display:flex;align-items:center;gap:12px;text-transform:none;letter-spacing:0;font-weight:800}
-  #conteudo-secao-mesa #cat-nav .cat-photo-card{width:100%;height:80px;min-height:80px;max-height:80px;border-radius:16px;background-size:cover;background-position:center;display:flex;align-items:center;padding:0 18px;box-shadow:0 4px 12px rgba(15,35,64,.16);position:relative;overflow:hidden;border:2.5px solid transparent;transition:transform .15s ease,box-shadow .15s ease}
+  #conteudo-secao-mesa #cat-nav .cat-photo-card{width:100%;min-height:112px;border-radius:20px;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:14px 18px;box-shadow:0 6px 16px rgba(15,35,64,.18);position:relative;overflow:hidden;border:2.5px solid transparent;transition:transform .15s ease,box-shadow .15s ease}
   #conteudo-secao-mesa #cat-nav .cat-photo-card:active{transform:scale(.95)}
   #conteudo-secao-mesa #cat-nav .cat-photo-card.on{border-color:#f97316;box-shadow:0 8px 22px rgba(249,115,22,.4)}
-  #conteudo-secao-mesa #cat-nav .cat-photo-label{color:#fff;font-weight:900;font-size:.92rem;text-transform:uppercase;letter-spacing:.02em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  #conteudo-secao-mesa #cat-nav .cat-photo-label{color:#fff;font-weight:900;font-size:1.05rem;text-transform:uppercase;letter-spacing:.03em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+  #cc-promo-carousel{scrollbar-width:none}
+  #cc-promo-carousel::-webkit-scrollbar{display:none}
+  #cc-promo-carousel .promo-card{scroll-snap-align:start;flex-shrink:0;width:168px;height:120px;border-radius:16px;background-size:cover;background-position:center;position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(15,35,64,.18);display:flex;align-items:flex-end;padding:10px}
+  #cc-promo-carousel .promo-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,35,64,.05) 40%,rgba(15,35,64,.9))}
+  #cc-promo-carousel .promo-card .promo-txt{position:relative;color:#fff}
+  #cc-promo-carousel .promo-card .promo-nome{font-weight:900;font-size:.78rem;text-transform:uppercase;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.5)}
+  #cc-promo-carousel .promo-card .promo-preco{font-weight:800;font-size:.72rem;color:#fed7aa}
   #conteudo-secao-mesa #cat-nav .pill .pill-ico{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex-shrink:0;border-radius:12px;font-size:1.25rem;background:#f3f4f6}
   #conteudo-secao-mesa #cat-nav .pill.on .pill-ico{background:rgba(255,255,255,.22)}
   #conteudo-secao-mesa #cat-nav .pill .pill-label{flex:1;text-align:left}
@@ -1282,36 +1297,31 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
      busca do cardápio quando ele está aberto. As 4 abas e as categorias
      agora vivem no conteúdo que rola, sem carrossel escondendo nada. -->
 <div class="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl" id="cc-topo-fixo-cliente">
-<!-- Nível 1: Banner Institucional Premium — foto real de fundo (Admin),
-         identidade + endereço + telefone + horário, alto contraste.
-         Pílula "Mesa X" flutua no canto (só quando há mesa); em modo
-         Delivery ela some e o telefone ganha destaque no lugar. -->
-<div class="w-full text-left px-4 pt-4 pb-3 flex flex-col gap-1 relative overflow-hidden cursor-pointer" id="cc-topo-banner-btn" style="min-height:140px;height:140px" onclick="alternarOpcaoMesa('cardapio')">
-<div class="absolute inset-0" id="cc-topo-banner-img" style="background-size:cover;background-position:center"></div>
-<div class="absolute inset-0" style="background:linear-gradient(135deg,rgba(15,35,64,.88),rgba(30,58,95,.82))"></div>
-<div class="relative flex items-start justify-between gap-2">
-<div class="flex flex-col gap-0.5 min-w-0">
-<span class="text-white font-black text-lg uppercase tracking-wide truncate" style="text-shadow:0 2px 6px rgba(0,0,0,.5)" id="cc-nome-estabelecimento"></span>
-<span class="text-white/85 font-bold text-[.68rem]" id="cc-topo-endereco"></span>
-<span class="text-white/70 font-bold text-[.66rem]" id="cc-topo-horario"></span>
+<!-- Nível 1: Banner Institucional Corporativo — identidade + endereço +
+         telefone + mesa, alto contraste, clique volta ao menu -->
+<button class="w-full text-left px-4 pt-3 pb-2.5 flex flex-col gap-1" style="background:linear-gradient(135deg,#0f2340,#1e3a5f)" onclick="alternarOpcaoMesa('cardapio')">
+<div class="flex items-center justify-between gap-2">
+<span class="text-white font-black text-sm uppercase tracking-wider truncate" id="cc-nome-estabelecimento"></span>
+<span class="bg-orange-500 text-white font-black text-xs uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0" id="label-mesa-ativa">Mesa</span>
 </div>
-<span class="bg-orange-500 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-full flex-shrink-0 shadow-lg" id="label-mesa-ativa">Mesa</span>
+<div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[.66rem] text-white/75 font-bold">
+<span id="cc-topo-endereco"></span>
+<span id="cc-topo-telefone-wrap" class="hidden items-center gap-1"><span class="text-white/40">·</span><span id="cc-topo-telefone"></span></span>
+<span id="cc-topo-horario-wrap" class="hidden items-center gap-1"><span class="text-white/40">·</span><span id="cc-topo-horario"></span></span>
 </div>
-<button type="button" class="relative flex items-center gap-1.5 mt-1.5 bg-[#25D366] rounded-full px-3 py-1.5 self-start shadow-lg active:scale-95 transition-transform" id="cc-topo-telefone-wrap" onclick="event.stopPropagation(); ccAbrirWhatsapp();">
-<span class="text-white text-sm">💬</span>
-<span class="text-white font-black text-[.72rem] tracking-wide" id="cc-topo-telefone"></span>
 </button>
-</div>
-<!-- Título comercial do miolo + busca real (sem botão "Cardápio" repetido) -->
-<div class="bg-white border-b border-slate-100 px-4 pt-3 pb-1">
-<p class="text-slate-900 font-black text-sm uppercase tracking-wide" id="cc-titulo-menu">📋 Menu da Praia</p>
-</div>
+<!-- Slot real da barra de busca do cardápio (#search-input), realocada
+         aqui via JS — não é um input novo. A Cardápio já é a tela de
+         entrada direta; não existe mais um "Voltar para o Início"
+         intermediário — o rodapé fixo cobre toda a navegação. -->
 <div class="bg-white border-b border-slate-100 p-2" id="cc-slot-busca-cardapio"></div>
+<!-- Nível 3: slot real do carrossel de categorias (#cat-nav) — não usado
+         mais fixo, categorias vão pro conteúdo; mantido oculto por
+         compatibilidade -->
+<div class="bg-white border-b shadow-sm p-2" id="cc-slot-categorias-cardapio"></div>
 </div>
-<!-- Chamar Garçom fica fora da cascata fixa, como FAB independente
-         (ver botão flutuante mais abaixo) — condicionado a existir mesa. -->
 <!-- 2. ZONA DE CONTEÚDO TOTALMENTE DESOBSTRUÍDA (Abaixo da Cascata) -->
-<div class="w-full px-4 pb-36 bg-slate-50 min-h-screen" id="conteudo-secao-mesa" style="padding-top: 188px !important;">
+<div class="w-full px-4 pb-36 bg-slate-50 min-h-screen" id="conteudo-secao-mesa" style="padding-top: 190px !important;">
 <!-- MENU INICIAL — 4 abas unificadas, cards brancos verticais, sem
        carrossel, todas abertas de uma vez, clique direto -->
 <div class="cc-cli-painel flex flex-col gap-3 p-3 w-full" id="cc-painel-home">
@@ -1415,11 +1425,11 @@ body.cc-modo-cliente #conteudo-secao-mesa{padding-bottom:110px!important}
 <!-- NAVEGAÇÃO PÚBLICA DO CLIENTE — acesso secundário; Cardápio é a entrada principal -->
 <nav id="cc-nav-publica" aria-label="Navegação do cliente">
   <button type="button" data-cc-nav="cardapio" onclick="alternarOpcaoMesa('cardapio')"><span>🍽️</span>Cardápio</button>
-  <button type="button" data-cc-nav="pedidos" onclick="alternarOpcaoMesa('pedidos')"><span>⏱️</span>Meu Pedido</button>
-  <button type="button" data-cc-nav="conta" onclick="alternarOpcaoMesa('conta')"><span>💲</span>Minha Conta</button>
-  <button type="button" data-cc-nav="avaliar" onclick="alternarOpcaoMesa('avaliar')"><span>👍</span>Avaliação</button>
+  <button type="button" data-cc-nav="pedidos" onclick="alternarOpcaoMesa('pedidos')"><span>📝</span>Meu Pedido</button>
+  <button type="button" data-cc-nav="conta" onclick="alternarOpcaoMesa('conta')"><span>💰</span>Minha Conta</button>
+  <button type="button" data-cc-nav="avaliar" onclick="alternarOpcaoMesa('avaliar')"><span>⭐</span>Avaliação</button>
 </nav>
-<button class="fixed z-50 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform" id="cc-fab-chamar-garcom" style="right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:56px;height:56px" onclick="ccChamarGarcomCartao()" title="Chamar Atendente">
+<button class="fixed z-50 bg-red-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform" style="right:18px;bottom:calc(78px + env(safe-area-inset-bottom));width:56px;height:56px" onclick="ccChamarGarcomCartao()" title="Chamar Atendente">
 <span class="text-2xl">🛎️</span>
 </button>
 </div>
@@ -2193,7 +2203,7 @@ const DEFAULT_CATEGORIAS = [
 ];
 
 const DEFAULT_CONFIG = {
-  nome: "BARRACA SOL DA BAHIA",
+  nome: "Barraca de Praia",
   local: "Praia do Farol de Itapuã · Salvador BA",
   horario: "Seg–Dom · 09h–20h",
   telefone: "(71) 99999-9999",
@@ -2352,13 +2362,16 @@ function ccAplicarFocoCategoria(id) {
   const wrap   = document.getElementById("cc-cat-nav-wrap");
   const trocar = document.getElementById("cc-cat-trocar");
   const lbl    = document.getElementById("cc-cat-trocar-label");
+  const promo  = document.getElementById("cc-promo-carousel-wrap");
   if (!wrap || !trocar) return;
   if (id === "all") {
     wrap.style.display = "";
     trocar.classList.add("hidden");
+    if (promo) promo.style.display = "";
   } else {
     wrap.style.display = "none";
     trocar.classList.remove("hidden");
+    if (promo) promo.style.display = "none";
     const cat = (typeof categorias !== "undefined") ? categorias.find(c => c.id === id) : null;
     if (lbl) lbl.textContent = cat ? (cat.icone + " " + cat.nome) : "Categoria selecionada";
     const main = document.querySelector("#view-cardapio main");
@@ -2366,6 +2379,25 @@ function ccAplicarFocoCategoria(id) {
   }
 }
 function ccVoltarCategorias() { setCat("all"); }
+
+// Carrossel comercial de destaques (itens marcados "novo" no cardápio) —
+// alto poder de venda, no topo do Cardápio, some ao filtrar categoria.
+function renderPromoCarousel() {
+  const el = document.getElementById("cc-promo-carousel");
+  if (!el) return;
+  const destaques = allItems().filter(i => i.novo && i.ativo !== false).slice(0, 8);
+  if (!destaques.length) {
+    const wrap = document.getElementById("cc-promo-carousel-wrap");
+    if (wrap) wrap.style.display = "none";
+    return;
+  }
+  el.innerHTML = destaques.map(it => {
+    const bg = it.img ? "url('" + it.img + "')" : "linear-gradient(135deg,#0f2340,#1e3a5f)";
+    const catDona = categorias.find(c => (c.itens || []).some(i => i.id === it.id));
+    return '<div class="promo-card" style="background-image:linear-gradient(180deg,rgba(15,35,64,.05) 40%,rgba(15,35,64,.9)),' + bg + '" onclick="setCat(\'' + (catDona ? catDona.id : 'all') + '\')">' +
+      '<div class="promo-txt"><div class="promo-nome">' + it.nome + '</div><div class="promo-preco">' + fmtBRL(it.preco) + '</div></div></div>';
+  }).join("");
+}
 
 /* ═══════════════════════════════════════
    MAIN RENDER
@@ -2404,7 +2436,7 @@ function renderNav() {
       const foto = fotoCategoria(id);
       b.className = "cat-photo-card " + (S.cat === id ? "on" : "off");
       b.style.backgroundImage = foto
-        ? "linear-gradient(90deg,rgba(15,35,64,.92) 35%,rgba(15,35,64,.35) 75%,rgba(15,35,64,.1)),url('" + foto + "')"
+        ? "linear-gradient(180deg,rgba(15,35,64,.05) 45%,rgba(15,35,64,.88)),url('" + foto + "')"
         : "linear-gradient(135deg,#0f2340,#1e3a5f)";
       b.innerHTML = '<span class="cat-photo-label">' + nome + '</span>';
     } else {
@@ -2414,19 +2446,8 @@ function renderNav() {
     b.onclick = () => setCat(id);
     nav.appendChild(b);
   };
-  if (clienteAtivo) {
-    // Cliente: exatamente 4 categorias fixas, com rótulo comercial —
-    // sem "Todos", sem "Acompanhamentos". Os ids reais (entradas/pratos/
-    // bebidas/sobremesas) não mudam, só o texto mostrado ao cliente.
-    const ROTULOS_CLIENTE = { entradas: "Entradas e Petiscos", pratos: "Pratos Principais", bebidas: "Bebidas e Coquetéis", sobremesas: "Sobremesas" };
-    Object.keys(ROTULOS_CLIENTE).forEach(id => {
-      const cat = categorias.find(c => c.id === id);
-      if (cat) mk(cat.icone, ROTULOS_CLIENTE[id], id);
-    });
-  } else {
-    mk("🍴", "Todos", "all");
-    categorias.forEach(c => mk(c.icone, c.nome, c.id));
-  }
+  mk("🍴", "Todos", "all");
+  categorias.forEach(c => mk(c.icone, c.nome, c.id));
 
   // Seta: mostrar/esconder conforme scroll
   function _syncArrow() {
@@ -12260,15 +12281,6 @@ function ccIniciarEscutaMesasRealtime() {
 const _ccMesasChamandoGarcom = new Set();
 const _ccMesasChamandoGarcomTotal = {};
 
-// Abre o WhatsApp comercial real (telefone cadastrado no Admin) — usado
-// pelo botão verde no banner do cliente (funciona em mesa e delivery).
-function ccAbrirWhatsapp() {
-  const digitos = String(config.telefone || "").replace(/\D/g, "");
-  if (!digitos) return;
-  const comDDI = (digitos.length <= 11) ? "55" + digitos : digitos;
-  window.open("https://wa.me/" + comDDI, "_blank");
-}
-
 async function ccChamarGarcomCartao() {
   const empresaId = window.COOKCONTROL_EMPRESA_ID_ATIVA;
   const mesa = (typeof S !== "undefined" && S.mesa) || localStorage.getItem(CC_MESA_CLIENTE_KEY);
@@ -12936,32 +12948,30 @@ function ccIniciarModoCliente() {
   if (topbar) topbar.style.display = "none";
   const shell = document.getElementById("view-mesa-cliente");
   if (shell) shell.classList.remove("hidden");
-  const temMesa = !!S.mesa;
   const label = document.getElementById("label-mesa-ativa");
-  if (label) {
-    if (temMesa) { label.textContent = "Mesa " + String(S.mesa).padStart(2, "0"); label.classList.remove("hidden"); }
-    else { label.classList.add("hidden"); }
-  }
+  if (label) label.textContent = "Mesa " + String(S.mesa).padStart(2, "0");
   const nomeTopo = document.getElementById("cc-nome-estabelecimento");
   if (nomeTopo) nomeTopo.textContent = config.nome || "";
   const enderecoTopo = document.getElementById("cc-topo-endereco");
   if (enderecoTopo) enderecoTopo.textContent = config.local || "";
-  const bannerImgTopo = document.getElementById("cc-topo-banner-img");
-  if (bannerImgTopo) bannerImgTopo.style.backgroundImage = "url('" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + "')";
+  const telWrap = document.getElementById("cc-topo-telefone-wrap");
   const telTxt = document.getElementById("cc-topo-telefone");
-  if (telTxt) telTxt.textContent = config.telefone
-    ? (temMesa ? config.telefone : "Suporte Delivery: " + config.telefone)
-    : "";
+  if (telWrap && telTxt) {
+    if (config.telefone) { telTxt.textContent = config.telefone; telWrap.classList.remove("hidden"); telWrap.classList.add("flex"); }
+    else { telWrap.classList.add("hidden"); telWrap.classList.remove("flex"); }
+  }
+  const horarioWrap = document.getElementById("cc-topo-horario-wrap");
   const horarioTxt = document.getElementById("cc-topo-horario");
-  if (horarioTxt) horarioTxt.textContent = config.horario || "";
-  const fabGarcom = document.getElementById("cc-fab-chamar-garcom");
-  if (fabGarcom) fabGarcom.style.display = temMesa ? "" : "none";
+  if (horarioWrap && horarioTxt) {
+    if (config.horario) { horarioTxt.textContent = config.horario; horarioWrap.classList.remove("hidden"); horarioWrap.classList.add("flex"); }
+    else { horarioWrap.classList.add("hidden"); horarioWrap.classList.remove("flex"); }
+  }
   const nomeBanner = document.getElementById("cc-home-banner-nome");
   if (nomeBanner) nomeBanner.textContent = config.nome || "";
   const localBanner = document.getElementById("cc-home-banner-local");
   if (localBanner) localBanner.textContent = config.local || "";
   const bannerImg = document.getElementById("cc-home-banner-img");
-  if (bannerImg) bannerImg.style.backgroundImage = "url(" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + ")";
+  if (bannerImg && config.designBanner) bannerImg.style.backgroundImage = "url(" + config.designBanner + ")";
   ccInjetarComandaTeste(S.mesa);
 
   // O Cardápio de #view-cardapio tem 4 filhos diretos: header (banner),
@@ -12977,11 +12987,13 @@ function ccIniciarModoCliente() {
   const slotBusca = document.getElementById("cc-slot-busca-cardapio");
   if (secao && origemCardapio && !secao.dataset.cardapioRealocado) {
     const filhos = Array.from(origemCardapio.children);
+    const promoDiv = filhos.find(f => f.id === "cc-promo-carousel-wrap");
     const catDiv = filhos.find(f => f.querySelector && f.querySelector("#cat-nav"));
     const trocarChip = filhos.find(f => f.id === "cc-cat-trocar");
     const searchDiv = filhos.find(f => f.querySelector && f.querySelector("#search-input"));
     const main = filhos.find(f => f.tagName === "MAIN");
     if (searchDiv && slotBusca) slotBusca.appendChild(searchDiv);
+    if (promoDiv) secao.appendChild(promoDiv);
     if (catDiv) secao.appendChild(catDiv);
     if (trocarChip) secao.appendChild(trocarChip);
     // O <header> decorativo (2 fotos + nome/endereço/mesa) NÃO é mais
@@ -13001,6 +13013,7 @@ function ccIniciarModoCliente() {
   // Re-renderiza agora que ccModoClienteAtivo() já é true, pra garantir
   // que as categorias saiam como cards com foto, não pills genéricos.
   if (typeof renderNav === "function") renderNav();
+  if (typeof renderPromoCarousel === "function") renderPromoCarousel();
   if (!_ccTimerInterval) _ccTimerInterval = setInterval(ccAtualizarTimers, 1000);
   if (!_ccPedidosPollInterval) {
     _ccPedidosPollInterval = setInterval(() => {
@@ -13036,10 +13049,12 @@ function alternarOpcaoMesa(tab) {
     const cardMain = document.querySelector("#conteudo-secao-mesa > main");
     const cardCat = Array.from(secao.children).find(el => el.querySelector && el.querySelector("#cat-nav"));
     const cardTrocar = document.getElementById("cc-cat-trocar");
+    const cardPromo = document.getElementById("cc-promo-carousel-wrap");
     if (cardHeader) cardHeader.style.display = "";
     if (cardMain) cardMain.style.display = "";
     if (cardCat) cardCat.style.display = "";
     if (cardTrocar) cardTrocar.style.display = "";
+    if (cardPromo) cardPromo.style.display = "";
     if (slotBusca) slotBusca.style.display = "";
     if (voltarWrap) voltarWrap.classList.remove("hidden");
     if (typeof ccAplicarFocoCategoria === "function") ccAplicarFocoCategoria(S.cat);
@@ -13085,7 +13100,7 @@ function ccCapaAtualizarBanner() {
   if (nome) nome.textContent = config.nome || "";
   if (local) local.textContent = config.local || "";
   if (horario) horario.textContent = config.horario || "";
-  if (img) img.style.backgroundImage = "url(" + (typeof window.ccBannerAtual === "function" ? window.ccBannerAtual() : config.designBanner) + ")";
+  if (img && config.designBanner) img.style.backgroundImage = "url(" + config.designBanner + ")";
 }
 function ccCapaMostrar(mostrar) {
   const el = document.getElementById("cc-capa-institucional");
@@ -13891,7 +13906,6 @@ const BANNER_DEFAULT="data:image/webp;base64,UklGRjjGAQBXRUJQVlA4ICzGAQCQ/ASdASq
 const originalShowView=window.showView;
 function cfg(){try{return window.config||{}}catch(e){return {}}}
 function banner(){return cfg().designBanner||BANNER_DEFAULT}
-window.ccBannerAtual = banner;
 function hideLegacy(){document.querySelectorAll('[id^="view-"]').forEach(e=>{e.classList.add('hidden');e.style.display='none'});['cc-topbar-wrapper','cc-capa-institucional','nav-main-wrapper'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});}
 function openView(name){
   /* V7 — navegação segura da capa: a versão V6 ocultava as views com
@@ -13996,210 +14010,5 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
-</script>
-<style id="cookcontrol-cliente-layout-final-v1">
-/* ============================================================
-   COOKCONTROL — CLIENTE FINAL / AJUSTE CIRÚRGICO DE LAYOUT
-   NÃO altera módulos administrativos, Supabase, pagamentos ou regras.
-   ============================================================ */
-body.cc-modo-cliente{overflow-x:hidden!important;background:#f4f6f8!important}
-
-/* 1) BANNER SUPERIOR — compacto, panorâmico e responsivo */
-body.cc-modo-cliente #cc-topo-fixo-cliente{
-  position:relative!important;
-  top:auto!important;left:auto!important;right:auto!important;
-  width:100%!important;
-  z-index:50!important;
-  box-shadow:0 2px 10px rgba(15,35,64,.10)!important;
-}
-body.cc-modo-cliente #cc-topo-banner-btn{
-  height:158px!important;
-  min-height:158px!important;
-  max-height:158px!important;
-  padding:14px 18px 12px!important;
-  background:#193b5d!important;
-}
-body.cc-modo-cliente #cc-topo-banner-img{
-  background-size:cover!important;
-  background-position:center 52%!important;
-  background-repeat:no-repeat!important;
-  opacity:1!important;
-}
-body.cc-modo-cliente #cc-topo-banner-btn > .absolute.inset-0:nth-child(2){
-  background:linear-gradient(90deg,rgba(10,30,52,.68),rgba(10,30,52,.10) 72%,rgba(10,30,52,.03))!important;
-}
-body.cc-modo-cliente #cc-nome-estabelecimento{
-  font-size:clamp(1.05rem,2vw,1.55rem)!important;
-  line-height:1.05!important;
-  letter-spacing:.025em!important;
-  max-width:72vw!important;
-}
-body.cc-modo-cliente #cc-topo-endereco{font-size:.72rem!important;line-height:1.15!important}
-body.cc-modo-cliente #cc-topo-horario{font-size:.68rem!important;line-height:1.15!important}
-body.cc-modo-cliente #cc-topo-telefone-wrap{margin-top:7px!important;padding:6px 11px!important}
-
-/* 2) FAIXA BRANCA — estreita, colada ao banner, sem vão/overlay */
-body.cc-modo-cliente #cc-topo-fixo-cliente > .bg-white.border-b.border-slate-100.px-4.pt-3.pb-1{
-  padding:7px 16px 5px!important;
-  min-height:34px!important;
-  height:34px!important;
-  box-sizing:border-box!important;
-}
-body.cc-modo-cliente #cc-titulo-menu{
-  margin:0!important;
-  font-size:.82rem!important;
-  line-height:22px!important;
-}
-body.cc-modo-cliente #cc-slot-busca-cardapio{
-  padding:7px 16px!important;
-  background:#fff!important;
-  border-bottom:1px solid #e5e7eb!important;
-  box-sizing:border-box!important;
-}
-body.cc-modo-cliente #cc-slot-busca-cardapio > *{
-  margin:0!important;
-  width:100%!important;
-}
-body.cc-modo-cliente #cc-slot-busca-cardapio #search-input{
-  height:48px!important;
-  min-height:48px!important;
-  border-radius:14px!important;
-  margin:0 auto!important;
-  box-sizing:border-box!important;
-}
-
-/* 3) CONTEÚDO — começa exatamente depois da cascata, sem margem negativa */
-body.cc-modo-cliente #conteudo-secao-mesa{
-  padding-top:0!important;
-  margin-top:0!important;
-  min-height:calc(100vh - 247px)!important;
-  box-sizing:border-box!important;
-}
-body.cc-modo-cliente #conteudo-secao-mesa #cc-painel-home{display:none!important}
-
-/* Cardápio do cliente: busca/categorias no fluxo normal */
-body.cc-modo-cliente #conteudo-secao-mesa #cc-cat-nav-wrap{
-  width:100%!important;
-  max-width:1100px!important;
-  margin:0 auto!important;
-  padding:12px 18px 10px!important;
-  box-sizing:border-box!important;
-}
-body.cc-modo-cliente #conteudo-secao-mesa #cat-nav{
-  width:100%!important;
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:12px!important;
-  padding:0!important;
-  margin:0!important;
-  align-items:stretch!important;
-}
-body.cc-modo-cliente #conteudo-secao-mesa #cat-nav .cat-photo-card{
-  width:100%!important;
-  min-width:0!important;
-  height:104px!important;
-  min-height:104px!important;
-  max-height:104px!important;
-  border-radius:18px!important;
-  padding:0 20px!important;
-  background-size:cover!important;
-  background-position:center!important;
-  box-shadow:0 5px 15px rgba(15,35,64,.16)!important;
-  border:1px solid rgba(255,255,255,.65)!important;
-}
-body.cc-modo-cliente #conteudo-secao-mesa #cat-nav .cat-photo-label{
-  font-size:1rem!important;
-  line-height:1.08!important;
-  letter-spacing:.025em!important;
-  text-shadow:0 2px 8px rgba(0,0,0,.75)!important;
-}
-
-/* Itens: ocupam a mesma largura útil das categorias */
-body.cc-modo-cliente #conteudo-secao-mesa > main{
-  width:100%!important;
-  max-width:1100px!important;
-  margin:0 auto!important;
-  padding-left:18px!important;
-  padding-right:18px!important;
-  box-sizing:border-box!important;
-}
-
-/* 4) RODAPÉ — quatro zonas iguais e ícones grandes/alinhados */
-body.cc-modo-cliente #cc-nav-publica{
-  display:grid!important;
-  grid-template-columns:repeat(4,1fr)!important;
-  width:100%!important;
-  max-width:640px!important;
-  left:50%!important;
-  right:auto!important;
-  transform:translateX(-50%)!important;
-  bottom:0!important;
-  height:78px!important;
-  padding:6px 8px calc(6px + env(safe-area-inset-bottom))!important;
-  border:1px solid #e5e7eb!important;
-  border-bottom:0!important;
-  border-radius:18px 18px 0 0!important;
-  box-sizing:border-box!important;
-  z-index:80!important;
-}
-body.cc-modo-cliente #cc-nav-publica button{
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:2px!important;
-  min-width:0!important;
-  padding:4px 2px!important;
-  font-size:.67rem!important;
-  line-height:1.05!important;
-  font-weight:900!important;
-  white-space:nowrap!important;
-}
-body.cc-modo-cliente #cc-nav-publica button span{
-  font-size:1.45rem!important;
-  line-height:1!important;
-  margin:0!important;
-}
-body.cc-modo-cliente #cc-nav-publica button.active{background:#fff7ed!important;color:#ea580c!important}
-body.cc-modo-cliente #cc-fab-chamar-garcom{z-index:90!important}
-
-@media(max-width:700px){
-  body.cc-modo-cliente #cc-topo-banner-btn{height:150px!important;min-height:150px!important;max-height:150px!important}
-  body.cc-modo-cliente #cc-topo-banner-img{background-position:center 52%!important}
-  body.cc-modo-cliente #cc-topo-fixo-cliente > .bg-white.border-b.border-slate-100.px-4.pt-3.pb-1{height:34px!important;min-height:34px!important}
-  body.cc-modo-cliente #cc-slot-busca-cardapio{padding:7px 12px!important}
-  body.cc-modo-cliente #cc-slot-busca-cardapio #search-input{height:46px!important;min-height:46px!important}
-  body.cc-modo-cliente #conteudo-secao-mesa #cat-nav{grid-template-columns:1fr!important;gap:10px!important}
-  body.cc-modo-cliente #conteudo-secao-mesa #cc-cat-nav-wrap{padding:10px 12px!important}
-  body.cc-modo-cliente #conteudo-secao-mesa #cat-nav .cat-photo-card{height:82px!important;min-height:82px!important;max-height:82px!important;border-radius:16px!important}
-  body.cc-modo-cliente #conteudo-secao-mesa #cat-nav .cat-photo-label{font-size:.9rem!important}
-  body.cc-modo-cliente #conteudo-secao-mesa > main{padding-left:12px!important;padding-right:12px!important}
-  body.cc-modo-cliente #cc-nav-publica{max-width:none!important;width:100%!important;border-radius:16px 16px 0 0!important}
-}
-</style>
-<script id="cookcontrol-cliente-identidade-final-v1">
-(function(){
-  function corrigirIdentidadeCliente(){
-    try{
-      if(typeof config==='undefined') return;
-      if(/^(barraca de praia|barraca da praia)$/i.test(String(config.nome||'').trim())){
-        config.nome='BARRACA SOL DA BAHIA';
-        if(typeof salvar==='function') salvar('config',config);
-      }
-      const nome=document.getElementById('cc-nome-estabelecimento');
-      if(nome) nome.textContent=config.nome||'BARRACA SOL DA BAHIA';
-      const banner=document.getElementById('cc-topo-banner-img');
-      if(banner){
-        const src=(typeof window.ccBannerAtual==='function')?window.ccBannerAtual():config.designBanner;
-        if(src) banner.style.backgroundImage='url("'+src.replace(/"/g,'\\"')+'")';
-      }
-      const tel=document.getElementById('cc-topo-telefone');
-      if(tel) tel.textContent=config.telefone ? ((typeof S!=='undefined'&&S.mesa)?config.telefone:'Suporte Delivery: '+config.telefone) : '';
-    }catch(e){console.warn('CookControl identidade cliente:',e)}
-  }
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(corrigirIdentidadeCliente,120);setTimeout(corrigirIdentidadeCliente,700);});
-  window.ccCorrigirIdentidadeCliente=corrigirIdentidadeCliente;
-})();
-</script>
-</body>
+</script></body>
 </html>
